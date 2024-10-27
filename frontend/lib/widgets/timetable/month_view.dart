@@ -4,10 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:paged_vertical_calendar/paged_vertical_calendar.dart';
 
 class MonthViewScreen extends StatefulWidget {
-  const MonthViewScreen({Key? key}) : super(key: key);
+  final BuildContext context;
+
+  const MonthViewScreen({super.key, required this.context});
 
   @override
-  _MonthViewScreenState createState() => _MonthViewScreenState();
+  State<MonthViewScreen> createState() => _MonthViewScreenState();
 }
 
 class _MonthViewScreenState extends State<MonthViewScreen> {
@@ -27,7 +29,7 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).canvasColor,
       body: Stack(
         children: [
           PagedVerticalCalendar(
@@ -41,8 +43,8 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   formattedMonth,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.bold,
                     fontSize: 22,
                   ),
@@ -55,9 +57,11 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
                   DateTime.now().year == date.year;
 
               return Container(
-                margin: const EdgeInsets.all(4.0),
+                margin: const EdgeInsets.all(2.0),
                 decoration: BoxDecoration(
-                  color: isToday ? Colors.blueAccent : Colors.grey.shade900,
+                  color: isToday
+                      ? Colors.blueAccent
+                      : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(10.0),
                   boxShadow: isToday
                       ? [
@@ -69,7 +73,7 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
                         ]
                       : [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Color.fromRGBO(51, 51, 51, 0.10),
                             blurRadius: 4,
                             offset: Offset(2, 2),
                           ),
@@ -79,7 +83,7 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
                   child: Text(
                     date.day.toString(),
                     style: TextStyle(
-                      color: isToday ? Colors.white : Colors.grey.shade300,
+                      color: isToday ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                       fontWeight: isToday ? FontWeight.bold : FontWeight.w600,
                       fontSize: 16,
                     ),

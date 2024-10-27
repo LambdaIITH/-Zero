@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:calendar_view/calendar_view.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 DateTime get _now => DateTime.now();
 
 class WeekViewScreen extends StatelessWidget {
-  WeekViewScreen({Key? key}) : super(key: key);
+  final BuildContext context;
+
+  WeekViewScreen({super.key, required this.context});
 
   final List<CalendarEventData> _events = [
     CalendarEventData(
@@ -38,7 +40,7 @@ class WeekViewScreen extends StatelessWidget {
       startDay: WeekDays.sunday,
       keepScrollOffset: true,
       scrollOffset: 450,
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).canvasColor,
       headerStringBuilder: (date, {secondaryDate}) {
         String startDate = DateFormat('d MMM').format(date);
         String endDate = DateFormat('d MMM').format(secondaryDate ?? date);
@@ -61,6 +63,20 @@ class WeekViewScreen extends StatelessWidget {
           ),
         ),
       ),
+      weekPageHeaderBuilder: (startDate, fromDate) {
+        return Container();
+      },
+      timeLineBuilder: (date) {
+        String period = date.hour < 12 ? 'AM' : 'PM';
+        return Container(
+          width: 60,
+          alignment: Alignment.center,
+          child: Text(
+            "${date.hour % 12} $period",
+            style: TextStyle(color: Colors.grey),
+          ),
+        );
+      },
       eventTileBuilder: (date, events, rect, startTime, endTime) {
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 4),

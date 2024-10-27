@@ -1,3 +1,4 @@
+import 'package:dashbaord/constants/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -15,14 +16,16 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final customColors = Theme.of(context).extension<CustomColors>();
+
     return Card(
-      color: Colors.grey.shade900,
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
       ),
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       elevation: 6,
-      shadowColor: Colors.black.withOpacity(0.2),
+      shadowColor: customColors?.customShadowColor,
       child: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Column(
@@ -34,8 +37,8 @@ class EventCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -43,7 +46,9 @@ class EventCard extends StatelessWidget {
                 ),
                 Icon(
                   CupertinoIcons.calendar,
-                  color: Colors.yellowAccent,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.yellowAccent
+                      : Colors.yellow[600],
                 ),
               ],
             ),
@@ -51,7 +56,7 @@ class EventCard extends StatelessWidget {
             Text(
               time,
               style: TextStyle(
-                color: Colors.grey.shade400,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -60,7 +65,7 @@ class EventCard extends StatelessWidget {
             Text(
               description,
               style: TextStyle(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 fontSize: 15,
               ),
             ),

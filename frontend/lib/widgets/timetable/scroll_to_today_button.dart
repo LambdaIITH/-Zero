@@ -9,7 +9,7 @@ class TodayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned(
       top: 10,
-      left: MediaQuery.of(context).size.width / 2 - 50,
+      left: MediaQuery.of(context).size.width / 2 - 69,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(

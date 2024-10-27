@@ -140,7 +140,6 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
               borderRadius: BorderRadius.circular(10),
               selectedColor: Colors.white,
               fillColor: Colors.red,
-              color: Colors.black,
               constraints: BoxConstraints(
                 minHeight: 40.0,
                 minWidth: MediaQuery.of(context).size.width * 2 / 9,
@@ -150,17 +149,23 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
                     viewType,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: viewType == selectedViewType
+                          ? Colors.white
+                          : Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
                   ),
                 );
               }).toList(),
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: _getCurrentView(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _getCurrentView(context),
+              ),
             ),
             SizedBox(
               height: 10,
@@ -172,19 +177,28 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
     );
   }
 
-  Widget _getCurrentView() {
+  Widget _getCurrentView(BuildContext context) {
     switch (selectedViewType) {
       case "List":
-        return ListViewScreen();
+        return ListViewScreen(
+          context: context,
+        );
       case "Day":
-        return DayViewScreen();
+        return DayViewScreen(
+          context: context,
+        );
       case "Week":
-        return WeekViewScreen();
+        return WeekViewScreen(
+          context: context,
+        );
       case "Month":
-        return MonthViewScreen();
-
+        return MonthViewScreen(
+          context: context,
+        );
       default:
-        return DayViewScreen();
+        return DayViewScreen(
+          context: context,
+        );
     }
   }
 
@@ -210,8 +224,11 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
             onPressed: () {
               _shareSchedule();
             },
-            backgroundColor: Colors.deepPurple,
-            child: Icon(Icons.share),
+            backgroundColor: Colors.red,
+            child: Icon(
+              Icons.ios_share,
+              color: Colors.white,
+            ),
           ),
         ),
         SizedBox(height: 12),
@@ -222,9 +239,10 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
             onPressed: () {
               _showAddEventBottomSheet(context);
             },
-            backgroundColor: Colors.deepPurple,
+            backgroundColor: Colors.red,
             child: Icon(
               CupertinoIcons.add,
+              color: Colors.white,
               size: 36,
             ),
           ),
@@ -232,8 +250,6 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
       ],
     );
   }
-
-  void _showAddEventDialog() {}
 
   void _shareSchedule() {
     String eventList = _events.join('\n');

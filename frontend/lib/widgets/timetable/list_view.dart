@@ -1,15 +1,16 @@
+import 'package:collection/collection.dart';
 import 'package:dashbaord/widgets/timetable/event_card.dart';
 import 'package:dashbaord/widgets/timetable/scroll_to_today_button.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:collection/collection.dart';
 
 class ListViewScreen extends StatefulWidget {
-  const ListViewScreen({Key? key}) : super(key: key);
+  final BuildContext context;
+
+  const ListViewScreen({super.key, required this.context});
 
   @override
-  _ListViewScreenState createState() => _ListViewScreenState();
+  State<ListViewScreen> createState() => _ListViewScreenState();
 }
 
 class _ListViewScreenState extends State<ListViewScreen> {
@@ -93,12 +94,11 @@ class _ListViewScreenState extends State<ListViewScreen> {
         groupBy(events, (event) => event['date'].toString().split(' ')[0]);
 
     void scrollToToday() {
+      debugPrint(Theme.of(context).canvasColor.toString());
+
       final todayKey = DateTime.now().toString().split(' ')[0];
       final index =
           groupedEvents.keys.toList().indexWhere((date) => date == todayKey);
-
-      debugPrint("TODAY's INDEX $index");
-      debugPrint("GROUPED  ${groupedEvents.keys.toString()}");
 
       if (index != -1) {
         double position = 0;
@@ -117,12 +117,10 @@ class _ListViewScreenState extends State<ListViewScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
       body: Stack(
         children: [
           ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.all(16.0),
             itemCount: groupedEvents.keys.length,
             itemBuilder: (context, index) {
               final dateKey = groupedEvents.keys.elementAt(index);
@@ -142,8 +140,9 @@ class _ListViewScreenState extends State<ListViewScreen> {
                         borderRadius: BorderRadius.circular(100.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 10,
+                            color: Color.fromRGBO(
+                                51, 51, 51, 0.10), // Shadow color
+                            blurRadius: 6,
                             offset: const Offset(0, 4),
                           ),
                         ],

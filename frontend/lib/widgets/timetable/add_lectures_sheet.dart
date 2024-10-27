@@ -1,5 +1,7 @@
+import 'package:dashbaord/utils/normal_text.dart';
 import 'package:dashbaord/widgets/timetable/lecture_time_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AddLectureBottomSheet extends StatefulWidget {
   @override
@@ -47,7 +49,7 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
   Widget build(BuildContext context) {
     return Material(
       elevation: 12,
-      color: const Color(0xFF121212),
+      color: Theme.of(context).canvasColor,
       borderRadius: BorderRadius.circular(25),
       shadowColor: Colors.white.withOpacity(0.3),
       child: SingleChildScrollView(
@@ -70,7 +72,7 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
               Text(
                 "Add Lecture",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
@@ -79,9 +81,10 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
               const SizedBox(height: 24),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Lecture Title',
-                  labelStyle: TextStyle(color: Colors.white70),
+                  labelStyle: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.blueAccent),
                   ),
@@ -97,10 +100,10 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
                 children: [
                   Text(
                     "Slots",
-                    style: TextStyle(
-                      fontSize: 20,
+                    style: GoogleFonts.inter(
+                      fontSize: 22,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   ElevatedButton.icon(
@@ -147,22 +150,22 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            slot['day'] ?? '',
-                            style:
-                                TextStyle(fontSize: 16, color: Colors.white70),
-                          ),
+                          NormalText(
+                              text: slot['day'] ?? '',
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color),
                           Row(
                             children: [
-                              Text(
-                                "${slot['from']} - ${slot['to']}",
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.white),
-                              ),
+                              NormalText(
+                                  text: "${slot['from']} - ${slot['to']}",
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.color),
                               IconButton(
                                 icon:
                                     Icon(Icons.delete, color: Colors.redAccent),

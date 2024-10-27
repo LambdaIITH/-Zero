@@ -1,4 +1,4 @@
-// birthday_bottom_sheet.dart
+import 'package:dashbaord/utils/normal_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -52,7 +52,7 @@ class _LectureTimePickerBottomSheetState
       borderRadius: BorderRadius.all(
         Radius.circular(24),
       ),
-      color: const Color(0xFF121212),
+      color: Theme.of(context).canvasColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -84,11 +84,17 @@ class _LectureTimePickerBottomSheetState
               children: {
                 false: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text("Select Slot"),
+                  child: NormalText(
+                    text: "Select Slot",
+                    size: 14,
+                  ),
                 ),
                 true: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text("Select Time"),
+                  child: NormalText(
+                    text: "Select Time",
+                    size: 14,
+                  ),
                 ),
               },
             ),
@@ -112,38 +118,36 @@ class _LectureTimePickerBottomSheetState
                       padding: const EdgeInsets.symmetric(
                           vertical: 1, horizontal: 4),
                       child: ElevatedButton(
-                        onPressed: () {
-                          debugPrint("$day $selectedDay");
-                          setState(() {
+                          onPressed: () {
                             debugPrint("$day $selectedDay");
-                            selectedDay = day;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: selectedDay == day
-                              ? Colors.red
-                              : Colors.grey[800],
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: selectedDay == day
-                                  ? Colors.red
-                                  : Colors.transparent,
-                              width: 2,
+                            setState(() {
+                              debugPrint("$day $selectedDay");
+                              selectedDay = day;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: selectedDay == day
+                                ? Colors.red
+                                : Theme.of(context).cardColor,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: selectedDay == day
+                                    ? Colors.red
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
                             ),
                           ),
-                        ),
-                        child: Text(
-                          day,
-                          style: TextStyle(
+                          child: NormalText(
+                            text: day,
                             color: selectedDay == day
                                 ? Colors.white
-                                : Colors.white,
-                          ),
-                        ),
-                      ),
+                                : Theme.of(context).textTheme.bodyLarge?.color,
+                                size: 16,
+                          )),
                     ),
                 ],
               ),

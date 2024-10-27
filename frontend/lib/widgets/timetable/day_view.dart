@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 DateTime get _now => DateTime.now();
 
 class DayViewScreen extends StatelessWidget {
-  DayViewScreen({Key? key}) : super(key: key);
+  final BuildContext context;
+
+  DayViewScreen({super.key, required this.context});
 
   final List<CalendarEventData> _events = [
     CalendarEventData(
@@ -35,9 +37,12 @@ class DayViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return DayView(
       controller: EventController()..addAll(_events),
-      backgroundColor: Colors.black,
-      dateStringBuilder: (date, {secondaryDate}) =>
-          DateFormat("d MMMM yyyy").format(date),
+      backgroundColor: Theme.of(context).canvasColor,
+      heightPerMinute: 1,
+      showVerticalLine: false,
+      initialDay: _now,
+      keepScrollOffset: true,
+      startDuration: Duration(hours: 8),
       headerStyle: HeaderStyle(
         headerTextStyle: const TextStyle(
           color: Colors.white,
@@ -54,28 +59,19 @@ class DayViewScreen extends StatelessWidget {
           ),
         ),
       ),
-      timeLineBuilder: (time) {
-        return Padding(
-          padding: EdgeInsets.all(2),
-          child: SizedBox(
-            width: 60,
-            child: Text(
-              DateFormat('h a').format(time),
-              style: const TextStyle(
-                color: Color.fromARGB(255, 187, 187, 187),
-                fontSize: 14,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
+      dayTitleBuilder: (date) {
+        return Container();
+      },
+      timeLineBuilder: (date) {
+        return Container(
+          width: 60,
+          alignment: Alignment.center,
+          child: Text(
+            DateFormat('h a').format(date),
+            style: TextStyle(color: Colors.grey),
           ),
         );
       },
-      heightPerMinute: 1,
-      showVerticalLine: false,
-      initialDay: _now,
-      keepScrollOffset: true,
-      startDuration: Duration(hours: 8),
       eventTileBuilder: (date, events, rect, startTime, endTime) {
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
@@ -114,9 +110,7 @@ class DayViewScreen extends StatelessWidget {
         );
       },
       onEventTap: (event, date) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(date.toIso8601String() + event[0].title),
-        ));
+        debugPrint(Theme.of(context).canvasColor.toString());
       },
     );
   }
