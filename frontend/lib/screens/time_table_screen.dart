@@ -1,3 +1,4 @@
+import 'package:dashbaord/widgets/timetable/add_lectures_sheet.dart';
 import 'package:dashbaord/widgets/timetable/day_view.dart';
 import 'package:dashbaord/widgets/timetable/list_view.dart';
 import 'package:dashbaord/widgets/timetable/month_view.dart';
@@ -187,6 +188,17 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
     }
   }
 
+  void _showAddEventBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return AddLectureBottomSheet();
+        // return const AddEventBottomSheet();
+      },
+      isScrollControlled: true,
+    );
+  }
+
   Widget _buildFABs() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -208,7 +220,7 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
           height: 64,
           child: FloatingActionButton(
             onPressed: () {
-              _showAddEventDialog();
+              _showAddEventBottomSheet(context);
             },
             backgroundColor: Colors.deepPurple,
             child: Icon(
@@ -221,8 +233,7 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
     );
   }
 
-  void _showAddEventDialog() {
-  }
+  void _showAddEventDialog() {}
 
   void _shareSchedule() {
     String eventList = _events.join('\n');
