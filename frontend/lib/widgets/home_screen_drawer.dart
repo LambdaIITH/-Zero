@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dashbaord/widgets/drawer_option.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreenDrawer extends StatelessWidget {
   const HomeScreenDrawer({
@@ -19,7 +20,8 @@ class HomeScreenDrawer extends StatelessWidget {
             const SizedBox(height: 30),
             IconButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                // Navigator.of(context).pop();
+                context.pop();
               },
               icon: const Icon(Icons.close),
             ),

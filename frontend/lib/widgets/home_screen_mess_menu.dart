@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/screens/mess_menu_screen.dart';
 import 'package:dashbaord/widgets/home_mess_component.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -73,9 +74,10 @@ class HomeScreenMessMenu extends StatelessWidget {
         if (messMenu == null) {
           return;
         }
-        Navigator.of(context).push(
-          CustomPageRoute(child: MessMenuScreen(messMenu: messMenu!)),
-        );
+        context.push('/mess', extra: {'messMenu': messMenu!});
+        // Navigator.of(context).push(
+        //   CustomPageRoute(child: MessMenuScreen(messMenu: messMenu!)),
+        // );
       },
       child: Container(
         decoration: BoxDecoration(
@@ -127,9 +129,10 @@ class HomeScreenMessMenu extends StatelessWidget {
         if (messMenu == null) {
           return;
         }
-        Navigator.of(context).push(
-          CustomPageRoute(child: MessMenuScreen(messMenu: messMenu!)),
-        );
+        context.push('/mess', extra: {'messMenu': messMenu!});
+        // Navigator.of(context).push(
+        //   CustomPageRoute(child: MessMenuScreen(messMenu: messMenu!)),
+        // );
       },
       child: Container(
         decoration: BoxDecoration(

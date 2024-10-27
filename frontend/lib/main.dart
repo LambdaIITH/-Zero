@@ -1,3 +1,4 @@
+import 'package:dashbaord/router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:dashbaord/screens/login_screen.dart';
 import 'package:dashbaord/screens/splash_screen.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -68,6 +70,7 @@ class _MyAppState extends State<MyApp> {
     FlutterNativeSplash.remove();
     getAuthStatus();
     getThemeMode();
+    // initRoute();
   }
 
   getThemeMode() async {
@@ -102,10 +105,51 @@ class _MyAppState extends State<MyApp> {
     setThemeMode(theme);
   }
 
+  // late GoRouter _router;
+
+  // void initRoute() {
+  //   _router = GoRouter(
+  //     navigatorKey: navigatorKey,
+  //     routes: <RouteBase>[
+  //       GoRoute(
+  //         path: '/',
+  //         builder: (BuildContext context, GoRouterState state) {
+  //           return isLoading
+  //               ? SplashScreen(nextPage: Container())
+  //               : isLoggedIn
+  //                   ? SplashScreen(
+  //                       isLoading: false,
+  //                       nextPage: HomeScreen(
+  //                           isGuest: false, onThemeChanged: handleThemeChange))
+  //                   : SplashScreen(
+  //                       isLoading: false,
+  //                       nextPage: LoginScreenWrapper(
+  //                           timeDilationFactor: 4.0,
+  //                           onThemeChanged: handleThemeChange));
+  //         },
+  //         routes: <RouteBase>[
+  //           GoRoute(
+  //             path: 'login',
+  //             builder: (BuildContext context, GoRouterState state) {
+  //               return SplashScreen(
+  //                   isLoading: isLoading,
+  //                   nextPage: LoginScreenWrapper(
+  //                     onThemeChanged: handleThemeChange,
+  //                     timeDilationFactor: 4.0,
+  //                   ));
+  //             },
+  //           ),
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
+    return MaterialApp.router(
+      routerConfig: AppRouter(onThemeChanged: handleThemeChange).router,
+      // navigatorKey: navigatorKey,
       title: 'Dashboard',
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
@@ -115,23 +159,23 @@ class _MyAppState extends State<MyApp> {
           : _mode == 1
               ? ThemeMode.light
               : ThemeMode.dark,
-      navigatorObservers: [_analyticsService.getAnalyticsObserver()],
-      home: isLoading
-          ? SplashScreen(nextPage: Container())
-          : isLoggedIn
-              ? SplashScreen(
-                  nextPage: HomeScreen(
-                    onThemeChanged: handleThemeChange,
-                    isGuest: false,
-                  ),
-                  isLoading: false,
-                )
-              : SplashScreen(
-                  isLoading: false,
-                  nextPage: LoginScreenWrapper(
-                    onThemeChanged: handleThemeChange,
-                    timeDilationFactor: 4.0,
-                  )),
+      // navigatorObservers: [_analyticsService.getAnalyticsObserver()],
+      // home: isLoading
+      //     ? SplashScreen(nextPage: Container())
+      //     : isLoggedIn
+      //         ? SplashScreen(
+      //             nextPage: HomeScreen(
+      //               onThemeChanged: handleThemeChange,
+      //               isGuest: false,
+      //             ),
+      //             isLoading: false,
+      //           )
+      //         : SplashScreen(
+      //             isLoading: false,
+      //             nextPage: LoginScreenWrapper(
+      //               onThemeChanged: handleThemeChange,
+      //               timeDilationFactor: 4.0,
+      //             )),
     );
   }
 }

@@ -1,30 +1,34 @@
-import 'package:dashbaord/screens/profile_screen.dart';
-import 'package:dashbaord/utils/custom_page_route.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/models/booking_model.dart';
 import 'package:dashbaord/models/travellers.dart';
 import 'package:dashbaord/models/user_model.dart';
-import 'package:dashbaord/screens/cab_add_success.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:intl/intl.dart';
 
 class CabAddScreen extends StatefulWidget {
-  final UserModel user;
-  final String image;
-  const CabAddScreen({Key? key, required this.user, required this.image})
-      : super(key: key);
+  final String? from;
+  final String? to;
+  final String? startTime;
+  final String? endTime;
+  final String? seats;
+  final String? comments;
+  const CabAddScreen({
+    Key? key,
+    this.from,
+    this.to,
+    this.startTime,
+    this.endTime,
+    this.seats,
+    this.comments,
+  }) : super(key: key);
   @override
   State<CabAddScreen> createState() => _CabAddScreenState();
 }
 
 class _CabAddScreenState extends State<CabAddScreen> {
-  // DateTime? selectedDate;
-  // String? selectedFromPlace;
-  // String? selectedToPlace;
   String? selectedLocation;
-  // TimeOfDay? selectedStartTime;
-  // TimeOfDay? selectedEndTime;
 
   DateTime? selectedStartDateTime;
   DateTime? selectedEndDateTime;
@@ -46,6 +50,33 @@ class _CabAddScreenState extends State<CabAddScreen> {
     super.initState();
     // getUserDetails();
     commentController.addListener(updateButtonStatus);
+
+    if (widget.from != null && locations.contains(widget.from)) {
+      selectedLocation = widget.from;
+      isFrom = false; // "From IITH to <location>"
+    } else if (widget.to != null && locations.contains(widget.to)) {
+      selectedLocation = widget.to;
+      isFrom = true; // "From <location> to IITH"
+    }
+
+    if (widget.startTime != null) {
+      selectedStartDateTime = DateTime.tryParse(widget.startTime!);
+    }
+    if (widget.endTime != null) {
+      selectedEndDateTime = DateTime.tryParse(widget.endTime!);
+    }
+
+    if (widget.seats != null && int.parse(widget.seats!) <= 6) {
+      seats = widget.seats;
+    } else {
+      seats = null;
+    }
+
+    if (widget.comments != null) {
+      commentController.text = widget.comments!;
+    }
+
+    updateButtonStatus();
   }
 
   @override
@@ -141,6 +172,8 @@ class _CabAddScreenState extends State<CabAddScreen> {
     });
   }
 
+  bool isSubmitting = false;
+
   bool updateButtonStatus() {
     setState(() {});
     return selectedEndDateTime != null &&
@@ -150,6 +183,12 @@ class _CabAddScreenState extends State<CabAddScreen> {
   }
 
   void createCab() async {
+    if (isSubmitting) return;
+
+    setState(() {
+      isSubmitting = true;
+    });
+
     // Check for phone number
     await getUserDetails();
 
@@ -171,11 +210,17 @@ class _CabAddScreenState extends State<CabAddScreen> {
               onPressed: () {
                 //TODO: add on theme change
 
-                Navigator.pushReplacement(
-                    context,
-                    CustomPageRoute(
-                        child: ProfileScreen(
-                            user: widget.user, image: widget.image, onThemeChanged: (int value) {  },)));
+                context.go('/me', extra: {
+                  // 'user': widget.user,
+                  // 'image': widget.image,
+                  'onThemeChanged': (int v) {}
+                });
+
+                // Navigator.pushReplacement(
+                //     context,
+                //     CustomPageRoute(
+                //         child: ProfileScreen(
+                //             user: widget.user, image: widget.image, onThemeChanged: (int value) {  },)));
               },
             ),
           ],
@@ -188,6 +233,9 @@ class _CabAddScreenState extends State<CabAddScreen> {
         seats == null ||
         selectedLocation == null ||
         userDetails == null) {
+      setState(() {
+        isSubmitting = false;
+      });
       return;
     }
     final BookingModel bookingModel = BookingModel(
@@ -213,21 +261,17 @@ class _CabAddScreenState extends State<CabAddScreen> {
       final res = await apiServices.createBooking(bookingModel, context);
       if (!mounted) return;
       if (res["error"] == null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CabAddSuccess(
-              user: widget.user,
-              image: widget.image,
-            ),
-          ),
-        );
+        context.go('/cabsharing/add/success');
       } else {
         showErrorDialog(context, res["error"]);
       }
     } catch (e) {
       if (!mounted) return;
       showErrorDialog(context, e.toString());
+    } finally {
+      setState(() {
+        isSubmitting = false;
+      });
     }
   }
 
@@ -241,9 +285,12 @@ class _CabAddScreenState extends State<CabAddScreen> {
           TextButton(
             child: const Text('OK'),
             onPressed: () {
-              if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
+              if (context.canPop()) {
+                context.pop();
               }
+              // if (Navigator.of(context).canPop()) {
+              //   Navigator.of(context).pop();
+              // }
             },
           ),
         ],
@@ -271,7 +318,12 @@ class _CabAddScreenState extends State<CabAddScreen> {
             size: 30.0,
           ),
           onPressed: () {
-            Navigator.pop(context);
+            // Navigator.pop(context);
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
           },
         ),
       ),
@@ -393,6 +445,7 @@ class _CabAddScreenState extends State<CabAddScreen> {
                                 }
                               });
                             },
+                            value: selectedLocation,
                             hint: selectedLocation == null
                                 ? Text(
                                     'Location',
@@ -455,6 +508,7 @@ class _CabAddScreenState extends State<CabAddScreen> {
                             }
                           });
                         },
+                        value: seats,
                         hint: Text(
                           'Seats including yours',
                           style: GoogleFonts.inter(
@@ -512,7 +566,7 @@ class _CabAddScreenState extends State<CabAddScreen> {
             alignment: Alignment.bottomCenter,
             margin: const EdgeInsets.only(bottom: 16),
             child: TextButton(
-              onPressed: !updateButtonStatus()
+              onPressed: (!updateButtonStatus() || isSubmitting)
                   ? null
                   : () {
                       createCab();
@@ -520,7 +574,7 @@ class _CabAddScreenState extends State<CabAddScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
-                  color: !updateButtonStatus()
+                  color: (!updateButtonStatus() || isSubmitting)
                       ? Colors.grey
                       : const Color.fromRGBO(254, 114, 76, 0.70),
                   boxShadow: const [
@@ -535,14 +589,18 @@ class _CabAddScreenState extends State<CabAddScreen> {
                 width: double.infinity,
                 height: 60,
                 alignment: Alignment.center,
-                child: Text(
-                  'Add Cab',
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                ),
+                child: isSubmitting
+                    ? const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      )
+                    : Text(
+                        'Add Cab',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
               ),
             ),
           ),

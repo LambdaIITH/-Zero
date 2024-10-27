@@ -8,13 +8,13 @@ import 'package:dashbaord/utils/bold_text.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:dashbaord/utils/show_message.dart';
 import 'package:dashbaord/widgets/custom_carousel.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 class LostAndFoundAddItemScreen extends StatefulWidget {
-  const LostAndFoundAddItemScreen({super.key, required this.currentUserEmail});
-  final String currentUserEmail;
+  const LostAndFoundAddItemScreen({super.key});
 
   @override
   State<LostAndFoundAddItemScreen> createState() =>
@@ -112,7 +112,8 @@ class _LostAndFoundAddItemScreenState extends State<LostAndFoundAddItemScreen> {
                 leading: const Icon(Icons.camera),
                 title: const Text('Camera'),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  // Navigator.of(context).pop();
+                  context.pop();
                   kIsWeb
                       ? pickImageWeb(ImageSource.camera)
                       : pickImage(ImageSource.camera);
@@ -122,7 +123,8 @@ class _LostAndFoundAddItemScreenState extends State<LostAndFoundAddItemScreen> {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Gallery'),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  // Navigator.of(context).pop();
+                  context.pop();
                   kIsWeb
                       ? pickImageWeb(ImageSource.gallery)
                       : pickImage(ImageSource.gallery);
@@ -187,15 +189,17 @@ class _LostAndFoundAddItemScreenState extends State<LostAndFoundAddItemScreen> {
         context: context,
         msg: "Item successfully added!",
       );
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LostAndFoundScreen(
-            currentUserEmail: widget.currentUserEmail,
-          ),
-        ),
-        (route) => route.isFirst,
-      );
+      
+      context.go('/lnf');
+      // Navigator.pushAndRemoveUntil(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) => LostAndFoundScreen(
+      //       currentUserEmail: widget.currentUserEmail,
+      //     ),
+      //   ),
+      //   (route) => route.isFirst,
+      // );
     } else {
       showMessage(
         context: context,

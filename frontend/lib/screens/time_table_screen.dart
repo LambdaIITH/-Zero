@@ -1,5 +1,7 @@
+import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/widgets/calendar_item.dart';
+import 'package:go_router/go_router.dart';
 
 class TimeTableScreen extends StatefulWidget {
   const TimeTableScreen({super.key});
@@ -38,7 +40,8 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
             child: IconButton(
               icon: const Icon(Icons.arrow_back_rounded, size: 40),
               onPressed: () {
-                Navigator.of(context).pop();
+                // Navigator.of(context).pop();
+                context.pop();
               },
             ),
           );

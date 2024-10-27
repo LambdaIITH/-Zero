@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -137,7 +138,8 @@ class _CabSearchState extends State<CabSearch> {
                             searchSelectedOption: null,
                             searchSelectedOption2: null,
                           );
-                          Navigator.pop(context);
+                          // Navigator.pop(context);
+                          context.pop();
                         }
                       : null,
                   child: Container(
@@ -188,7 +190,8 @@ class _CabSearchState extends State<CabSearch> {
                                     ? selectedOption2
                                     : null,
                           );
-                          Navigator.pop(context);
+                          // Navigator.pop(context);
+                          context.pop();
                         }
                       : null,
                   child: Container(

@@ -7,6 +7,7 @@ import 'package:dashbaord/utils/bold_text.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:dashbaord/utils/show_message.dart';
 import 'package:dashbaord/widgets/custom_carousel.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 class LostAndFoundEditItemScreen extends StatefulWidget {
@@ -109,7 +110,8 @@ class _LostAndFoundEditItemScreenState
         context: context,
         msg: "Successfully item added!",
       );
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
+      context.pop();
     } else {
       showMessage(
         context: context,

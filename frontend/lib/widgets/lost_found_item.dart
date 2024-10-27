@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dashbaord/constants/enums/lost_and_found.dart';
 import 'package:dashbaord/models/lost_and_found_model.dart';
-import 'package:dashbaord/screens/lost_and_found_item_screen.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:dashbaord/widgets/custom_carousel.dart';
+import 'package:go_router/go_router.dart';
 
 class LostFoundItem extends StatelessWidget {
   const LostFoundItem(
@@ -15,19 +15,23 @@ class LostFoundItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => LostAndFoundItemScreen(
-            currentUserEmail: currentUserEmail,
-            id: item.id,
-            lostOrFound: item.lostOrFound,
-          ),
-        ),
-      ),
+      onTap: () => context.push('/lnf/${item.lostOrFound.name}/${item.id}', extra: {
+        'currentUserEmail': currentUserEmail,
+        'lostOrFound': item.lostOrFound,
+      }),
+      // Navigator.of(context).push(
+      //   MaterialPageRoute(
+      //     builder: (context) => LostAndFoundItemScreen(
+      //       currentUserEmail: currentUserEmail,
+      //       id: item.id,
+      //       lostOrFound: item.lostOrFound,
+      //     ),
+      //   ),
+      // ),
       child: Container(
-      constraints: const BoxConstraints(
-        maxHeight: 200,
-      ),
+        constraints: const BoxConstraints(
+          maxHeight: 200,
+        ),
         width: 160, // Fixed height
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(

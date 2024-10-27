@@ -1,50 +1,111 @@
 import 'dart:async';
 
+import 'package:dashbaord/services/api_service.dart';
+import 'package:dashbaord/services/shared_service.dart';
+import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dashbaord/widgets/bus_timing_list_widget.dart';
 import 'package:dashbaord/widgets/next_bus_card_widget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/analytics_service.dart';
 
-class BusTimingsScreen extends StatelessWidget {
+class BusTimingsScreen extends StatefulWidget {
   const BusTimingsScreen({super.key, required this.busSchedule});
-  final BusSchedule busSchedule;
+  final BusSchedule? busSchedule;
+
+  @override
+  State<BusTimingsScreen> createState() => _BusTimingsScreenState();
+}
+
+class _BusTimingsScreenState extends State<BusTimingsScreen> {
+  BusSchedule? busSchedule;
+  bool isLoading = true;
+
+  void showError({String? msg}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg ?? 'Please login to use this feature'),
+        duration: const Duration(milliseconds: 1500),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Future<void> fetchBus() async {
+    final response = await ApiServices().getBusSchedule(context);
+    if (response == null) {
+      showError(msg: "Server Refresh Failed...");
+      final res = await SharedService().getBusSchedule();
+      if (res == null) {
+        context.go('/');
+        return;
+      }
+
+      setState(() {
+        busSchedule = res;
+        isLoading = false;
+      });
+    }
+    setState(() {
+      busSchedule = response;
+      isLoading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.busSchedule == null) {
+      fetchBus();
+    } else {
+      busSchedule = widget.busSchedule;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Bus Timings',
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: textColor,
-            )),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            // color: textColor,
-            size: 30.0,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-              child: BusSchedulePage(
-            busSchedule: busSchedule,
-          ))
-        ],
-      ),
-    );
+    return isLoading
+        ? CustomLoadingScreen()
+        : Scaffold(
+            appBar: AppBar(
+              title: Text('Bus Timings',
+                  style: GoogleFonts.inter(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                  )),
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  // color: textColor,
+                  size: 30.0,
+                ),
+                onPressed: () {
+                  // Navigator.pop(context);
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/');
+                  }
+                },
+              ),
+            ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                    child: BusSchedulePage(
+                  busSchedule: busSchedule!,
+                ))
+              ],
+            ),
+          );
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dashbaord/screens/home_screen.dart';
 import 'package:dashbaord/services/analytics_service.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ContinueAsGuest extends StatelessWidget {
@@ -23,23 +24,25 @@ class ContinueAsGuest extends StatelessWidget {
           onTap: () {
             //TODO: handle this
             analyticsService.logEvent(name: "Guest Login");
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => HomeScreen(
-                onThemeChanged: onThemeChanged,
-                isGuest: true,
-              ),
-            ));
+            // Navigator.of(context).pushReplacement(MaterialPageRoute(
+            //   builder: (context) => HomeScreen(
+            //     onThemeChanged: onThemeChanged,
+            //     isGuest: true,
+            //   ),
+            // ));
+            context.go('/', extra: {
+              'onThemeChanged': onThemeChanged,
+              'isGuest': true,
+            });
           },
           borderRadius: BorderRadius.circular(12),
           child: Center(
             child: Text(
               "Continue without Login",
               style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: Colors.black
-                // color: Theme.of(context).brightness == Brightness.light ? const Color(0xff454545) : Color.fromARGB(255, 200, 200, 200),
-              ),
+                  fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black
+                  // color: Theme.of(context).brightness == Brightness.light ? const Color(0xff454545) : Color.fromARGB(255, 200, 200, 200),
+                  ),
             ),
           ),
         ),
