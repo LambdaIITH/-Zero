@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dashbaord/models/user_model.dart';
 import 'package:dashbaord/services/shared_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
@@ -15,22 +14,19 @@ import 'package:dashbaord/models/booking_model.dart';
 
 class CabSharingScreen extends StatefulWidget {
   final UserModel? user;
-  final String? image;
   final bool isMyRide;
   final DateTime? startTime;
   final DateTime? endTime;
   final String? from;
   final String? to;
   const CabSharingScreen(
-      {Key? key,
+      {super.key,
       required this.user,
-      required this.image,
       this.isMyRide = false,
       this.endTime,
       this.from,
       this.startTime,
-      this.to})
-      : super(key: key);
+      this.to});
   @override
   State<CabSharingScreen> createState() => _CabSharingScreenState();
 }
@@ -53,40 +49,18 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
 
   changeLoadingState() {
     state++;
-    if (state >= 2) {
+    if (state >= 3) {
       isLoading = false;
     }
     setState(() {});
   }
 
   UserModel? userModel;
-  String image = '';
-
-  void fetchUserProfile() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      setState(() {
-        image = user.photoURL ??
-            'https://media.istockphoto.com/id/519078727/photo/male-silhouette-as-avatar-profile-picture.jpg?s=2048x2048&w=is&k=20&c=craUhUZK7FB8wYiGDHF0Az0T9BY1bmRHasCHoQbNLlg=';
-        changeLoadingState();
-      });
-    } else {
-      context.go('/login');
-      setState(() {
-        changeLoadingState();
-      });
-    }
-  }
 
   Future<void> fetchUser() async {
     final response = await ApiServices().getUserDetails(context);
     if (response == null) {
-      setState(() {
-        changeLoadingState();
-      });
-
       context.go('/login');
-
       return;
     }
     setState(() {
@@ -99,15 +73,13 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
     final user = await SharedService().getUserDetails();
     if (user['name'] == null || user['email'] == null) {
       await fetchUser();
-      fetchUserProfile();
     } else {
       UserModel userM = UserModel(
           email: user['email'] ?? 'user@iith.ac.in',
           name: user['name'] ?? 'User');
+
       setState(() {
         userModel = userM;
-        image = user['image'] ?? image;
-        changeLoadingState();
         changeLoadingState();
       });
     }
@@ -127,33 +99,24 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
         searchSelectedOption: widget.from,
         searchSelectedOption2: widget.to,
       );
+      changeLoadingState();
     } else {
       getAllCabs();
     }
+    // 1 time loading status
 
     isTabOneSelected = !widget.isMyRide;
     analyticsService.logScreenView(screenName: "Cab Share Screen");
     getUserCabs();
+    // 2 times loading status
 
-    if (widget.user == null && widget.image == null) {
+    if (widget.user == null) {
       getUserData();
     } else {
-      if (widget.user != null) {
-        userModel = widget.user;
-        state++;
-        changeLoadingState();
-      } else {
-        fetchUser();
-      }
-
-      if (widget.image != null) {
-        image = widget.image ?? '';
-        state++;
-        changeLoadingState();
-      } else {
-        fetchUserProfile();
-      }
+      userModel = widget.user;
+      changeLoadingState();
     }
+    // 3 times loading status
   }
 
   void updateSearchForm({
@@ -568,11 +531,7 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
           ? Container()
           : FloatingActionButton(
               onPressed: () async {
-                context.push('/cabsharing/add', extra: {
-                  'user': userModel ??
-                      UserModel(email: "user@iith.ac.in", name: "User"),
-                  'image': image
-                });
+                context.push('/cabsharing/add');
                 // Navigator.push(
                 //   context,
                 //   CustomPageRoute(

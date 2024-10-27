@@ -13,8 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/analytics_service.dart';
 
 class BusTimingsScreen extends StatefulWidget {
-  const BusTimingsScreen({super.key, required this.busSchedule});
+  const BusTimingsScreen({super.key, required this.busSchedule, this.full});
   final BusSchedule? busSchedule;
+  final bool? full;
 
   @override
   State<BusTimingsScreen> createState() => _BusTimingsScreenState();
@@ -63,6 +64,7 @@ class _BusTimingsScreenState extends State<BusTimingsScreen> {
       fetchBus();
     } else {
       busSchedule = widget.busSchedule;
+      isLoading = false;
     }
   }
 
@@ -102,6 +104,7 @@ class _BusTimingsScreenState extends State<BusTimingsScreen> {
                 Expanded(
                     child: BusSchedulePage(
                   busSchedule: busSchedule!,
+                  full: widget.full,
                 ))
               ],
             ),
@@ -125,8 +128,9 @@ class NextBusModel {
 }
 
 class BusSchedulePage extends StatefulWidget {
-  const BusSchedulePage({super.key, required this.busSchedule});
+  const BusSchedulePage({super.key, required this.busSchedule, this.full});
   final BusSchedule busSchedule;
+  final bool? full;
 
   @override
   State<BusSchedulePage> createState() => _BusSchedulePageState();
@@ -280,6 +284,10 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
     updateNextBuses();
     setInitialTimer();
     analyticsService.logScreenView(screenName: "Bus Schedule Screen");
+
+    if (widget.full != null) {
+      fullSchedule = widget.full!;
+    }
   }
 
   @override

@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:dashbaord/extensions.dart';
-import 'package:dashbaord/utils/custom_page_route.dart';
 import 'package:flutter/material.dart';
-import 'package:dashbaord/screens/bus_timings_screen.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:go_router/go_router.dart';

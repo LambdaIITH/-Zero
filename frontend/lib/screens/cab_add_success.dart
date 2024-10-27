@@ -1,16 +1,12 @@
-import 'package:dashbaord/models/user_model.dart';
-import 'package:dashbaord/screens/cab_sharing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../utils/custom_page_route.dart';
 
 class CabAddSuccess extends StatelessWidget {
   // final UserModel user;
   // final String image;
-  const CabAddSuccess({Key? key})
-      : super(key: key);
+  const CabAddSuccess({super.key});
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {

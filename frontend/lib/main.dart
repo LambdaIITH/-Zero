@@ -6,12 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:dashbaord/constants/app_theme.dart';
 import 'package:dashbaord/firebase_options.dart';
-import 'package:dashbaord/screens/home_screen.dart';
-import 'package:dashbaord/screens/login_screen.dart';
-import 'package:dashbaord/screens/splash_screen.dart';
-import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -27,7 +22,7 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -62,7 +57,6 @@ class _MyAppState extends State<MyApp> {
     changeState();
   }
 
-  final FirebaseAnalyticsService _analyticsService = FirebaseAnalyticsService();
 
   @override
   void initState() {
@@ -70,7 +64,6 @@ class _MyAppState extends State<MyApp> {
     FlutterNativeSplash.remove();
     getAuthStatus();
     getThemeMode();
-    // initRoute();
   }
 
   getThemeMode() async {
@@ -104,46 +97,6 @@ class _MyAppState extends State<MyApp> {
 
     setThemeMode(theme);
   }
-
-  // late GoRouter _router;
-
-  // void initRoute() {
-  //   _router = GoRouter(
-  //     navigatorKey: navigatorKey,
-  //     routes: <RouteBase>[
-  //       GoRoute(
-  //         path: '/',
-  //         builder: (BuildContext context, GoRouterState state) {
-  //           return isLoading
-  //               ? SplashScreen(nextPage: Container())
-  //               : isLoggedIn
-  //                   ? SplashScreen(
-  //                       isLoading: false,
-  //                       nextPage: HomeScreen(
-  //                           isGuest: false, onThemeChanged: handleThemeChange))
-  //                   : SplashScreen(
-  //                       isLoading: false,
-  //                       nextPage: LoginScreenWrapper(
-  //                           timeDilationFactor: 4.0,
-  //                           onThemeChanged: handleThemeChange));
-  //         },
-  //         routes: <RouteBase>[
-  //           GoRoute(
-  //             path: 'login',
-  //             builder: (BuildContext context, GoRouterState state) {
-  //               return SplashScreen(
-  //                   isLoading: isLoading,
-  //                   nextPage: LoginScreenWrapper(
-  //                     onThemeChanged: handleThemeChange,
-  //                     timeDilationFactor: 4.0,
-  //                   ));
-  //             },
-  //           ),
-  //         ],
-  //       ),
-  //     ],
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {

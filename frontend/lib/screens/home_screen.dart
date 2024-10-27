@@ -1,13 +1,10 @@
 import 'dart:convert';
 
-import 'package:dashbaord/screens/cab_add_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/models/user_model.dart';
-import 'package:dashbaord/screens/cab_sharing_screen.dart';
-import 'package:dashbaord/screens/lost_and_found_screen.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/services/shared_service.dart';
@@ -250,121 +247,187 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void showTimeTableConfirmationDialog(BuildContext context, String code) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          backgroundColor: Colors.grey[900], // Dark background for the dialog
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20, // Larger font size for main text
+                    fontWeight: FontWeight.w500,
+                  ),
+                  children: [
+                    TextSpan(
+                      text:
+                          'Are you sure you want to accept the timetable with code: ',
+                    ),
+                    TextSpan(
+                      text: code,
+                      style: TextStyle(
+                        fontFamily: 'Courier', // Code font styling
+                        color: Colors.greenAccent, // Highlighted code color
+                        fontSize: 22, // Slightly larger font size for code
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Note: This will replace your current timetable and this action is not alterable.',
+                style: TextStyle(
+                    color: const Color.fromARGB(255, 255, 135, 135),
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'No',
+                style: TextStyle(color: Colors.redAccent, fontSize: 16),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                //TODO:
+              },
+              child: Text(
+                'Yes',
+                style: TextStyle(color: Colors.greenAccent, fontSize: 16),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  bool isDialogShown = false;
+
   @override
   Widget build(BuildContext context) {
     timeDilation = 1;
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 0.0,
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarBrightness: Theme.of(context).brightness,
-          // Status bar color
-          statusBarColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          toolbarHeight: 0.0,
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarBrightness: Theme.of(context).brightness,
+            // Status bar color
+            statusBarColor: Theme.of(context).scaffoldBackgroundColor,
+          ),
         ),
-      ),
-      key: _scaffoldKey,
-      body: isLoading
-          ? const CustomLoadingScreen()
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: RefreshIndicator(
-                  onRefresh: () {
-                    return Future.delayed(const Duration(seconds: 1), _refresh);
-                  },
-                  child: ListView(
-                    children: [
-                      const SizedBox(height: 24),
-                      HomeScreenAppBar(
-                          status: mainGateStatus,
-                          onThemeChanged: widget.onThemeChanged,
-                          image: image,
-                          user: userModel,
-                          isGuest: widget.isGuest),
-                      if (eventText.isNotEmpty) const SizedBox(height: 28),
-                      if (eventText.isNotEmpty)
-                        TextScroll(
-                          eventText,
-                          velocity:
-                              const Velocity(pixelsPerSecond: Offset(50, 0)),
-                          delayBefore: const Duration(milliseconds: 900),
-                          pauseBetween: const Duration(milliseconds: 100),
-                          style: const TextStyle(color: Colors.purple),
-                          textAlign: TextAlign.center,
-                          selectable: true,
-                        ),
-                      const SizedBox(height: 28),
-                      HomeScreenBusTimings(
-                        busSchedule: busSchedule,
-                      ),
-                      const SizedBox(height: 20),
-                      HomeScreenMessMenu(messMenu: messMenu),
-                      const SizedBox(height: 20),
-                      HomeCardNoOptions(
-                        isComingSoon: false,
-                        title: 'Cab Sharing',
-                        child: 'assets/icons/cab-sharing-icon.svg',
-                        onTap: () {
-                          widget.isGuest
-                              ? showError()
-                              : context.push('/cabsharing', extra: {
-                                  'user': userModel ??
-                                      UserModel(
-                                          email: "user@iith.ac.in",
-                                          name: "User"),
-                                  'image': image,
-                                });
-                          // Navigator.of(context).push(MaterialPageRoute(
-                          //     builder: (ctx) => CabSharingScreen(
-                          //       image: image,
-                          //       user: userModel ??
-                          //           UserModel(
-                          //               email: "user@iith.ac.in",
-                          //               name: "User"),
-                          //     ),
-                          //   ));
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      HomeCardNoOptions(
-                        isComingSoon: false,
-                        isLnF: true,
-                        title: 'Lost & Found',
-                        child: 'assets/icons/magnifying-icon.svg',
-                        onTap: widget.isGuest
-                            ? showError
-                            : () => context.push('/lnf', extra: {
-                                  'currentUserEmail':
-                                      userModel?.email ?? 'user@iith.ac.in'
-                                }),
-                        // Navigator.of(context).push(
-                        //       MaterialPageRoute(
-                        //         builder: (ctx) => LostAndFoundScreen(
-                        //           currentUserEmail:
-                        //               userModel?.email ?? 'user@iith.ac.in',
-                        //         ),
-                        //       ),
-                        //     ),
-                      ),
-                      const SizedBox(height: 20),
-                      HomeCardNoOptions(
-                          isLnF: true,
-                          title: 'Timetable',
-                          child: 'assets/icons/calendar.svg',
-                          onTap: widget.isGuest ? showError : () {}
-                          // : () => Navigator.of(context).push(
-                          //       MaterialPageRoute(
-                          //           builder: (ctx) => Container()),
-                          //     ),
+        key: _scaffoldKey,
+        body: Builder(builder: (BuildContext bc) {
+          if (widget.code != null && !isDialogShown) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showTimeTableConfirmationDialog(context, widget.code!);
+            });
+            isDialogShown = true;
+          }
+
+          return isLoading
+              ? const CustomLoadingScreen()
+              : SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: RefreshIndicator(
+                      onRefresh: () {
+                        return Future.delayed(
+                            const Duration(seconds: 1), _refresh);
+                      },
+                      child: ListView(
+                        children: [
+                          const SizedBox(height: 24),
+                          HomeScreenAppBar(
+                              status: mainGateStatus,
+                              onThemeChanged: widget.onThemeChanged,
+                              image: image,
+                              user: userModel,
+                              isGuest: widget.isGuest),
+                          if (eventText.isNotEmpty) const SizedBox(height: 28),
+                          if (eventText.isNotEmpty)
+                            TextScroll(
+                              eventText,
+                              velocity: const Velocity(
+                                  pixelsPerSecond: Offset(50, 0)),
+                              delayBefore: const Duration(milliseconds: 900),
+                              pauseBetween: const Duration(milliseconds: 100),
+                              style: const TextStyle(color: Colors.purple),
+                              textAlign: TextAlign.center,
+                              selectable: true,
+                            ),
+                          const SizedBox(height: 28),
+                          HomeScreenBusTimings(
+                            busSchedule: busSchedule,
                           ),
-                      const SizedBox(
-                        height: 50,
-                      )
-                    ],
+                          const SizedBox(height: 20),
+                          HomeScreenMessMenu(messMenu: messMenu),
+                          const SizedBox(height: 20),
+                          HomeCardNoOptions(
+                            isComingSoon: false,
+                            title: 'Cab Sharing',
+                            child: 'assets/icons/cab-sharing-icon.svg',
+                            onTap: () {
+                              widget.isGuest
+                                  ? showError()
+                                  : context.push('/cabsharing', extra: {
+                                      'user': userModel ??
+                                          UserModel(
+                                              email: "user@iith.ac.in",
+                                              name: "User"),
+                                      'image': image,
+                                    });
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          HomeCardNoOptions(
+                            isComingSoon: false,
+                            isLnF: true,
+                            title: 'Lost & Found',
+                            child: 'assets/icons/magnifying-icon.svg',
+                            onTap: widget.isGuest
+                                ? showError
+                                : () => context.push('/lnf', extra: {
+                                      'currentUserEmail':
+                                          userModel?.email ?? 'user@iith.ac.in'
+                                    }),
+                          ),
+                          const SizedBox(height: 20),
+                          HomeCardNoOptions(
+                              isLnF: true,
+                              title: 'Timetable',
+                              child: 'assets/icons/calendar.svg',
+                              onTap: widget.isGuest ? showError : () {}
+                              // : () => Navigator.of(context).push(
+                              //       MaterialPageRoute(
+                              //           builder: (ctx) => Container()),
+                              //     ),
+                              ),
+                          const SizedBox(
+                            height: 50,
+                          )
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-    );
+                );
+        }));
   }
 }

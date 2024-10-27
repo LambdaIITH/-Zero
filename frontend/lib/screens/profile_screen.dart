@@ -4,7 +4,6 @@ import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/models/user_model.dart';
-import 'package:dashbaord/screens/login_screen.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:go_router/go_router.dart';
@@ -32,7 +31,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final analyticsService = FirebaseAnalyticsService();
   UserModel? userModel;
   bool isLoading = true;
-  String image = '';
+  String image =
+      'https://media.istockphoto.com/id/519078727/photo/male-silhouette-as-avatar-profile-picture.jpg?s=2048x2048&w=is&k=20&c=craUhUZK7FB8wYiGDHF0Az0T9BY1bmRHasCHoQbNLlg=';
 
   int status = 0;
   int totalOperation = 2;
@@ -51,12 +51,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     getThemeMode();
 
+    print('USER : ${widget.user}');
+    print(widget.image);
+
     if (widget.user == null && widget.image == null) {
       getUserData();
     } else {
       if (widget.user != null) {
         userModel = widget.user;
-        status++;
         changeState();
       } else {
         fetchUser();
@@ -64,7 +66,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (widget.image != null) {
         image = widget.image ?? '';
-        status++;
         changeState();
       } else {
         fetchUserProfile();
@@ -78,11 +79,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       setState(() {
-        image = user.photoURL ??
-            'https://media.istockphoto.com/id/519078727/photo/male-silhouette-as-avatar-profile-picture.jpg?s=2048x2048&w=is&k=20&c=craUhUZK7FB8wYiGDHF0Az0T9BY1bmRHasCHoQbNLlg=';
+        image = user.photoURL ?? image;
         changeState();
       });
-
     } else {
       context.go('/login');
       setState(() {
@@ -113,6 +112,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user['name'] == null || user['email'] == null) {
       await fetchUser();
       fetchUserProfile();
+    } else if (user['image'] == null) {
+      fetchUserProfile();
+      UserModel userM = UserModel(
+          email: user['email'] ?? 'user@iith.ac.in',
+          name: user['name'] ?? 'User');
+      setState(() {
+        userModel = userM;
+        changeState();
+      });
     } else {
       UserModel userM = UserModel(
           email: user['email'] ?? 'user@iith.ac.in',
@@ -120,6 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         userModel = userM;
         image = user['image'] ?? image;
+        print("IMAGEEEEEEEEEEEE: ${user['image']}");
         changeState();
         changeState();
       });

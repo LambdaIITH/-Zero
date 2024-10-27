@@ -2,8 +2,6 @@
 
 import 'dart:convert';
 
-import 'package:dashbaord/screens/login_screen.dart';
-import 'package:dio/browser.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -35,7 +33,6 @@ class ApiServices {
   Dio dio = Dio();
 
   Future<void> configureDio() async {
-    dio.httpClientAdapter = BrowserHttpClientAdapter();
     final dioConfig = DioConfig();
     final client = dioConfig.getClient();
     client.options.baseUrl = backendUrl;

@@ -219,7 +219,7 @@ class _MessMenuPageState extends State<MessMenuPage> {
         Column(
           children: [
             const SizedBox(
-              height: 40.0,
+              height: 8.0,
             ),
             if (meals != null) ...[
               ShowMessMenu(

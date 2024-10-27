@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CabShareSuccess extends StatelessWidget {
-  const CabShareSuccess({Key? key}) : super(key: key);
+  const CabShareSuccess({super.key});
   final String name = "John Doe";
   @override
   Widget build(BuildContext context) {

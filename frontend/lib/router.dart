@@ -13,8 +13,8 @@ import 'package:dashbaord/screens/lost_and_found_item_screen.dart';
 import 'package:dashbaord/screens/lost_and_found_screen.dart';
 import 'package:dashbaord/screens/mess_menu_screen.dart';
 import 'package:dashbaord/screens/profile_screen.dart';
+import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
-import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -29,6 +29,7 @@ class AppRouter {
 
   AppRouter._internal({required this.onThemeChanged});
 
+  final FirebaseAnalyticsService _analyticsService = FirebaseAnalyticsService();
   final Function(int) onThemeChanged;
 
   bool getAuthStatus() {
@@ -39,13 +40,13 @@ class AppRouter {
 
   late final GoRouter router = GoRouter(
     initialLocation: '/',
+    observers: [_analyticsService.getAnalyticsObserver()],
     routes: [
       GoRoute(
         path: '/',
         redirect: (context, state) {
           final isLoggedIn = getAuthStatus();
 
-          // Only redirect if the user is at the root path (`/`)
           if (state.fullPath == '/') {
             return isLoggedIn ? '/home' : '/login';
           }
@@ -116,12 +117,10 @@ class AppRouter {
 
           final data = state.extra as Map<String, dynamic>? ?? {};
           final user = data['user'] as UserModel?;
-          final image = data['image'] as String?;
           final isMyRide = data['isMyRide'] as bool? ?? false;
 
           return CabSharingScreen(
             user: user,
-            image: image,
             isMyRide: isMe ?? isMyRide,
             startTime: startTime,
             endTime: endTime,
@@ -229,11 +228,42 @@ class AppRouter {
       GoRoute(
         path: '/bus',
         builder: (context, state) {
+          final fullStr = state.uri.queryParameters['full'];
+          bool? full;
+          if (fullStr == 'true') {
+            full = true;
+          } else if (fullStr == 'false') {
+            full = false;
+          }
+
           final data = state.extra as Map<String, dynamic>? ?? {};
           final busSchedule = data['busSchedule'] as BusSchedule?;
 
           return BusTimingsScreen(
             busSchedule: busSchedule,
+            full: full,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/share/timetable/:code',
+        builder: (context, state) {
+          final code = state.pathParameters['code'];
+
+          if (code == null) {
+            context.go('/');
+            return Container();
+          }
+          final isLoggedIn = getAuthStatus();
+          if (!isLoggedIn) {
+            context.go('/login');
+            return Container();
+          }
+
+          return HomeScreen(
+            isGuest: false,
+            onThemeChanged: onThemeChanged,
+            code: code,
           );
         },
       ),

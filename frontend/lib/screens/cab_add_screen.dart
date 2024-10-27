@@ -15,14 +15,14 @@ class CabAddScreen extends StatefulWidget {
   final String? seats;
   final String? comments;
   const CabAddScreen({
-    Key? key,
+    super.key,
     this.from,
     this.to,
     this.startTime,
     this.endTime,
     this.seats,
     this.comments,
-  }) : super(key: key);
+  });
   @override
   State<CabAddScreen> createState() => _CabAddScreenState();
 }
