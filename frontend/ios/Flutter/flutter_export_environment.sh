@@ -1,6 +1,6 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/usr/local/flutter"
+export "FLUTTER_ROOT=/home/bhaskar/.shorebird/bin/cache/flutter/6e83d825c469beb6e98e20c5ec69382f7f554fe7"
 export "FLUTTER_APPLICATION_PATH=/home/bhaskar/Desktop/lambda/Dashboard/frontend"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"

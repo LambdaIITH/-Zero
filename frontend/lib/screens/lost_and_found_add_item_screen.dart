@@ -89,7 +89,6 @@ class _LostAndFoundAddItemScreenState extends State<LostAndFoundAddItemScreen> {
 
     if (pickedFile != null) {
       final bytes = await pickedFile.readAsBytes();
-      print(bytes);
       setState(() {
         _imagesWeb.add(bytes);
         imagePicked = true;

@@ -80,16 +80,8 @@ class _CustomGoogleButtonState extends State<CustomGoogleButton> {
         await logout();
         showSnackBar('Error!');
       } else {
-        // Navigator.of(context).pushReplacement(MaterialPageRoute(
-        //   builder: (context) => HomeScreen(
-        //     isGuest: false,
-        //     onThemeChanged: widget.onThemeChanged,
-        //     code: widget.code,
-        //   ),
-        // ));
-        context.go('/', extra: {
+        context.go('/home', extra: {
           'isGuest': false,
-          'onThemeChanged': widget.onThemeChanged,
           'code': widget.code,
         });
       }
@@ -195,18 +187,8 @@ class _CustomGoogleButtonState extends State<CustomGoogleButton> {
                 Navigator.of(context).popUntil(
                     (route) => route.isFirst); //POP THE LOADING SCREEN
               } else {
-                // Navigator.of(context).pushAndRemoveUntil(
-                //     MaterialPageRoute(
-                //       builder: (context) => HomeScreen(
-                //         isGuest: false,
-                //         onThemeChanged: widget.onThemeChanged,
-                //         code: widget.code,
-                //       ),
-                //     ),
-                //     (Route<dynamic> route) => false);
-                context.go('/', extra: {
+                context.go('/home', extra: {
                   'isGuest': false,
-                  'onThemeChanged': widget.onThemeChanged,
                   'code': widget.code,
                 });
               }

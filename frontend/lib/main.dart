@@ -57,7 +57,6 @@ class _MyAppState extends State<MyApp> {
     changeState();
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -102,7 +101,6 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: AppRouter(onThemeChanged: handleThemeChange).router,
-      // navigatorKey: navigatorKey,
       title: 'Dashboard',
       debugShowCheckedModeBanner: false,
       theme: lightTheme,

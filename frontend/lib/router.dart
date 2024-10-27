@@ -15,6 +15,7 @@ import 'package:dashbaord/screens/mess_menu_screen.dart';
 import 'package:dashbaord/screens/profile_screen.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
+import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -59,10 +60,12 @@ class AppRouter {
         builder: (context, state) {
           final data = state.extra as Map<String, dynamic>? ?? {};
           final isGuest = data['isGuest'] as bool? ?? false;
+          final code = data['code'] as String?;
 
           return HomeScreen(
             isGuest: isGuest,
             onThemeChanged: onThemeChanged,
+            code: code,
           );
         },
       ),
@@ -72,30 +75,47 @@ class AppRouter {
           final data = state.extra as Map<String, dynamic>? ?? {};
           final timeDilationFactor =
               data['timeDilationFactor'] as double? ?? 1.0;
+          final timetableCode = data['timetableCode'];
+
+          print("timetableCode: $timetableCode");
 
           return LoginScreenWrapper(
             timeDilationFactor: timeDilationFactor,
             onThemeChanged: onThemeChanged,
+            code: timetableCode,
           );
         },
       ),
       GoRoute(
         path: '/me',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final data = state.extra as Map<String, dynamic>? ?? {};
           final user = data['user'] as UserModel?;
           final image = data['image'] as String?;
 
-          return ProfileScreen(
-            user: user,
-            image: image,
-            onThemeChanged: onThemeChanged,
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: ProfileScreen(
+              user: user,
+              image: image,
+              onThemeChanged: onThemeChanged,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
           );
         },
       ),
       GoRoute(
         path: '/cabsharing',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final isMeStr = state.uri.queryParameters['me'];
           final startTimeString = state.uri.queryParameters['startTime'];
           final endTimeString = state.uri.queryParameters['endTime'];
@@ -119,13 +139,26 @@ class AppRouter {
           final user = data['user'] as UserModel?;
           final isMyRide = data['isMyRide'] as bool? ?? false;
 
-          return CabSharingScreen(
-            user: user,
-            isMyRide: isMe ?? isMyRide,
-            startTime: startTime,
-            endTime: endTime,
-            from: from,
-            to: to,
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: CabSharingScreen(
+              user: user,
+              isMyRide: isMe ?? isMyRide,
+              startTime: startTime,
+              endTime: endTime,
+              from: from,
+              to: to,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
           );
         },
       ),
@@ -170,29 +203,67 @@ class AppRouter {
       ),
       GoRoute(
         path: '/lnf',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final data = state.extra as Map<String, dynamic>? ?? {};
           final currentUserEmail = data['currentUserEmail'] as String?;
 
-          return LostAndFoundScreen(
-            currentUserEmail: currentUserEmail,
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: LostAndFoundScreen(
+              currentUserEmail: currentUserEmail,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
           );
         },
       ),
       GoRoute(
         path: '/lnf/add',
-        builder: (context, state) {
-          return LostAndFoundAddItemScreen();
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: LostAndFoundAddItemScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 1),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
+          );
         },
       ),
       GoRoute(
         path: '/lnf/:item/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'];
           final item = state.pathParameters['item'];
 
           if (id == null) {
-            return const ErrorScreen();
+            return CustomTransitionPage(
+              child: const ErrorScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+            );
           }
 
           LostOrFound lrf;
@@ -201,33 +272,71 @@ class AppRouter {
           } else if (item == 'found') {
             lrf = LostOrFound.found;
           } else {
-            return const ErrorScreen();
+            return CustomTransitionPage(
+              child: const ErrorScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+            );
           }
 
           final data = state.extra as Map<String, dynamic>? ?? {};
           final currentUserEmail = data['currentUserEmail'] as String?;
 
-          return LostAndFoundItemScreen(
-            currentUserEmail: currentUserEmail,
-            id: id,
-            lostOrFound: lrf,
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: LostAndFoundItemScreen(
+              currentUserEmail: currentUserEmail,
+              id: id,
+              lostOrFound: lrf,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
           );
         },
       ),
       GoRoute(
         path: '/mess',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final data = state.extra as Map<String, dynamic>? ?? {};
           final messMenu = data['messMenu'] as MessMenuModel?;
 
-          return MessMenuScreen(
-            messMenu: messMenu,
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: MessMenuScreen(
+              messMenu: messMenu,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
           );
         },
       ),
       GoRoute(
         path: '/bus',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final fullStr = state.uri.queryParameters['full'];
           bool? full;
           if (fullStr == 'true') {
@@ -239,9 +348,22 @@ class AppRouter {
           final data = state.extra as Map<String, dynamic>? ?? {};
           final busSchedule = data['busSchedule'] as BusSchedule?;
 
-          return BusTimingsScreen(
-            busSchedule: busSchedule,
-            full: full,
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: BusTimingsScreen(
+              busSchedule: busSchedule,
+              full: full,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
           );
         },
       ),
@@ -254,10 +376,13 @@ class AppRouter {
             context.go('/');
             return Container();
           }
+
           final isLoggedIn = getAuthStatus();
           if (!isLoggedIn) {
-            context.go('/login');
-            return Container();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.go('/login', extra: {'timetableCode': code});
+            });
+            return CustomLoadingScreen();
           }
 
           return HomeScreen(

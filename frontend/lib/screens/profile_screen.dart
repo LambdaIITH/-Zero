@@ -51,9 +51,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     getThemeMode();
 
-    print('USER : ${widget.user}');
-    print(widget.image);
-
     if (widget.user == null && widget.image == null) {
       getUserData();
     } else {
@@ -128,7 +125,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         userModel = userM;
         image = user['image'] ?? image;
-        print("IMAGEEEEEEEEEEEE: ${user['image']}");
         changeState();
         changeState();
       });
