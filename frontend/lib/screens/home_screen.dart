@@ -1,8 +1,5 @@
 import 'dart:convert';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/models/user_model.dart';
 import 'package:dashbaord/screens/cab_sharing_screen.dart';
@@ -15,7 +12,11 @@ import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:dashbaord/widgets/home_card_no_options.dart';
 import 'package:dashbaord/widgets/home_screen_appbar.dart';
 import 'package:dashbaord/widgets/home_screen_bus_timings.dart';
+import 'package:dashbaord/widgets/home_screen_calendar.dart';
 import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:in_app_update/in_app_update.dart';
@@ -288,6 +289,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           selectable: true,
                         ),
                       const SizedBox(height: 28),
+                      HomeScreenCalendar(),
+                      const SizedBox(height: 20),
                       HomeScreenBusTimings(
                         busSchedule: busSchedule,
                       ),
@@ -330,20 +333,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                       ),
                       const SizedBox(height: 20),
-                      HomeCardNoOptions(
-                        isLnF: true,
-                        title: 'Timetable',
-                        child: 'assets/icons/calendar.svg',
-                        onTap: widget.isGuest
-                            ? showError
-                            : () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                      builder: (ctx) => Container()),
-                                ),
-                      ),
-                      const SizedBox(
-                        height: 50,
-                      )
                     ],
                   ),
                 ),
