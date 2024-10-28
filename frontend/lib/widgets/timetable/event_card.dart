@@ -6,13 +6,15 @@ class EventCard extends StatelessWidget {
   final String title;
   final String time;
   final String description;
+  final String type;
 
   const EventCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.time,
     required this.description,
-  }) : super(key: key);
+    required this.type,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +47,7 @@ class EventCard extends StatelessWidget {
                   ),
                 ),
                 Icon(
-                  CupertinoIcons.calendar,
+                  type == "lecture" ? CupertinoIcons.calendar: CupertinoIcons.book,
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.yellowAccent
                       : Colors.yellow[600],

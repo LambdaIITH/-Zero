@@ -1,3 +1,5 @@
+import 'package:dashbaord/models/lecture_model.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:flutter/material.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:intl/intl.dart';
@@ -5,60 +7,87 @@ import 'package:intl/intl.dart';
 DateTime get _now => DateTime.now();
 
 class DayViewScreen extends StatelessWidget {
+  final Timetable? timetable;
+
   final BuildContext context;
 
-  DayViewScreen({super.key, required this.context});
+  const DayViewScreen(
+      {super.key, required this.context, required this.timetable});
 
-  final List<CalendarEventData> _events = [
-    CalendarEventData(
-      date: _now,
-      title: "LSSP",
-      description: "LHC 4",
-      startTime: DateTime(_now.year, _now.month, _now.day, 14, 30),
-      endTime: DateTime(_now.year, _now.month, _now.day, 16),
-    ),
-    CalendarEventData(
-      date: _now,
-      startTime: DateTime(_now.year, _now.month, _now.day, 16),
-      endTime: DateTime(_now.year, _now.month, _now.day, 17, 30),
-      title: "Statistical Analysis using R",
-      description: "LHC 9",
-    ),
-    CalendarEventData(
-      date: _now.add(Duration(days: 1)),
-      startTime: DateTime(_now.year, _now.month, _now.day, 18),
-      endTime: DateTime(_now.year, _now.month, _now.day, 19),
-      title: "Wedding anniversary",
-      description: "Attend uncle's wedding anniversary.",
-    ),
-  ];
+  List<CalendarEventData> convertTimetableToCalendarEvents(
+      List<Lecture> lectures) {
+    final now = DateTime.now();
+    final events = <CalendarEventData>[];
+
+    DateTime startDate = DateTime(now.year, now.month, now.day);
+
+    int month;
+    if (now.month >= 1 && now.month <= 4) {
+      month = 5;
+    } else if (now.month >= 8 && now.month <= 11) {
+      month = 12;
+    } else {
+      month = now.month;
+    }
+
+    DateTime endDate = DateTime(now.year, month, 5);
+
+    for (DateTime date = startDate;
+        date.isBefore(endDate);
+        date = date.add(Duration(days: 1))) {
+      String dayName = DateFormat('EEEE').format(date);
+
+      for (var lecture in lectures) {
+        if (lecture.day == dayName) {
+          DateTime startTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            TimeOfDay.fromDateTime(
+                    DateFormat('hh:mm a').parse(lecture.startTime))
+                .hour,
+            TimeOfDay.fromDateTime(
+                    DateFormat('hh:mm a').parse(lecture.startTime))
+                .minute,
+          );
+
+          DateTime endTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            TimeOfDay.fromDateTime(DateFormat('hh:mm a').parse(lecture.endTime))
+                .hour,
+            TimeOfDay.fromDateTime(DateFormat('hh:mm a').parse(lecture.endTime))
+                .minute,
+          );
+
+          events.add(CalendarEventData(
+            date: date,
+            title: lecture.courseCode,
+            description: timetable!.courses[lecture.courseCode]!,
+            startTime: startTime,
+            endTime: endTime,
+          ));
+        }
+      }
+    }
+
+    return events;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<CalendarEventData> events =
+        convertTimetableToCalendarEvents(timetable!.slots);
+
     return DayView(
-      controller: EventController()..addAll(_events),
+      controller: EventController()..addAll(events),
       backgroundColor: Theme.of(context).canvasColor,
       heightPerMinute: 1,
       showVerticalLine: false,
       initialDay: _now,
       keepScrollOffset: true,
       startDuration: Duration(hours: 8),
-      headerStyle: HeaderStyle(
-        headerTextStyle: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-          fontSize: 20,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade900,
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.grey.shade800,
-              width: 1,
-            ),
-          ),
-        ),
-      ),
       dayTitleBuilder: (date) {
         return Container();
       },
@@ -74,8 +103,10 @@ class DayViewScreen extends StatelessWidget {
       },
       eventTileBuilder: (date, events, rect, startTime, endTime) {
         return Container(
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.all(8),
+          margin: const EdgeInsets.symmetric(vertical: 1),
+          padding: endTime.difference(startTime) > Duration(minutes: 40)
+              ? EdgeInsets.all(8)
+              : EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           height: 80, // Set your desired height here
           decoration: BoxDecoration(
             color: Colors.blueAccent,
@@ -98,7 +129,8 @@ class DayViewScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (events[0].description != null)
+              if (events[0].description != null &&
+                  endTime.difference(startTime) > Duration(minutes: 40))
                 Text(
                   events[0].description!,
                   style: TextStyle(

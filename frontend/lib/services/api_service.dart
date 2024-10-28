@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 
+import 'package:dashbaord/models/lecture_model.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/screens/login_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -191,6 +193,30 @@ class ApiServices {
     }
     return null;
   }
+
+  // ====================CALENDAR STARTS===================================
+
+
+  Future<Timetable?> getTimetable(BuildContext context) async {
+    try {
+      final response = await dio.get('/courses');
+
+      if (response.statusCode == 200) {
+        return Timetable.fromJson(response.data);
+      } else {
+        throw Exception('Failed to load timetable');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await logout(context);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ====================CALENDAR ENDS===================================
 
   // ====================CAB SHARING STARTS===================================
 
@@ -835,9 +861,9 @@ class ApiServices {
     try {
       final response = await dio.get('/main-gate/status');
       if (response.statusCode == 200) {
-        if(response.data['inside']){
+        if (response.data['inside']) {
           return 1;
-        }else{
+        } else {
           return 0;
         }
       }

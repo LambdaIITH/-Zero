@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dashbaord/models/mess_menu_model.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/models/user_model.dart';
 import 'package:dashbaord/screens/cab_sharing_screen.dart';
 import 'package:dashbaord/screens/lost_and_found_screen.dart';
@@ -52,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   String image = '';
   int mainGateStatus = -1;
+  Timetable? timetable;
 
   void fetchMessMenu() async {
     final response = await ApiServices().getMessMenu(context);
@@ -100,6 +102,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
     //save bus schedule
     await SharedService().saveBusSchedule(response);
+  }
+
+  Future<void> fetchTimetable() async {
+    final response = await ApiServices().getTimetable(context);
+    if (response == null) {
+      showError(
+          msg: "Timetable Fetch Failed. Refreshing from local storage...");
+
+      final res = await SharedService().getTimetable();
+
+      setState(() {
+        timetable = res;
+        changeState();
+      });
+      return;
+    }
+    setState(() {
+      timetable = response;
+      changeState();
+    });
+
+    await SharedService().saveTimetable(response);
   }
 
   Future<void> fetchUser() async {
@@ -199,6 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     fetchMessMenu();
     fetchBus();
+    fetchTimetable();
     analyticsService.logScreenView(screenName: "HomeScreen");
   }
 
@@ -288,8 +313,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.center,
                           selectable: true,
                         ),
-                      const SizedBox(height: 28),
-                      HomeScreenCalendar(),
+                      if (timetable != null) ...[
+                        const SizedBox(height: 28),
+                        HomeScreenSchedule(
+                          timetable: timetable,
+                        ),
+                      ],
                       const SizedBox(height: 20),
                       HomeScreenBusTimings(
                         busSchedule: busSchedule,

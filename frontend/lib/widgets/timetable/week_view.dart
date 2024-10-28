@@ -1,4 +1,6 @@
 import 'package:calendar_view/calendar_view.dart';
+import 'package:dashbaord/models/lecture_model.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -6,37 +8,75 @@ DateTime get _now => DateTime.now();
 
 class WeekViewScreen extends StatelessWidget {
   final BuildContext context;
+  final Timetable? timetable;
 
-  WeekViewScreen({super.key, required this.context});
+  WeekViewScreen({super.key, required this.context, required this.timetable});
 
-  final List<CalendarEventData> _events = [
-    CalendarEventData(
-      date: _now,
-      title: "LSSP",
-      description: "LHC 4",
-      startTime: DateTime(_now.year, _now.month, _now.day, 14, 30),
-      endTime: DateTime(_now.year, _now.month, _now.day, 16),
-    ),
-    CalendarEventData(
-      date: _now,
-      startTime: DateTime(_now.year, _now.month, _now.day, 16),
-      endTime: DateTime(_now.year, _now.month, _now.day, 17, 30),
-      title: "Statistical Analysis using R",
-      description: "LHC 9",
-    ),
-    CalendarEventData(
-      date: _now.add(Duration(days: 1)),
-      startTime: DateTime(_now.year, _now.month, _now.day, 18),
-      endTime: DateTime(_now.year, _now.month, _now.day, 19),
-      title: "Wedding anniversary",
-      description: "Attend uncle's wedding anniversary.",
-    ),
-  ];
+  List<CalendarEventData> convertTimetableToCalendarEvents(
+      List<Lecture> lectures) {
+    final now = DateTime.now();
+    final events = <CalendarEventData>[];
+
+    DateTime startDate = DateTime(now.year, now.month, now.day);
+    int month;
+    if (now.month >= 1 && now.month <= 4) {
+      month = 5;
+    } else if (now.month >= 8 && now.month <= 11) {
+      month = 12;
+    } else {
+      month = now.month;
+    }
+
+    DateTime endDate = DateTime(now.year, month, 5);
+    for (DateTime date = startDate;
+        date.isBefore(endDate);
+        date = date.add(Duration(days: 1))) {
+      String dayName = DateFormat('EEEE').format(date);
+
+      for (var lecture in lectures) {
+        if (lecture.day == dayName) {
+          DateTime startTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            TimeOfDay.fromDateTime(
+                    DateFormat('hh:mm a').parse(lecture.startTime))
+                .hour,
+            TimeOfDay.fromDateTime(
+                    DateFormat('hh:mm a').parse(lecture.startTime))
+                .minute,
+          );
+
+          DateTime endTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            TimeOfDay.fromDateTime(DateFormat('hh:mm a').parse(lecture.endTime))
+                .hour,
+            TimeOfDay.fromDateTime(DateFormat('hh:mm a').parse(lecture.endTime))
+                .minute,
+          );
+
+          events.add(CalendarEventData(
+            date: date, // Optional, based on your requirements
+            title: lecture.courseCode,
+            description: timetable!.courses[lecture.courseCode]!,
+            startTime: startTime,
+            endTime: endTime,
+          ));
+        }
+      }
+    }
+
+    return events;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<CalendarEventData> events =
+        convertTimetableToCalendarEvents(timetable!.slots);
     return WeekView(
-      controller: EventController()..addAll(_events),
+      controller: EventController()..addAll(events),
       startDay: WeekDays.sunday,
       keepScrollOffset: true,
       scrollOffset: 450,
@@ -67,20 +107,19 @@ class WeekViewScreen extends StatelessWidget {
         return Container();
       },
       timeLineBuilder: (date) {
-        String period = date.hour < 12 ? 'AM' : 'PM';
         return Container(
           width: 60,
           alignment: Alignment.center,
           child: Text(
-            "${date.hour % 12} $period",
+            DateFormat('h a').format(date),
             style: TextStyle(color: Colors.grey),
           ),
         );
       },
       eventTileBuilder: (date, events, rect, startTime, endTime) {
         return Container(
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.all(8),
+          margin: const EdgeInsets.symmetric(vertical: 1),
+          padding: const EdgeInsets.all(2),
           width: rect.width,
           height: rect.height,
           decoration: BoxDecoration(
@@ -101,7 +140,7 @@ class WeekViewScreen extends StatelessWidget {
                 events[0].title,
                 maxLines: 2,
                 style: const TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   overflow: TextOverflow.ellipsis,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

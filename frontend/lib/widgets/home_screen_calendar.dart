@@ -1,23 +1,58 @@
 import 'package:dashbaord/extensions.dart';
 import 'package:dashbaord/models/lecture_model.dart';
-import 'package:dashbaord/screens/time_table_screen.dart';
+import 'package:dashbaord/models/time_table_model.dart';
+import 'package:dashbaord/screens/calendar_screen.dart';
 import 'package:dashbaord/utils/custom_page_route.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
-class HomeScreenCalendar extends StatefulWidget {
-  const HomeScreenCalendar({super.key});
+class HomeScreenSchedule extends StatefulWidget {
+  final Timetable? timetable;
+
+  const HomeScreenSchedule({super.key, required this.timetable});
 
   @override
-  State<HomeScreenCalendar> createState() => _HomeScreenCalendarState();
+  State<HomeScreenSchedule> createState() => _HomeScreenScheduleState();
 }
 
-class _HomeScreenCalendarState extends State<HomeScreenCalendar> {
-  final List<Lecture> lectures = [
-    Lecture(time: '9:00AM', code: 'MA1120', name: 'Numerical Analysis'),
-    Lecture(time: '10:00AM', code: 'EE2120', name: 'LSSP'),
-  ];
+class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
+  // function to get the next k upcoming courses for today
+  List<Lecture> getNextCourses(int k) {
+    DateTime now = DateTime.now();
+
+    DateTime today = DateTime(now.year, now.month, now.day);
+    String todayDayString = DateFormat('EEEE').format(today);
+
+    // find out all courses for today from lecture.day and checking for current day
+    // with date manipulation
+    // For example. if today is Monday, all those lectures with day as
+    // Monday will be returned
+    List<Lecture> todayCourses = widget.timetable?.slots.where((lecture) {
+          return lecture.day == todayDayString;
+        }).toList() ??
+        [];
+
+    // return all courses whose start time is after the present time
+    List<Lecture> upcomingCourses = todayCourses.where((lecture) {
+      TimeOfDay lectureTime = TimeOfDay.fromDateTime(
+          DateFormat('hh:mm a').parse(lecture.startTime));
+      // converting lectureStartTime to today's date and adding the time from startTime and endTime
+      DateTime lectureStartTime = DateTime(
+          now.year, now.month, now.day, lectureTime.hour, lectureTime.minute);
+      return lectureStartTime.isAfter(now);
+    }).toList();
+
+    // sorting the upcomingCourses, so that we get the k lectures in order
+    upcomingCourses.sort((a, b) {
+      DateTime aStartTime = DateFormat('hh:mm a').parse(a.startTime);
+      DateTime bStartTime = DateFormat('hh:mm a').parse(b.startTime);
+      return aStartTime.compareTo(bStartTime);
+    });
+
+    return upcomingCourses.take(k).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +60,9 @@ class _HomeScreenCalendarState extends State<HomeScreenCalendar> {
       onTap: () => Navigator.push(
         context,
         CustomPageRoute(
-          child: TimeTableScreen(),
+          child: CalendarScreen(
+            timetable: widget.timetable,
+          ),
         ),
       ),
       child: Container(
@@ -62,9 +99,10 @@ class _HomeScreenCalendarState extends State<HomeScreenCalendar> {
             SizedBox(height: 8),
             ListView.builder(
               shrinkWrap: true,
-              itemCount: lectures.length,
+              itemCount: 2,
               itemBuilder: (context, index) {
-                return lectureItem(lectures[index], context);
+                return lectureItem(
+                    getNextCourses(2)[index], widget.timetable, context);
               },
             ),
             SizedBox(height: 8),
@@ -75,7 +113,8 @@ class _HomeScreenCalendarState extends State<HomeScreenCalendar> {
   }
 }
 
-Container lectureItem(Lecture lecture, BuildContext context) {
+Container lectureItem(
+    Lecture lecture, Timetable? timetable, BuildContext context) {
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     padding: EdgeInsets.all(8),
@@ -97,11 +136,11 @@ Container lectureItem(Lecture lecture, BuildContext context) {
     child: Row(
       children: [
         Text(
-          lecture.time,
+          lecture.startTime,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.titleSmall?.color,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
           ),
         ),
         SizedBox(width: 8),
@@ -120,14 +159,14 @@ Container lectureItem(Lecture lecture, BuildContext context) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             NormalText(
-              text: lecture.code,
+              text: lecture.courseCode,
               size: 12,
-              color: Theme.of(context).textTheme.titleSmall?.color,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
             NormalText(
-              text: lecture.name,
+              text: timetable!.courses[lecture.courseCode]!,
               size: 18,
-              color: Theme.of(context).textTheme.titleSmall?.color,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ],
         ),
@@ -135,4 +174,3 @@ Container lectureItem(Lecture lecture, BuildContext context) {
     ),
   );
 }
-

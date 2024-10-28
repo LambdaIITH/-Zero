@@ -1,8 +1,23 @@
-
 class Lecture {
-  final String time;
-  final String code;
-  final String name;
+  final String startTime;
+  final String endTime;
+  final String day;
 
-  Lecture({required this.time, required this.code, required this.name});
+  final String courseCode;
+
+  Lecture(
+      {required this.startTime,
+      required this.endTime,
+      required this.day,
+      required this.courseCode,
+      });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'start_time': startTime,
+      'end_time': endTime,
+      'day': day,
+      'course_code': courseCode,
+    };
+  }
 }
