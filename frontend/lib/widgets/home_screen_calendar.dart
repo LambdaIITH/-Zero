@@ -36,12 +36,23 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
 
     // return all courses whose start time is after the present time
     List<Lecture> upcomingCourses = todayCourses.where((lecture) {
-      TimeOfDay lectureTime = TimeOfDay.fromDateTime(
+      TimeOfDay lectureStartTimeText = TimeOfDay.fromDateTime(
           DateFormat('hh:mm a').parse(lecture.startTime));
       // converting lectureStartTime to today's date and adding the time from startTime and endTime
-      DateTime lectureStartTime = DateTime(
-          now.year, now.month, now.day, lectureTime.hour, lectureTime.minute);
-      return lectureStartTime.isAfter(now);
+      DateTime lectureStartTime = DateTime(now.year, now.month, now.day,
+          lectureStartTimeText.hour, lectureStartTimeText.minute);
+
+      TimeOfDay lectureEndTimeText =
+          TimeOfDay.fromDateTime(DateFormat('hh:mm a').parse(lecture.endTime));
+      // converting lectureStartTime to today's date and adding the time from startTime and endTime
+      DateTime lectureEndTime = DateTime(now.year, now.month, now.day,
+          lectureEndTimeText.hour, lectureEndTimeText.minute);
+
+      if (!lectureStartTime.isAfter(now)) {
+        return now.isAfter(lectureStartTime) && now.isBefore(lectureEndTime);
+      } else {
+        return true;
+      }
     }).toList();
 
     // sorting the upcomingCourses, so that we get the k lectures in order
@@ -51,65 +62,75 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
       return aStartTime.compareTo(bStartTime);
     });
 
-    return upcomingCourses.take(k).toList();
+    if (upcomingCourses.length < k) {
+      return upcomingCourses.toList();
+    }
+
+    return upcomingCourses.toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        CustomPageRoute(
-          child: CalendarScreen(
-            timetable: widget.timetable,
-          ),
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.customColors.customContainerColor,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: context.customColors.customShadowColor,
-              offset: const Offset(0, 4),
-              blurRadius: 10.0,
-              spreadRadius: 0.0,
-            ),
-          ],
-        ),
-        clipBehavior: Clip.hardEdge,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 18, top: 15),
-                child: Text(
-                  'Schedule',
-                  style: GoogleFonts.inter(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                  ),
+    // to show 2 upcoming lectures in the schedule
+    int numLectures = 2;
+    final events = getNextCourses(numLectures);
+
+    return events.isEmpty
+        ? Container()
+        : InkWell(
+            onTap: () => Navigator.push(
+              context,
+              CustomPageRoute(
+                child: CalendarScreen(
+                  timetable: widget.timetable,
                 ),
               ),
             ),
-            SizedBox(height: 8),
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: 2,
-              itemBuilder: (context, index) {
-                return lectureItem(
-                    getNextCourses(2)[index], widget.timetable, context);
-              },
+            child: Container(
+              decoration: BoxDecoration(
+                color: context.customColors.customContainerColor,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: context.customColors.customShadowColor,
+                    offset: const Offset(0, 4),
+                    blurRadius: 10.0,
+                    spreadRadius: 0.0,
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.hardEdge,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 18, top: 15),
+                      child: Text(
+                        'Schedule',
+                        style: GoogleFonts.inter(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: events.length,
+                    itemBuilder: (context, index) {
+                      return lectureItem(
+                          events[index], widget.timetable, context);
+                    },
+                  ),
+                  SizedBox(height: 8),
+                ],
+              ),
             ),
-            SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
+          );
   }
 }
 
