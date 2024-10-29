@@ -57,12 +57,12 @@ class Timetable(BaseModel):
         
         
     """
-    courses: Dict[str, str]  = Field(default_factory=dict)
-    custom_slots: Dict[str, Dict[str, str]] = Field(default_factory=dict)
+    courses: Dict[str, Dict[str, str]]  = Field(default_factory=dict)
+    slots: List[Dict[str, str]] = Field(default_factory=list)
     
     @classmethod
     def from_row(cls, timetable):
-        return Timetable(courses=timetable['courses'], custom_slots=timetable['custom_slots'])
+        return Timetable(courses=timetable['courses'], slots=timetable['slots'])
     
 
 class LfItem(BaseModel):

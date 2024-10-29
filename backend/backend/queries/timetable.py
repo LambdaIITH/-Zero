@@ -13,7 +13,6 @@ def get_timetable(user_id: int) -> str:
 def post_timetable(user_id: int, timetable: Timetable) -> str:
     """Update the timetable of the user with the given user_id"""
     timetable = json.dumps(timetable.model_dump())
-    print(timetable)
     
     query = Query.update(users).set('timetable', timetable).where(users.id == user_id)
     return str(query)

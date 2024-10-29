@@ -10,35 +10,100 @@ import regex as re
 import uuid 
 router = APIRouter(prefix="/timetable", tags=["timetable"])
 
-def slot_sanity_check(slot : Dict[str, str]):
+import re
+from typing import Dict, List, Union
+from datetime import datetime
+
+def validate_course_schedule(data: Dict) -> Union[str, bool]:
+    """
+    Validates the course schedule data structure.
+
+    Parameters:
+    - data (Dict): The course schedule data containing 'courses' and 'slots'.
+
+    Returns:
+    - Union[str, bool]: Returns True if the data is valid, otherwise returns a string error message.
+    """
     try:
-        keys = slot.keys()
-        slot_val = slot.values()
-        # check if all slots are valid
-        # basically keys must be in one of the weekdays
-        weekdays = ['M', 'T', 'W', 'Th', 'F', 'S', 'Su']
-        for key in keys:
-            if key not in weekdays:
-                return False
-
-        # check if all values are in the format of HH:MM-HH:MM
-
-        for val in slot_val:
-            if not re.match(r"^\d{2}:\d{2}-\d{2}:\d{2}$", val):
-                return False
-        # all HH must be in 00 to 23 and MM must be in 00 to 59
-        for val in slot_val:
-            start, end = val.split("-")
-            start_hh, start_mm = start.split(":")
-            end_hh, end_mm = end.split(":")
-            if not (0 <= int(start_hh) <= 23 and 0 <= int(start_mm) <= 59 and 0 <= int(end_hh) <= 23 and 0 <= int(end_mm) <= 59):
-                return False
-
+        # Validate 'courses' section
+        courses = data.get("courses")
+        if not isinstance(courses, dict):
+            return "Invalid 'courses' format. Expected a dictionary."
+        
+        for course_code, course_info in courses.items():
+            if not isinstance(course_info, dict):
+                return f"Invalid course info for {course_code}. Expected a dictionary."
+            if "title" not in course_info or not isinstance(course_info["title"], str):
+                return f"Missing or invalid 'title' for course {course_code}."
+        
+        # Validate 'slots' section
+        slots = data.get("slots")
+        if not isinstance(slots, list):
+            return "Invalid 'slots' format. Expected a list."
+        
+        valid_weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        
+        # Regex pattern to match time formats like "9:00 AM" or "10:30 PM"
+        time_pattern = re.compile(r"^(1[0-2]|0?[1-9]):([0-5]\d)\s?(AM|PM)$", re.IGNORECASE)
+        
+        # To check overlapping slots, we'll store times per day
+        schedule = {}
+        
+        for slot in slots:
+            if not isinstance(slot, dict):
+                return "Each slot should be a dictionary."
+            
+            # Check required fields
+            required_fields = ["course_code", "day", "start_time", "end_time"]
+            for field in required_fields:
+                if field not in slot:
+                    return f"Missing field '{field}' in slot: {slot}"
+            
+            # Validate course_code
+            course_code = slot["course_code"]
+            if course_code not in courses:
+                return f"Invalid 'course_code' {course_code} in slot: {slot}"
+            
+            # Validate day
+            day = slot["day"]
+            if day not in valid_weekdays:
+                return f"Invalid 'day' {day} in slot: {slot}"
+            
+            # Validate time formats
+            start_time_str = slot["start_time"]
+            end_time_str = slot["end_time"]
+            
+            if not time_pattern.match(start_time_str):
+                return f"Invalid 'start_time' format: {start_time_str} in slot: {slot}"
+            if not time_pattern.match(end_time_str):
+                return f"Invalid 'end_time' format: {end_time_str} in slot: {slot}"
+            
+            # Parse times to compare
+            time_format = "%I:%M %p"
+            start_time = datetime.strptime(start_time_str.upper(), time_format)
+            end_time = datetime.strptime(end_time_str.upper(), time_format)
+            
+            if start_time >= end_time:
+                return f"'start_time' {start_time_str} is not earlier than 'end_time' {end_time_str} in slot: {slot}"
+            
+            # Check for overlapping slots on the same day
+            if day not in schedule:
+                schedule[day] = []
+            
+            for existing_start, existing_end in schedule[day]:
+                if not (end_time <= existing_start or start_time >= existing_end):
+                    return f"Overlapping slot detected on {day}: {slot}"
+            
+            # Add the current slot to the schedule
+            schedule[day].append((start_time, end_time))
+        
+        # If all validations pass
         return True
+    
     except Exception as e:
-        return False
-    
-    
+        return f"An error occurred during validation: {e}"
+
+
 @router.get("/courses")
 def get_timetable(request: Request) -> Timetable:
     user_id = get_user_id(request)
@@ -56,24 +121,12 @@ def post_edit_timetable(request: Request, timetable: Timetable):
     user_id = get_user_id(request)
     # sanity check
     course_codes = list(timetable.courses.keys())
-    custom_slot_codes = list(timetable.custom_slots.keys())
     ## check if custom_slot_codes are not same as default slots
     
+    validation_result = validate_course_schedule(timetable)
+    if not isinstance(validation_result, bool):
+            raise HTTPException(status_code=400, detail=validation_result)
     
-    for slot in custom_slot_codes:
-        if slot in default_slots or custom_slot_codes.count(slot) > 1:
-            raise HTTPException(status_code=400, detail = "Slot already exists") 
-    
-    ## doing sanity check on slots
-    for slot in custom_slot_codes:
-        if not slot_sanity_check(timetable.custom_slots[slot]):
-            raise HTTPException(status_code=400, detail=f"Slot {slot} is not in correct format")
-    slots = list(set(default_slots).union(set(custom_slot_codes)))
-    
-    ## check if all courses occur in valid slots only
-    for course_code, slot in timetable.courses.items():
-        if slot not in slots:
-            raise HTTPException(status_code=400, detail=f"No slot {slot} exists for course {course_code}")
     try:
         query = timetable_queries.post_timetable(user_id, timetable)
         with conn.cursor() as cur:
