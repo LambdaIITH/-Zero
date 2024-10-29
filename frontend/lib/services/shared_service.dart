@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
@@ -7,6 +8,7 @@ class SharedService {
   static const String _keyName = 'user_name';
   static const String _keyEmail = 'user_email';
   static const String _keyImageUrl = 'user_image_url';
+  static const String _keyTimetable = 'timetable';
   static const String _keyMessMenu = 'mess_menu';
   static const String _keyBusSchedule = 'bus_schedule';
 
@@ -43,6 +45,24 @@ class SharedService {
     await prefs.remove(_keyName);
     await prefs.remove(_keyEmail);
     await prefs.remove(_keyImageUrl);
+  }
+
+  Future<Timetable?> getTimetable() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? timetableJson = prefs.getString(_keyTimetable);
+
+    if (timetableJson != null) {
+      final Map<String, dynamic> timetableMap = json.decode(timetableJson);
+      return Timetable.fromJson(timetableMap);
+    }
+
+    return null;
+  }
+
+  Future<void> saveTimetable(Timetable timetable) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String timetableJson = json.encode(timetable.toJson());
+    await prefs.setString(_keyTimetable, timetableJson);
   }
 
   Future<void> saveMessMenu(MessMenuModel messMenu) async {

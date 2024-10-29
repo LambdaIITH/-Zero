@@ -58,9 +58,12 @@ final ThemeData lightTheme = ThemeData(
     titleTextStyle: GoogleFonts.inter(color: Colors.black),
   ),
   cardColor: Colors.white,
+  canvasColor: Colors.white,
   textTheme: TextTheme(
     bodyLarge: GoogleFonts.inter(color: Colors.black),
     bodyMedium: GoogleFonts.inter(color: Colors.black45),
+    bodySmall: GoogleFonts.inter(
+        color: const Color.fromARGB(255, 114, 114, 114)), //mess card time
     displayLarge: GoogleFonts.inter(color: Colors.black),
     displayMedium: GoogleFonts.inter(color: Colors.black),
     displaySmall: GoogleFonts.inter(color: Colors.black),
@@ -70,8 +73,6 @@ final ThemeData lightTheme = ThemeData(
         color: const Color(0xff6A6A6A)), //next bus card text color
     titleMedium: GoogleFonts.inter(color: Colors.white), //next bus card color
     titleSmall: GoogleFonts.inter(color: const Color(0xff404040)),
-    bodySmall: GoogleFonts.inter(
-        color: const Color.fromARGB(255, 114, 114, 114)), //mess card time
     labelLarge: GoogleFonts.inter(
       color: const Color(0xff292929),
     ), // mess meals
@@ -100,21 +101,24 @@ final ThemeData darkTheme = ThemeData(
     titleTextStyle: GoogleFonts.inter(color: Colors.white),
   ),
   cardColor: const Color.fromARGB(255, 48, 48, 48),
+  canvasColor: Colors.black,
   textTheme: TextTheme(
     bodyLarge: GoogleFonts.inter(color: Colors.white),
     bodyMedium: GoogleFonts.inter(color: Colors.white54),
+    bodySmall:
+        GoogleFonts.inter(color: const Color.fromARGB(255, 201, 201, 201)),
     displayLarge: GoogleFonts.inter(color: Colors.white),
     displayMedium: GoogleFonts.inter(color: Colors.white),
     displaySmall: GoogleFonts.inter(color: Colors.white),
     headlineMedium: GoogleFonts.inter(color: Colors.white),
     headlineSmall: GoogleFonts.inter(color: Colors.white),
     titleLarge: GoogleFonts.inter(
-        color: const Color.fromARGB(255, 214, 214, 214)), //next bus card text color
+        color: const Color.fromARGB(
+            255, 214, 214, 214)), //next bus card text color
     titleMedium: GoogleFonts.inter(
         color: const Color.fromARGB(255, 38, 38, 38)), //next bus card color
     titleSmall: GoogleFonts.inter(
         color: const Color.fromARGB(255, 170, 170, 170)), //mess card time
-    bodySmall: GoogleFonts.inter(color: const Color.fromARGB(255, 201, 201, 201)),
     labelLarge: GoogleFonts.inter(
       color: const Color.fromARGB(255, 206, 206, 206),
     ), // mess meals

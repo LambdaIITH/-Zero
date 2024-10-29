@@ -1,9 +1,7 @@
 import 'dart:convert';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/models/user_model.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
@@ -13,7 +11,11 @@ import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:dashbaord/widgets/home_card_no_options.dart';
 import 'package:dashbaord/widgets/home_screen_appbar.dart';
 import 'package:dashbaord/widgets/home_screen_bus_timings.dart';
+import 'package:dashbaord/widgets/home_screen_calendar.dart';
 import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:home_widget/home_widget.dart';
@@ -54,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   String image = '';
   int mainGateStatus = -1;
+  Timetable? timetable;
 
   void fetchMessMenu() async {
     final response = await ApiServices().getMessMenu(context);
@@ -102,6 +105,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
     //save bus schedule
     await SharedService().saveBusSchedule(response);
+  }
+
+  Future<void> fetchTimetable() async {
+    final response = await ApiServices().getTimetable(context);
+    if (response == null) {
+      showError(
+          msg: "Timetable Fetch Failed. Refreshing from local storage...");
+
+      final res = await SharedService().getTimetable();
+
+      setState(() {
+        timetable = res;
+        changeState();
+      });
+      return;
+    }
+    setState(() {
+      timetable = response;
+      changeState();
+    });
+
+    await SharedService().saveTimetable(response);
   }
 
   Future<void> fetchUser() async {
@@ -201,6 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     fetchMessMenu();
     fetchBus();
+    fetchTimetable();
     analyticsService.logScreenView(screenName: "HomeScreen");
   }
 
@@ -333,7 +359,102 @@ class _HomeScreenState extends State<HomeScreen> {
             statusBarColor: Theme.of(context).scaffoldBackgroundColor,
           ),
         ),
+        // ),
         key: _scaffoldKey,
+        // body: isLoading
+        //     ? const CustomLoadingScreen()
+        //     : SafeArea(
+        //         child: Padding(
+        //           padding: const EdgeInsets.symmetric(horizontal: 20),
+        //           child: RefreshIndicator(
+        //             onRefresh: () {
+        //               return Future.delayed(const Duration(seconds: 1), _refresh);
+        //             },
+        //             child: ListView(
+        //               children: [
+        //                 const SizedBox(height: 24),
+        //                 HomeScreenAppBar(
+        //                     status: mainGateStatus,
+        //                     onThemeChanged: widget.onThemeChanged,
+        //                     image: image,
+        //                     user: userModel,
+        //                     isGuest: widget.isGuest),
+        //                 if (eventText.isNotEmpty) const SizedBox(height: 28),
+        //                 if (eventText.isNotEmpty)
+        //                   TextScroll(
+        //                     eventText,
+        //                     velocity:
+        //                         const Velocity(pixelsPerSecond: Offset(50, 0)),
+        //                     delayBefore: const Duration(milliseconds: 900),
+        //                     pauseBetween: const Duration(milliseconds: 100),
+        //                     style: const TextStyle(color: Colors.purple),
+        //                     textAlign: TextAlign.center,
+        //                     selectable: true,
+        //                   ),
+        //                   const SizedBox(height: 28),
+        //                   HomeScreenSchedule(
+        //                     timetable: timetable,
+        //                     onEditTimetable: (editedTimetable) {
+        //                       setState(
+        //                         () {
+        //                           timetable = editedTimetable;
+        //                         },
+        //                       );
+        //                     },
+        //                     onLectureAdded: (courseCode, courseName, lectures) {
+        //                       setState(
+        //                         () {
+        //                           timetable = timetable!.addCourse(
+        //                               courseCode, courseName, lectures);
+        //                         },
+        //                       );
+        //                     },
+        //                   ),
+        //                 const SizedBox(height: 20),
+        //                 HomeScreenBusTimings(
+        //                   busSchedule: busSchedule,
+        //                 ),
+        //                 const SizedBox(height: 20),
+        //                 HomeScreenMessMenu(messMenu: messMenu),
+        //                 const SizedBox(height: 20),
+        //                 HomeCardNoOptions(
+        //                   isComingSoon: false,
+        //                   title: 'Cab Sharing',
+        //                   child: 'assets/icons/cab-sharing-icon.svg',
+        //                   onTap: () {
+        //                     widget.isGuest
+        //                         ? showError()
+        //                         : Navigator.of(context).push(MaterialPageRoute(
+        //                             builder: (ctx) => CabSharingScreen(
+        //                               image: image,
+        //                               user: userModel ??
+        //                                   UserModel(
+        //                                       email: "user@iith.ac.in",
+        //                                       name: "User"),
+        //                             ),
+        //                           ));
+        //                   },
+        //                 ),
+        //                 const SizedBox(height: 20),
+        //                 HomeCardNoOptions(
+        //                   isComingSoon: false,
+        //                   isLnF: true,
+        //                   title: 'Lost & Found',
+        //                   child: 'assets/icons/magnifying-icon.svg',
+        //                   onTap: widget.isGuest
+        //                       ? showError
+        //                       : () => Navigator.of(context).push(
+        //                             MaterialPageRoute(
+        //                               builder: (ctx) => LostAndFoundScreen(
+        //                                 currentUserEmail:
+        //                                     userModel?.email ?? 'user@iith.ac.in',
+        //                               ),
+        //                             ),
+        //                           ),
+        //                 ),
+        //                 const SizedBox(height: 20),
+        //               ],
+        //   key: _scaffoldKey,
         body: Builder(builder: (BuildContext bc) {
           if (widget.code != null && !isDialogShown) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -374,6 +495,25 @@ class _HomeScreenState extends State<HomeScreen> {
                               selectable: true,
                             ),
                           const SizedBox(height: 28),
+                          HomeScreenSchedule(
+                            timetable: timetable,
+                            onEditTimetable: (editedTimetable) {
+                              setState(
+                                () {
+                                  timetable = editedTimetable;
+                                },
+                              );
+                            },
+                            onLectureAdded: (courseCode, courseName, lectures) {
+                              setState(
+                                () {
+                                  timetable = timetable!.addCourse(
+                                      courseCode, courseName, lectures);
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 20),
                           HomeScreenBusTimings(
                             busSchedule: busSchedule,
                           ),
