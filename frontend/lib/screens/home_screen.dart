@@ -313,10 +313,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           textAlign: TextAlign.center,
                           selectable: true,
                         ),
-                      if (timetable != null) ...[
                         const SizedBox(height: 28),
                         HomeScreenSchedule(
                           timetable: timetable,
+                          onEditTimetable: (editedTimetable) {
+                            setState(
+                              () {
+                                timetable = editedTimetable;
+                              },
+                            );
+                          },
                           onLectureAdded: (courseCode, courseName, lectures) {
                             setState(
                               () {
@@ -326,7 +332,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                         ),
-                      ],
                       const SizedBox(height: 20),
                       HomeScreenBusTimings(
                         busSchedule: busSchedule,

@@ -3,19 +3,26 @@ import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/widgets/timetable/add_lectures_sheet.dart';
 import 'package:dashbaord/widgets/timetable/day_view.dart';
 import 'package:dashbaord/widgets/timetable/list_view.dart';
+import 'package:dashbaord/widgets/timetable/manage_courses_sheet.dart';
 import 'package:dashbaord/widgets/timetable/month_view.dart';
 import 'package:dashbaord/widgets/timetable/week_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:calendar_view/calendar_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 
 class CalendarScreen extends StatefulWidget {
   final Timetable? timetable;
   final Function(String, String, List<Lecture>)? onLectureAdded;
+  final Function(Timetable)? onEditTimetable;
 
-  const CalendarScreen(
-      {super.key, required this.timetable, required this.onLectureAdded});
+  const CalendarScreen({
+    super.key,
+    required this.timetable,
+    required this.onLectureAdded,
+    required this.onEditTimetable,
+  });
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
@@ -40,31 +47,75 @@ class _CalendarScreenState extends State<CalendarScreen> {
       controller: EventController()..addAll(_events),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             "Calendar",
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 30,
-              shadows: [
-                Shadow(
-                  offset: Offset(0, 1.5),
-                  color: Colors.black,
-                )
-              ],
+            style: GoogleFonts.inter(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
             ),
           ),
           leadingWidth: 65,
-          leading: Builder(builder: (context) {
-            return Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, size: 40),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              size: 30.0,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == "refresh") {
+                } else if (value == "manageCourses") {
+                  _showManageCoursesBottomSheet(context);
+                } else if (value == "shareCode") {
+                  _shareSchedule();
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: "refresh",
+                  child: Row(
+                    children: [
+                      Icon(Icons.refresh, color: Colors.redAccent),
+                      SizedBox(width: 5),
+                      Text("Refresh"),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: "manageCourses",
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings, color: Colors.redAccent),
+                      SizedBox(width: 5),
+                      Text("Manage Courses"),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: "shareCode",
+                  child: Row(
+                    children: [
+                      Icon(Icons.share, color: Colors.redAccent),
+                      SizedBox(width: 5),
+                      Text("Share Timetable"),
+                    ],
+                  ),
+                ),
+              ],
+              icon: Icon(Icons.more_vert),
+              color: Theme.of(context).cardColor,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
-            );
-          }),
+            ),
+          ],
         ),
         body: Column(
           children: [
@@ -166,6 +217,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
           },
         );
         // return const AddEventBottomSheet();
+      },
+      isScrollControlled: true,
+    );
+  }
+
+  void _showManageCoursesBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ManageCoursesBottomSheet(
+          timetable: timetable,
+          onEditTimetable: (editedTimetable) {
+            setState(() {
+              timetable = editedTimetable;
+            });
+            widget.onEditTimetable!(editedTimetable);
+          },
+        );
       },
       isScrollControlled: true,
     );

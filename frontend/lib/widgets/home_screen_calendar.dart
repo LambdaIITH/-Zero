@@ -11,8 +11,13 @@ import 'package:intl/intl.dart';
 class HomeScreenSchedule extends StatefulWidget {
   final Timetable? timetable;
   final Function(String, String, List<Lecture>)? onLectureAdded;
+  final Function(Timetable)? onEditTimetable;
 
-  const HomeScreenSchedule({super.key, required this.timetable, required this.onLectureAdded});
+  const HomeScreenSchedule(
+      {super.key,
+      required this.timetable,
+      required this.onLectureAdded,
+      required this.onEditTimetable});
 
   @override
   State<HomeScreenSchedule> createState() => _HomeScreenScheduleState();
@@ -93,69 +98,79 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
     final events = eventsObject[0];
     bool isEventsForToday = eventsObject[1];
 
-    return events.isEmpty
-        ? Container()
-        : InkWell(
-            onTap: () => Navigator.push(
-              context,
-              CustomPageRoute(
-                child: CalendarScreen(
-                  timetable: widget.timetable,
-                  onLectureAdded: widget.onLectureAdded,
-                ),
-              ),
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        CustomPageRoute(
+          child: CalendarScreen(
+            timetable: widget.timetable,
+            onLectureAdded: widget.onLectureAdded,
+            onEditTimetable: widget.onEditTimetable,
+          ),
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.customColors.customContainerColor,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: context.customColors.customShadowColor,
+              offset: const Offset(0, 4),
+              blurRadius: 10.0,
+              spreadRadius: 0.0,
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: context.customColors.customContainerColor,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: context.customColors.customShadowColor,
-                    offset: const Offset(0, 4),
-                    blurRadius: 10.0,
-                    spreadRadius: 0.0,
-                  ),
-                ],
-              ),
-              clipBehavior: Clip.hardEdge,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 18, top: 15),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'Schedule',
-                            style: GoogleFonts.inter(
-                              color:
-                                  Theme.of(context).textTheme.bodyLarge?.color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 28,
-                            ),
-                          ),
-    
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          ],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 18, top: 15),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Schedule',
+                      style: GoogleFonts.inter(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28,
+                      ),
+                    ),
+                    events.isEmpty
+                        ? SizedBox()
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             child: Text(
-                              '${isEventsForToday ? 'Today' : 'Tomorrow'}',
+                              isEventsForToday ? 'Today' : 'Tomorrow',
                               style: GoogleFonts.inter(
-                                color:
-                                    Theme.of(context).textTheme.bodyMedium?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
                                 fontSize: 16,
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  ListView.builder(
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
+            events.isEmpty
+                ? Center(
+                    child: Padding(
+                        padding: EdgeInsets.all(
+                          12,
+                        ),
+                        child: Text('No upcoming events!')),
+                  )
+                : ListView.builder(
                     shrinkWrap: true,
                     itemCount: events.length,
                     itemBuilder: (context, index) {
@@ -163,11 +178,11 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
                           events[index], widget.timetable, context);
                     },
                   ),
-                  SizedBox(height: 8),
-                ],
-              ),
-            ),
-          );
+            SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 }
 
