@@ -1,3 +1,4 @@
+import 'package:dashbaord/models/lecture_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/widgets/timetable/add_lectures_sheet.dart';
 import 'package:dashbaord/widgets/timetable/day_view.dart';
@@ -11,7 +12,10 @@ import 'package:share_plus/share_plus.dart';
 
 class CalendarScreen extends StatefulWidget {
   final Timetable? timetable;
-  const CalendarScreen({super.key, required this.timetable});
+  final Function(String, String, List<Lecture>)? onLectureAdded;
+
+  const CalendarScreen(
+      {super.key, required this.timetable, required this.onLectureAdded});
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
@@ -20,8 +24,15 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   String selectedViewType = "List";
   List<String> viewTypeList = ["List", "Day", "Week", "Month"];
+  Timetable? timetable;
 
   final List<CalendarEventData> _events = [];
+
+  @override
+  void initState() {
+    super.initState();
+    timetable = widget.timetable;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,27 +126,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
       case "List":
         return ListViewScreen(
           context: context,
-          timetable: widget.timetable,
+          timetable: timetable,
         );
       case "Day":
         return DayViewScreen(
           context: context,
-          timetable: widget.timetable,
+          timetable: timetable,
         );
       case "Week":
         return WeekViewScreen(
           context: context,
-          timetable: widget.timetable,
+          timetable: timetable,
         );
       case "Month":
         return MonthViewScreen(
           context: context,
-          timetable: widget.timetable,
+          timetable: timetable,
         );
       default:
         return DayViewScreen(
           context: context,
-          timetable: widget.timetable,
+          timetable: timetable,
         );
     }
   }
@@ -144,7 +155,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return AddLectureBottomSheet();
+        return AddLectureBottomSheet(
+          timetable: widget.timetable,
+          onLectureAdded: (courseCode, courseName, lectures) {
+            setState(() {
+              timetable =
+                  timetable!.addCourse(courseCode, courseName, lectures);
+            });
+            widget.onLectureAdded!(courseCode, courseName, lectures);
+          },
+        );
         // return const AddEventBottomSheet();
       },
       isScrollControlled: true,

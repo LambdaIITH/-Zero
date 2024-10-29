@@ -43,4 +43,11 @@ class Timetable {
       'slots': slots.map((lecture) => lecture.toJson()).toList(),
     };
   }
+
+  Timetable addCourse(
+          String courseCode, String courseName, List<Lecture> lectures) =>
+      Timetable(
+        courses: {...courses, courseCode: courseName},
+        slots: [...slots, ...lectures],
+      );
 }

@@ -133,6 +133,11 @@ class DayViewScreen extends StatelessWidget {
                   endTime.difference(startTime) > Duration(minutes: 40))
                 Text(
                   events[0].description!,
+                  overflow: TextOverflow.fade,
+                  maxLines:
+                      endTime.difference(startTime) <= Duration(hours: 1)
+                          ? 1
+                          : 2,
                   style: TextStyle(
                     color: Colors.white70,
                   ),

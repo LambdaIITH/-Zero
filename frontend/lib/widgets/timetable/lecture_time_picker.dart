@@ -1,14 +1,16 @@
+import 'package:dashbaord/constants/enums/iith_slots.dart';
+import 'package:dashbaord/models/lecture_model.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class LectureTimePickerBottomSheet extends StatefulWidget {
-  final DateTime initialDate;
-  final Function(DateTime) onDateSelected;
+  final Function(List<Lecture>) onSlotSelected;
 
-  LectureTimePickerBottomSheet({
-    required this.initialDate,
-    required this.onDateSelected,
+  const LectureTimePickerBottomSheet({
+    super.key,
+    required this.onSlotSelected,
   });
 
   @override
@@ -18,34 +20,29 @@ class LectureTimePickerBottomSheet extends StatefulWidget {
 
 class _LectureTimePickerBottomSheetState
     extends State<LectureTimePickerBottomSheet> {
-  String selectedDay = "Monday";
+  String selectedDay = "Monday", selectedStartTime = "9:00 AM", selectedEndTime = "10:00 AM";
   bool isTimePickerSelected = false;
-  DateTime initialDate = DateTime.now();
-  int selectedWeekday = DateTime.now().weekday;
-  final List<String> slots = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "X",
-    "Y",
-    "Z"
-  ];
+  DateTime initialDate = DateTime.parse("2024-10-26 09:00:00");
+
+  final List<String> slots = getAllSlots();
   String selectedSlot = "A";
+
+  void _addSlots() {
+    if (isTimePickerSelected) {
+      widget.onSlotSelected([
+        Lecture(
+            startTime: selectedStartTime,
+            endTime: selectedEndTime,
+            day: selectedDay,
+            courseCode: "")
+      ]);
+    } else {
+      widget.onSlotSelected(getSlotFromString(selectedSlot)!.getLectures());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    void onDateSelected(DateTime newDate) {
-      debugPrint("Selected date: $newDate");
-    }
-
     return Material(
       elevation: 8,
       shadowColor: Colors.white,
@@ -146,7 +143,7 @@ class _LectureTimePickerBottomSheetState
                             color: selectedDay == day
                                 ? Colors.white
                                 : Theme.of(context).textTheme.bodyLarge?.color,
-                                size: 16,
+                            size: 16,
                           )),
                     ),
                 ],
@@ -161,9 +158,12 @@ class _LectureTimePickerBottomSheetState
                       minuteInterval: 30,
                       itemExtent: 50,
                       mode: CupertinoDatePickerMode.time,
-                      initialDateTime: widget.initialDate,
+                      initialDateTime: initialDate,
                       onDateTimeChanged: (DateTime newDate) {
-                        onDateSelected(newDate);
+                        setState(() {
+                          selectedStartTime =
+                              DateFormat('h:mm a').format(newDate);
+                        });
                       },
                     ),
                   ),
@@ -176,9 +176,16 @@ class _LectureTimePickerBottomSheetState
                       minuteInterval: 30,
                       itemExtent: 50,
                       mode: CupertinoDatePickerMode.time,
-                      initialDateTime: widget.initialDate,
+                      initialDateTime: initialDate.add(
+                        Duration(
+                          hours: 1,
+                        ),
+                      ),
                       onDateTimeChanged: (DateTime newDate) {
-                        onDateSelected(newDate);
+                        setState(() {
+                          selectedEndTime =
+                              DateFormat('h:mm a').format(newDate);
+                        });
                       },
                     ),
                   ),
@@ -205,8 +212,6 @@ class _LectureTimePickerBottomSheetState
                       onSelectedItemChanged: (int index) {
                         setState(() {
                           selectedSlot = slots[index];
-                          debugPrint(selectedSlot);
-                          // widget.onSlotSelected(selectedSlot);
                         });
                       },
                       children: slots
@@ -235,6 +240,7 @@ class _LectureTimePickerBottomSheetState
                 padding: const EdgeInsets.all(16),
               ),
               onPressed: () {
+                _addSlots();
                 Navigator.of(context).pop();
               },
               child: const Icon(Icons.check, color: Colors.white),

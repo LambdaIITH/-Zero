@@ -317,6 +317,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 28),
                         HomeScreenSchedule(
                           timetable: timetable,
+                          onLectureAdded: (courseCode, courseName, lectures) {
+                            setState(
+                              () {
+                                timetable = timetable!.addCourse(
+                                    courseCode, courseName, lectures);
+                              },
+                            );
+                          },
                         ),
                       ],
                       const SizedBox(height: 20),

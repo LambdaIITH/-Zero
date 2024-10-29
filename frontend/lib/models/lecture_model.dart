@@ -2,7 +2,6 @@ class Lecture {
   final String startTime;
   final String endTime;
   final String day;
-
   final String courseCode;
 
   Lecture(

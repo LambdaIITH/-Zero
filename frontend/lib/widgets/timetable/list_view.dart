@@ -46,12 +46,6 @@ class _ListViewScreenState extends State<ListViewScreen> {
     for (var lecture in lectures) {
       int? targetWeekday = dayToWeekday[lecture.day];
 
-      if (targetWeekday != null) {
-        debugPrint('Weekday number for ${lecture.day}: $targetWeekday');
-      } else {
-        debugPrint('Invalid day: ${lecture.day}');
-      }
-
       int daysToAdd = (targetWeekday! - now.weekday) % 7;
       if (daysToAdd < 0) {
         daysToAdd += 7;
