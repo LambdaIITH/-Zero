@@ -196,7 +196,6 @@ class ApiServices {
 
   // ====================CALENDAR STARTS===================================
 
-
   Future<Timetable?> getTimetable(BuildContext context) async {
     try {
       final response = await dio.get('/courses');
@@ -210,9 +209,9 @@ class ApiServices {
       if (e.response?.statusCode == 401) {
         await logout(context);
       }
-      return null;
+      return Timetable(courses: {}, slots: []);
     } catch (e) {
-      return null;
+      return Timetable(courses: {}, slots: []);
     }
   }
 
