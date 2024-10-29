@@ -10,27 +10,43 @@ import 'package:intl/intl.dart';
 
 class HomeScreenSchedule extends StatefulWidget {
   final Timetable? timetable;
+  final Function(String, String, List<Lecture>)? onLectureAdded;
 
-  const HomeScreenSchedule({super.key, required this.timetable});
+  const HomeScreenSchedule({super.key, required this.timetable, required this.onLectureAdded});
 
   @override
   State<HomeScreenSchedule> createState() => _HomeScreenScheduleState();
 }
 
 class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
-  // function to get the next k upcoming courses for today
-  List<Lecture> getNextCourses(int k) {
-    DateTime now = DateTime.now();
+  // return events for today and true, if there are no events return events for tomorrow and false
+  List<dynamic> getNextCourses(int k) {
+    final todayEvents = getNextCoursesforDate(k, DateTime.now());
 
-    DateTime today = DateTime(now.year, now.month, now.day);
-    String todayDayString = DateFormat('EEEE').format(today);
+    if (todayEvents.isEmpty) {
+      final tomorrowEvents = getNextCoursesforDate(
+        k,
+        DateTime.now().add(
+          Duration(days: 1),
+        ),
+      );
+      return [tomorrowEvents, false];
+    }
+
+    return [todayEvents, true];
+  }
+
+  // function to get the next k upcoming courses for given date
+  List<Lecture> getNextCoursesforDate(int k, DateTime date) {
+    DateTime now = DateTime.now();
+    String dayString = DateFormat('EEEE').format(date);
 
     // find out all courses for today from lecture.day and checking for current day
     // with date manipulation
     // For example. if today is Monday, all those lectures with day as
     // Monday will be returned
     List<Lecture> todayCourses = widget.timetable?.slots.where((lecture) {
-          return lecture.day == todayDayString;
+          return lecture.day == dayString;
         }).toList() ??
         [];
 
@@ -39,13 +55,13 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
       TimeOfDay lectureStartTimeText = TimeOfDay.fromDateTime(
           DateFormat('hh:mm a').parse(lecture.startTime));
       // converting lectureStartTime to today's date and adding the time from startTime and endTime
-      DateTime lectureStartTime = DateTime(now.year, now.month, now.day,
+      DateTime lectureStartTime = DateTime(date.year, date.month, date.day,
           lectureStartTimeText.hour, lectureStartTimeText.minute);
 
       TimeOfDay lectureEndTimeText =
           TimeOfDay.fromDateTime(DateFormat('hh:mm a').parse(lecture.endTime));
       // converting lectureStartTime to today's date and adding the time from startTime and endTime
-      DateTime lectureEndTime = DateTime(now.year, now.month, now.day,
+      DateTime lectureEndTime = DateTime(date.year, date.month, date.day,
           lectureEndTimeText.hour, lectureEndTimeText.minute);
 
       if (!lectureStartTime.isAfter(now)) {
@@ -66,14 +82,16 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
       return upcomingCourses.toList();
     }
 
-    return upcomingCourses.toList();
+    return upcomingCourses.take(k).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     // to show 2 upcoming lectures in the schedule
     int numLectures = 2;
-    final events = getNextCourses(numLectures);
+    final eventsObject = getNextCourses(numLectures);
+    final events = eventsObject[0];
+    bool isEventsForToday = eventsObject[1];
 
     return events.isEmpty
         ? Container()
@@ -83,6 +101,7 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
               CustomPageRoute(
                 child: CalendarScreen(
                   timetable: widget.timetable,
+                  onLectureAdded: widget.onLectureAdded,
                 ),
               ),
             ),
@@ -107,13 +126,31 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
                     alignment: Alignment.topLeft,
                     child: Padding(
                       padding: const EdgeInsets.only(left: 18, top: 15),
-                      child: Text(
-                        'Schedule',
-                        style: GoogleFonts.inter(
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 28,
-                        ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Schedule',
+                            style: GoogleFonts.inter(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 28,
+                            ),
+                          ),
+    
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Text(
+                              '${isEventsForToday ? 'Today' : 'Tomorrow'}',
+                              style: GoogleFonts.inter(
+                                color:
+                                    Theme.of(context).textTheme.bodyMedium?.color,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
