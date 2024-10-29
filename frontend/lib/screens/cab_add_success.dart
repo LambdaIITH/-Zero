@@ -1,31 +1,29 @@
-import 'package:dashbaord/models/user_model.dart';
-import 'package:dashbaord/screens/cab_sharing_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../utils/custom_page_route.dart';
 
 class CabAddSuccess extends StatelessWidget {
-  final UserModel user;
-  final String image;
-  const CabAddSuccess({Key? key, required this.user, required this.image})
-      : super(key: key);
+  // final UserModel user;
+  // final String image;
+  const CabAddSuccess({super.key});
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pushAndRemoveUntil(
-          context,
-          CustomPageRoute(
-            startPos: const Offset(-1, 0),
-            child: CabSharingScreen(
-              user: user,
-              image: image,
-              isMyRide: true,
-            ),
-          ),
-          (route) => route.isFirst,
-        );
+        context.go('/cabsharing/?me=true');
+        // Navigator.pushAndRemoveUntil(
+        //   context,
+        //   CustomPageRoute(
+        //     startPos: const Offset(-1, 0),
+        //     child: CabSharingScreen(
+        //       user: user,
+        //       image: image,
+        //       isMyRide: true,
+        //     ),
+        //   ),
+        //   (route) => route.isFirst,
+        // );
         // Navigator.pushReplacement(
         //   context,
         //   MaterialPageRoute(

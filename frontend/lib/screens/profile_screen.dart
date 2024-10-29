@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dashbaord/services/shared_service.dart';
+import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/models/user_model.dart';
-import 'package:dashbaord/screens/login_screen.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -12,8 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final UserModel user;
-  final String image;
+  final UserModel? user;
+  final String? image;
   final ValueChanged<int> onThemeChanged;
   const ProfileScreen(
       {super.key,
@@ -27,12 +29,106 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final analyticsService = FirebaseAnalyticsService();
+  UserModel? userModel;
+  bool isLoading = true;
+  String image =
+      'https://media.istockphoto.com/id/519078727/photo/male-silhouette-as-avatar-profile-picture.jpg?s=2048x2048&w=is&k=20&c=craUhUZK7FB8wYiGDHF0Az0T9BY1bmRHasCHoQbNLlg=';
+
+  int status = 0;
+  int totalOperation = 2;
+
+  void changeState() {
+    setState(() {
+      status++;
+      if (status >= totalOperation) {
+        isLoading = false;
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     getThemeMode();
+
+    if (widget.user == null && widget.image == null) {
+      getUserData();
+    } else {
+      if (widget.user != null) {
+        userModel = widget.user;
+        changeState();
+      } else {
+        fetchUser();
+      }
+
+      if (widget.image != null) {
+        image = widget.image ?? '';
+        changeState();
+      } else {
+        fetchUserProfile();
+      }
+    }
+
     analyticsService.logScreenView(screenName: "Profile Screen");
+  }
+
+  void fetchUserProfile() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        image = user.photoURL ?? image;
+        changeState();
+      });
+    } else {
+      context.go('/login');
+      setState(() {
+        changeState();
+      });
+    }
+  }
+
+  Future<void> fetchUser() async {
+    final response = await ApiServices().getUserDetails(context);
+    if (response == null) {
+      setState(() {
+        changeState();
+      });
+
+      context.go('/login');
+
+      return;
+    }
+    setState(() {
+      userModel = response;
+      changeState();
+    });
+  }
+
+  getUserData() async {
+    final user = await SharedService().getUserDetails();
+    if (user['name'] == null || user['email'] == null) {
+      await fetchUser();
+      fetchUserProfile();
+    } else if (user['image'] == null) {
+      fetchUserProfile();
+      UserModel userM = UserModel(
+          email: user['email'] ?? 'user@iith.ac.in',
+          name: user['name'] ?? 'User');
+      setState(() {
+        userModel = userM;
+        changeState();
+      });
+    } else {
+      UserModel userM = UserModel(
+          email: user['email'] ?? 'user@iith.ac.in',
+          name: user['name'] ?? 'User');
+      setState(() {
+        userModel = userM;
+        image = user['image'] ?? image;
+        changeState();
+        changeState();
+      });
+    }
   }
 
   int? _mode;
@@ -73,7 +169,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: GoogleFonts.inter(fontSize: 16),
               ),
               onPressed: () {
-                Navigator.of(context).pop();
+                // Navigator.of(context).pop();
+                context.pop();
               },
             ),
             TextButton(
@@ -83,7 +180,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               onPressed: () {
                 analyticsService.logEvent(name: "Logout");
-                Navigator.of(context).pop();
+                // Navigator.of(context).pop();
+                context.pop();
                 logout(context);
               },
             ),
@@ -108,14 +206,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
 
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-            builder: (context) => LoginScreen(
-                  onThemeChanged: widget.onThemeChanged,
-                  timeDilation: 1,
-                )),
-        (Route<dynamic> route) => false,
-      );
+      // Navigator.of(context).pushAndRemoveUntil(
+      //   MaterialPageRoute(
+      //       builder: (context) => LoginScreen(
+      //             onThemeChanged: widget.onThemeChanged,
+      //             timeDilation: 1,
+      //           )),
+      //   (Route<dynamic> route) => false,
+      // );
+      context.go('/login', extra: {
+        'onThemeChanged': widget.onThemeChanged,
+        'timeDilation': 1,
+      });
     }
     await ApiServices().serverLogout();
   }
@@ -143,7 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void updatePhoneNumber(String newPhoneNumber) {
     setState(() {
-      widget.user.phone = newPhoneNumber;
+      userModel?.phone = newPhoneNumber;
       showMessage("Your phone number has been successfully updated");
     });
   }
@@ -152,162 +254,177 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: Text('Profile',
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: textColor,
-            )),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            // color: textColor,
-            size: 30.0,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 40),
-                CircleAvatar(
-                  radius: 80,
-                  // replaces google image with size parameter changed to improve image resolution
-                  backgroundImage: CachedNetworkImageProvider(
-                      widget.image.replaceFirst(RegExp(r'=s\d+'), '=s240')),
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  widget.user.name,
+    return isLoading
+        ? CustomLoadingScreen()
+        : Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            appBar: AppBar(
+              // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              title: Text('Profile',
                   style: GoogleFonts.inter(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
                     color: textColor,
-                  ),
+                  )),
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  // color: textColor,
+                  size: 30.0,
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  widget.user.getRollNumber(),
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    // color: Colors.black45,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ProfileButton(
-                  buttonName: 'Theme',
-                  iconName: Icons.light_mode,
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return ThemeBottomSheet(
-                          changeState: (value) {
-                            setState(() {
-                              _mode = value;
-                            });
-                          },
-                          current: _mode ?? 0,
-                          onThemeChanged: widget.onThemeChanged,
-                        );
-                      },
-                    );
-                  },
-                ),
-                ProfileButton(
-                  buttonName: "Edit Phone Number",
-                  iconName: Icons.edit_rounded,
-                  onPressed: () {
-                    showModalBottomSheet(
-                        isScrollControlled: true,
-                        context: context,
-                        builder: (ctx) => EditPhoneNumber(
-                            user: widget.user,
-                            onUpdate: (newPhoneNumber) {
-                              updatePhoneNumber(newPhoneNumber);
-                            }));
-                  },
-                ),
-                ProfileButton(
-                  buttonName: 'Feedback',
-                  iconName: Icons.feedback_rounded,
-                  onPressed: () {
-                    openURL('https://iith-dashboard.feedbase.app');
-                  },
-                ),
-                ProfileButton(
-                  buttonName: 'Logout',
-                  iconName: Icons.logout_rounded,
-                  onPressed: () {
-                    _showLogoutDialog(context);
-                  },
-                ),
-                const SizedBox(height: 45),
-              ],
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/home');
+                  }
+                  // Navigator.pop(context);
+                },
+              ),
             ),
-          ),
-          Container(
-            alignment: Alignment.bottomCenter,
-            margin: const EdgeInsets.only(bottom: 25),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            body: Stack(
               children: [
-                GestureDetector(
-                  onTap: () async {
-                    await openURL('https://iith.dev');
-                  },
-                  onDoubleTap: () async {
-                    await openURL("https://github.com/LambdaIITH/Dashboard");
-                  },
-                  onLongPress: () async {
-                    await openURL("mailto:support@iith.dev");
-                  },
-                  child: Text(
-                    'Made with 💜 by Lambda',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                FutureBuilder<PackageInfo>(
-                  future: PackageInfo.fromPlatform(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<PackageInfo> snapshot) {
-                    if (snapshot.hasData) {
-                      return Text(
-                        snapshot.data!.version,
+                SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      CircleAvatar(
+                        radius: 80,
+                        // replaces google image with size parameter changed to improve image resolution
+                        backgroundImage: CachedNetworkImageProvider(
+                            image.replaceFirst(RegExp(r'=s\d+'), '=s240')),
+                      ),
+                      const SizedBox(height: 15),
+                      Text(
+                        userModel?.name ?? 'User',
                         style: GoogleFonts.inter(
-                          fontSize: 16,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        userModel == null ? '' : userModel!.getRollNumber(),
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
                           fontWeight: FontWeight.w500,
+                          // color: Colors.black45,
                           color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
-                      );
-                    } else {
-                      return const Text('Debug App');
-                    }
-                  },
+                      ),
+                      const SizedBox(height: 20),
+                      ProfileButton(
+                        buttonName: 'Theme',
+                        iconName: Icons.light_mode,
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return ThemeBottomSheet(
+                                changeState: (value) {
+                                  setState(() {
+                                    _mode = value;
+                                  });
+                                },
+                                current: _mode ?? 0,
+                                onThemeChanged: widget.onThemeChanged,
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      ProfileButton(
+                        buttonName: "Edit Phone Number",
+                        iconName: Icons.edit_rounded,
+                        onPressed: () {
+                          showModalBottomSheet(
+                              isScrollControlled: true,
+                              context: context,
+                              builder: (ctx) => EditPhoneNumber(
+                                  user: userModel ??
+                                      UserModel(
+                                          email: 'roll@iith.ac.in',
+                                          name: 'User'),
+                                  onUpdate: (newPhoneNumber) {
+                                    updatePhoneNumber(newPhoneNumber);
+                                  }));
+                        },
+                      ),
+                      ProfileButton(
+                        buttonName: 'Feedback',
+                        iconName: Icons.feedback_rounded,
+                        onPressed: () {
+                          openURL('https://iith-dashboard.feedbase.app');
+                        },
+                      ),
+                      ProfileButton(
+                        buttonName: 'Logout',
+                        iconName: Icons.logout_rounded,
+                        onPressed: () {
+                          _showLogoutDialog(context);
+                        },
+                      ),
+                      const SizedBox(height: 45),
+                    ],
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.bottomCenter,
+                  margin: const EdgeInsets.only(bottom: 25),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          await openURL('https://iith.dev');
+                        },
+                        onDoubleTap: () async {
+                          await openURL(
+                              "https://github.com/LambdaIITH/Dashboard");
+                        },
+                        onLongPress: () async {
+                          await openURL("mailto:support@iith.dev");
+                        },
+                        child: Text(
+                          'Made with 💜 by Lambda',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      FutureBuilder<PackageInfo>(
+                        future: PackageInfo.fromPlatform(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<PackageInfo> snapshot) {
+                          if (snapshot.hasData) {
+                            return Text(
+                              snapshot.data!.version,
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
+                              ),
+                            );
+                          } else {
+                            return const Text('Debug App');
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
   }
 }
 
@@ -416,7 +533,8 @@ class _EditPhoneNumberState extends State<EditPhoneNumber> {
         .updatePhoneNumber(context, phoneController.text.trim());
     if (res != null) {
       widget.onUpdate(phoneController.text.trim());
-      Navigator.pop(context);
+      // Navigator.pop(context);
+      context.pop();
     } else {
       showMessage("Something went wrong!");
     }

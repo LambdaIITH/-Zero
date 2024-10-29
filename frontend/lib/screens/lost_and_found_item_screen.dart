@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:dashbaord/screens/lost_and_found_screen.dart';
 import 'package:dashbaord/utils/bold_text.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:dashbaord/utils/show_message.dart';
 import 'package:dashbaord/widgets/custom_carousel.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -21,14 +21,11 @@ class LostAndFoundItemScreen extends StatelessWidget {
       required this.currentUserEmail});
   final String id;
   final LostOrFound lostOrFound;
-  final String currentUserEmail;
+  final String? currentUserEmail;
 
   Future<LostAndFoundModel> getItem(BuildContext context) async {
     final data = await ApiServices().getLostAndFoundItem(
-      id: id,
-      lostOrFound: lostOrFound,
-      context: context
-    );
+        id: id, lostOrFound: lostOrFound, context: context);
     debugPrint(data.toString());
     if (data['status'] == 200) {
       debugPrint(data['item']['image_urls'].runtimeType.toString());
@@ -50,7 +47,8 @@ class LostAndFoundItemScreen extends StatelessWidget {
         context: context,
         msg: 'Something went wrong: ${data['error']}',
       );
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
+      // context.pop();
       return LostAndFoundModel(
           userEmail: '',
           userName: '',
@@ -98,7 +96,8 @@ class LostAndFoundItemScreen extends StatelessWidget {
                 Expanded(
                   child: InkWell(
                     onTap: () {
-                      Navigator.pop(context);
+                      // Navigator.pop(context);
+                      context.pop();
                     },
                     child: Container(
                       alignment: Alignment.topCenter,
@@ -174,7 +173,8 @@ class LostAndFoundItemScreen extends StatelessWidget {
                   Expanded(
                     child: InkWell(
                       onTap: () {
-                        Navigator.pop(context);
+                        // Navigator.pop(context);
+                        context.pop();
                       },
                       child: Container(
                         alignment: Alignment.topCenter,
@@ -199,15 +199,19 @@ class LostAndFoundItemScreen extends StatelessWidget {
                     child: InkWell(
                       onTap: () async {
                         await onTap();
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LostAndFoundScreen(
-                              currentUserEmail: currentUserEmail,
-                            ),
-                          ),
-                          (route) => route.isFirst,
-                        );
+                        
+                        context.go('/lnf', extra: {
+                          'currentUserEmail': currentUserEmail,
+                        });
+                        // Navigator.pushAndRemoveUntil(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => LostAndFoundScreen(
+                        //       currentUserEmail: currentUserEmail,
+                        //     ),
+                        //   ),
+                        //   (route) => route.isFirst,
+                        // );
                       },
                       child: Container(
                         alignment: Alignment.topCenter,
@@ -236,10 +240,7 @@ class LostAndFoundItemScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     void deleteItem() async {
       final response = await ApiServices().deleteLostAndFoundItem(
-        id: id,
-        lostOrFound: lostOrFound,
-        context: context
-      );
+          id: id, lostOrFound: lostOrFound, context: context);
 
       if (response['status'] == 200) {
         showMessage(

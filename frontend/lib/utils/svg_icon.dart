@@ -5,7 +5,7 @@ class SvgIcon extends StatelessWidget {
   final String assetName;
   final double? size;
 
-  const SvgIcon(this.assetName, {Key? key, this.size}) : super(key: key);
+  const SvgIcon(this.assetName, {super.key, this.size});
 
   @override
   Widget build(BuildContext context) {

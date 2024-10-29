@@ -1,27 +1,32 @@
 import 'dart:async';
 
 import 'package:dashbaord/models/user_model.dart';
-import 'package:dashbaord/utils/custom_page_route.dart';
+import 'package:dashbaord/services/shared_service.dart';
 import 'package:flutter/material.dart';
-import 'package:dashbaord/screens/cab_add_screen.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:dashbaord/widgets/cab_details.dart';
 import 'package:dashbaord/widgets/cab_search_form.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/models/booking_model.dart';
 
 class CabSharingScreen extends StatefulWidget {
-  final UserModel user;
-  final String image;
+  final UserModel? user;
   final bool isMyRide;
+  final DateTime? startTime;
+  final DateTime? endTime;
+  final String? from;
+  final String? to;
   const CabSharingScreen(
-      {Key? key,
+      {super.key,
       required this.user,
-      required this.image,
-      this.isMyRide = false})
-      : super(key: key);
+      this.isMyRide = false,
+      this.endTime,
+      this.from,
+      this.startTime,
+      this.to});
   @override
   State<CabSharingScreen> createState() => _CabSharingScreenState();
 }
@@ -44,19 +49,74 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
 
   changeLoadingState() {
     state++;
-    if (state >= 2) {
+    if (state >= 3) {
       isLoading = false;
     }
     setState(() {});
   }
 
+  UserModel? userModel;
+
+  Future<void> fetchUser() async {
+    final response = await ApiServices().getUserDetails(context);
+    if (response == null) {
+      context.go('/login');
+      return;
+    }
+    setState(() {
+      userModel = response;
+      changeLoadingState();
+    });
+  }
+
+  getUserData() async {
+    final user = await SharedService().getUserDetails();
+    if (user['name'] == null || user['email'] == null) {
+      await fetchUser();
+    } else {
+      UserModel userM = UserModel(
+          email: user['email'] ?? 'user@iith.ac.in',
+          name: user['name'] ?? 'User');
+
+      setState(() {
+        userModel = userM;
+        changeLoadingState();
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
+    if (widget.startTime != null ||
+        widget.endTime != null ||
+        widget.from != null ||
+        widget.to != null) {
+      updateSearchForm(
+        start: widget.startTime,
+        end: widget.endTime,
+        searchSelectedOption: widget.from,
+        searchSelectedOption2: widget.to,
+      );
+      changeLoadingState();
+    } else {
+      getAllCabs();
+    }
+    // 1 time loading status
+
     isTabOneSelected = !widget.isMyRide;
     analyticsService.logScreenView(screenName: "Cab Share Screen");
-    getAllCabs();
     getUserCabs();
+    // 2 times loading status
+
+    if (widget.user == null) {
+      getUserData();
+    } else {
+      userModel = widget.user;
+      changeLoadingState();
+    }
+    // 3 times loading status
   }
 
   void updateSearchForm({
@@ -262,7 +322,8 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
                             value: sortBySeatsSelected,
                             onChanged: (value) {
                               sortBySeats();
-                              Navigator.pop(context);
+                              // Navigator.pop(context);
+                              context.pop();
                             },
                           ),
                           const Text('Sort by Seats'),
@@ -277,7 +338,8 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
                             value: sortBySeatsDescendingSelected,
                             onChanged: (value) {
                               sortBySeatsDescending();
-                              Navigator.pop(context);
+                              // Navigator.pop(context);
+                              context.pop();
                             },
                           ),
                           const Text('Sort by Seats Desc'),
@@ -292,7 +354,8 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
                             value: sortByEndTimeSelected,
                             onChanged: (value) {
                               sortByEndTime();
-                              Navigator.pop(context);
+                              // Navigator.pop(context);
+                              context.pop();
                             },
                           ),
                           const Text('Sort by End Time'),
@@ -307,7 +370,8 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
                             value: sortByEndTimeDescendingSelected,
                             onChanged: (value) {
                               sortByEndTimeDescending();
-                              Navigator.pop(context);
+                              // Navigator.pop(context);
+                              context.pop();
                             },
                           ),
                           const Text('Sort by End Time Desc'),
@@ -363,7 +427,9 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
                                 );
                               },
                               cab: allBookings[inx],
-                              user: widget.user,
+                              user: userModel ??
+                                  UserModel(
+                                      email: "user@iith.ac.in", name: "User"),
                             )
                           : null,
                     ),
@@ -403,7 +469,8 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
                           );
                         },
                         cab: userBookings[inx],
-                        user: widget.user,
+                        user: userModel ??
+                            UserModel(email: "user@iith.ac.in", name: "User"),
                       ),
                     ),
                   ),
@@ -451,7 +518,12 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
             size: 30.0,
           ),
           onPressed: () {
-            Navigator.pop(context);
+            // Navigator.pop(context);
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
           },
         ),
       ),
@@ -459,16 +531,17 @@ class _CabSharingScreenState extends State<CabSharingScreen> {
           ? Container()
           : FloatingActionButton(
               onPressed: () async {
-                Navigator.push(
-                  context,
-                  CustomPageRoute(
-                    startPos: const Offset(0, 1),
-                    child: CabAddScreen(
-                      user: widget.user,
-                      image: widget.image,
-                    ),
-                  ),
-                );
+                context.push('/cabsharing/add');
+                // Navigator.push(
+                //   context,
+                //   CustomPageRoute(
+                //     startPos: const Offset(0, 1),
+                //     child: CabAddScreen(
+                //       user: widget.user,
+                //       image: widget.image,
+                //     ),
+                //   ),
+                // );
               },
               backgroundColor: const Color.fromARGB(204, 254, 115, 76),
               child: const Icon(

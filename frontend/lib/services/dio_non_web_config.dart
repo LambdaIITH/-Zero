@@ -4,4 +4,5 @@ class DioConfig {
   Dio getClient() {
     return Dio();
   }
+
 }

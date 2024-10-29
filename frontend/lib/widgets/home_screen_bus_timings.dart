@@ -1,11 +1,10 @@
 import 'dart:async';
 
 import 'package:dashbaord/extensions.dart';
-import 'package:dashbaord/utils/custom_page_route.dart';
 import 'package:flutter/material.dart';
-import 'package:dashbaord/screens/bus_timings_screen.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dashbaord/utils/normal_text.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreenBusTimings extends StatefulWidget {
@@ -134,10 +133,12 @@ class _HomeScreenBusTimingsState extends State<HomeScreenBusTimings> {
         if (widget.busSchedule == null) {
           return;
         }
-        Navigator.push(
-            context,
-            CustomPageRoute(
-                child: BusTimingsScreen(busSchedule: widget.busSchedule!)));
+        context.push('/bus', extra: {'busSchedule': widget.busSchedule!});
+
+        // Navigator.push(
+        //     context,
+        //     CustomPageRoute(
+        //         child: BusTimingsScreen(busSchedule: widget.busSchedule!)));
       },
       child: Container(
         decoration: BoxDecoration(
@@ -193,10 +194,13 @@ class _HomeScreenBusTimingsState extends State<HomeScreenBusTimings> {
     }
 
     return InkWell(
-      onTap: () => Navigator.push(
-          context,
-          CustomPageRoute(
-              child: BusTimingsScreen(busSchedule: widget.busSchedule!))),
+      onTap: () =>
+          context.push('/bus', extra: {'busSchedule': widget.busSchedule!}),
+
+      // Navigator.push(
+      //     context,
+      //     CustomPageRoute(
+      //         child: BusTimingsScreen(busSchedule: widget.busSchedule!))),
       child: Container(
         decoration: BoxDecoration(
           color: context.customColors.customContainerColor,

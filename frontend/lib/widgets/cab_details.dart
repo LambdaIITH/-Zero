@@ -1,6 +1,7 @@
 import 'package:dashbaord/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/services/api_service.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import "package:intl/intl.dart";
 import 'package:dashbaord/models/booking_model.dart';
@@ -131,7 +132,8 @@ class _CabCardState extends State<CabCard> {
           actions: <Widget>[
             InkWell(
               onTap: () {
-                Navigator.pop(context);
+                // Navigator.pop(context);
+                context.pop();
               },
               child: Container(
                 alignment: Alignment.topCenter,
@@ -200,7 +202,8 @@ class _CabCardState extends State<CabCard> {
                         color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10)),
                         borderSide: BorderSide(
                           color:
                               Theme.of(context).textTheme.bodyMedium?.color ??
@@ -209,7 +212,8 @@ class _CabCardState extends State<CabCard> {
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10)),
                         borderSide: BorderSide(
                           color:
                               Theme.of(context).textTheme.bodyMedium?.color ??
@@ -233,7 +237,8 @@ class _CabCardState extends State<CabCard> {
                       TextButton(
                         onPressed: () {
                           joinCab(context);
-                          Navigator.pop(context);
+                          // Navigator.pop(context);
+                          context.pop();
                           widget.onRefresh();
                         },
                         style: TextButton.styleFrom(
@@ -301,9 +306,10 @@ class _CabCardState extends State<CabCard> {
                 Expanded(
                   child: InkWell(
                     onTap: () async {
-                      final res =
-                          await apiServices.rejectRequest(bookingId, email, context);
-                      Navigator.pop(context);
+                      final res = await apiServices.rejectRequest(
+                          bookingId, email, context);
+                      // Navigator.pop(context);
+                      context.pop();
                       if (res['status'] == 200) {
                         showMessage("Successfully request rejected");
                       } else {
@@ -334,9 +340,10 @@ class _CabCardState extends State<CabCard> {
                 Expanded(
                   child: InkWell(
                     onTap: () async {
-                      final res =
-                          await apiServices.acceptRequest(bookingId, email, context);
-                      Navigator.pop(context);
+                      final res = await apiServices.acceptRequest(
+                          bookingId, email, context);
+                      // Navigator.pop(context);
+                      context.pop();
                       if (res['status'] == 200) {
                         showMessage("Successfully request accepted");
                       } else {
@@ -390,7 +397,8 @@ class _CabCardState extends State<CabCard> {
                   Expanded(
                     child: InkWell(
                       onTap: () {
-                        Navigator.pop(context);
+                        // Navigator.pop(context);
+                        context.pop();
                       },
                       child: Container(
                         alignment: Alignment.topCenter,
@@ -414,7 +422,8 @@ class _CabCardState extends State<CabCard> {
                   Expanded(
                     child: InkWell(
                       onTap: () async {
-                        Navigator.pop(context);
+                        // Navigator.pop(context);
+                        context.pop();
                         await onTap();
                         widget.onRefresh();
                       },
@@ -628,14 +637,20 @@ class _CabCardState extends State<CabCard> {
                               padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10.0),
-                                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[600] : Colors.grey[200],
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.grey[600]
+                                    : Colors.grey[200],
                               ),
                               child: Text(
                                 "Note: $note",
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.color,
                                 ),
                               ),
                             ),

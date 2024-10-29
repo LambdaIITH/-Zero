@@ -2,16 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:dashbaord/screens/home_screen.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class CustomGoogleButton extends StatefulWidget {
   final ValueChanged<int> onThemeChanged;
-  const CustomGoogleButton({super.key, required this.onThemeChanged});
+  final String? code;
+
+  const CustomGoogleButton(
+      {super.key, required this.onThemeChanged, this.code});
 
   @override
   State<CustomGoogleButton> createState() => _CustomGoogleButtonState();
@@ -77,12 +80,10 @@ class _CustomGoogleButtonState extends State<CustomGoogleButton> {
         await logout();
         showSnackBar('Error!');
       } else {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            isGuest: false,
-            onThemeChanged: widget.onThemeChanged,
-          ),
-        ));
+        context.go('/home', extra: {
+          'isGuest': false,
+          'code': widget.code,
+        });
       }
     } catch (error) {
       showSnackBar('Failed to sign in with Google.');
@@ -186,14 +187,10 @@ class _CustomGoogleButtonState extends State<CustomGoogleButton> {
                 Navigator.of(context).popUntil(
                     (route) => route.isFirst); //POP THE LOADING SCREEN
               } else {
-                Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        isGuest: false,
-                        onThemeChanged: widget.onThemeChanged,
-                      ),
-                    ),
-                    (Route<dynamic> route) => false);
+                context.go('/home', extra: {
+                  'isGuest': false,
+                  'code': widget.code,
+                });
               }
             } else {
               await logout();

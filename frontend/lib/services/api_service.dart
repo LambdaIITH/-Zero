@@ -17,6 +17,7 @@ import 'package:dashbaord/models/user_model.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -57,11 +58,12 @@ class ApiServices {
   Future<void> googleLogout(BuildContext context) async {
     await _googleSignIn.signOut();
     await FirebaseAuth.instance.signOut();
-    Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-            builder: (ctx) => LoginScreen(onThemeChanged: (int x) {})),
-        (route) => false);
+    // Navigator.pushAndRemoveUntil(
+    //     context,
+    //     MaterialPageRoute(
+    //         builder: (ctx) => LoginScreen(onThemeChanged: (int x) {})),
+    //     (route) => false);
+    context.go('/login', extra: {'onThemeChanged': (int x) {}});
   }
 
   void showError(BuildContext context) {

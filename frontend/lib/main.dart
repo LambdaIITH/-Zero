@@ -1,3 +1,4 @@
+import 'package:dashbaord/router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -5,10 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:dashbaord/constants/app_theme.dart';
 import 'package:dashbaord/firebase_options.dart';
-import 'package:dashbaord/screens/home_screen.dart';
-import 'package:dashbaord/screens/login_screen.dart';
-import 'package:dashbaord/screens/splash_screen.dart';
-import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,7 +22,7 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -59,8 +56,6 @@ class _MyAppState extends State<MyApp> {
     });
     changeState();
   }
-
-  final FirebaseAnalyticsService _analyticsService = FirebaseAnalyticsService();
 
   @override
   void initState() {
@@ -104,8 +99,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
+    return MaterialApp.router(
+      routerConfig: AppRouter(onThemeChanged: handleThemeChange).router,
       title: 'Dashboard',
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
@@ -115,23 +110,23 @@ class _MyAppState extends State<MyApp> {
           : _mode == 1
               ? ThemeMode.light
               : ThemeMode.dark,
-      navigatorObservers: [_analyticsService.getAnalyticsObserver()],
-      home: isLoading
-          ? SplashScreen(nextPage: Container())
-          : isLoggedIn
-              ? SplashScreen(
-                  nextPage: HomeScreen(
-                    onThemeChanged: handleThemeChange,
-                    isGuest: false,
-                  ),
-                  isLoading: false,
-                )
-              : SplashScreen(
-                  isLoading: false,
-                  nextPage: LoginScreenWrapper(
-                    onThemeChanged: handleThemeChange,
-                    timeDilationFactor: 4.0,
-                  )),
+      // navigatorObservers: [_analyticsService.getAnalyticsObserver()],
+      // home: isLoading
+      //     ? SplashScreen(nextPage: Container())
+      //     : isLoggedIn
+      //         ? SplashScreen(
+      //             nextPage: HomeScreen(
+      //               onThemeChanged: handleThemeChange,
+      //               isGuest: false,
+      //             ),
+      //             isLoading: false,
+      //           )
+      //         : SplashScreen(
+      //             isLoading: false,
+      //             nextPage: LoginScreenWrapper(
+      //               onThemeChanged: handleThemeChange,
+      //               timeDilationFactor: 4.0,
+      //             )),
     );
   }
 }

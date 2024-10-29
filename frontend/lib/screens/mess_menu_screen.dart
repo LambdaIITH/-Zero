@@ -1,50 +1,115 @@
+import 'package:dashbaord/services/api_service.dart';
+import 'package:dashbaord/services/shared_service.dart';
+import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/widgets/mess_menu_widget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-class MessMenuScreen extends StatelessWidget {
-  final MessMenuModel messMenu;
+class MessMenuScreen extends StatefulWidget {
+  final MessMenuModel? messMenu;
   const MessMenuScreen({
     super.key,
     required this.messMenu,
   });
 
   @override
+  State<MessMenuScreen> createState() => _MessMenuScreenState();
+}
+
+class _MessMenuScreenState extends State<MessMenuScreen> {
+  MessMenuModel? messMenu;
+  bool isLoading = true;
+
+  void showError({String? msg}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg ?? 'Please login to use this feature'),
+        duration: const Duration(milliseconds: 1500),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void fetchMessMenu() async {
+    final response = await ApiServices().getMessMenu(context);
+    if (response == null) {
+      showError(msg: "Server Refresh Failed...");
+      final res = await SharedService().getMessMenu();
+      if (res == null) {
+        context.go('/');
+        return;
+      }
+      setState(() {
+        messMenu = res;
+        isLoading = false;
+      });
+
+      return;
+    }
+    setState(() {
+      messMenu = response;
+      isLoading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.messMenu == null) {
+      fetchMessMenu();
+    } else {
+      messMenu = widget.messMenu;
+      isLoading = false;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Mess Menu',
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: textColor,
-            )),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            // color: Colors.black,
-            size: 30.0,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SafeArea(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-              child: SingleChildScrollView(
-                  child: MessMenuPage(
-            messMenu: messMenu,
-          ))),
-        ]),
-      ),
-    );
+    return isLoading
+        ? CustomLoadingScreen()
+        : Scaffold(
+            appBar: AppBar(
+              title: Text('Mess Menu',
+                  style: GoogleFonts.inter(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                  )),
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  // color: Colors.black,
+                  size: 30.0,
+                ),
+                onPressed: () {
+                  // Navigator.pop(context);
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/');
+                  }
+                },
+              ),
+            ),
+            body: SafeArea(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                        child: SingleChildScrollView(
+                            child: MessMenuPage(
+                      messMenu: messMenu!,
+                    ))),
+                  ]),
+            ),
+          );
   }
 }
 
@@ -95,8 +160,7 @@ class _MessMenuPageState extends State<MessMenuPage> {
   }
 
   bool isWeekend() {
-    return whichDay == 'Sunday' ||
-        whichDay == 'Saturday';
+    return whichDay == 'Sunday' || whichDay == 'Saturday';
   }
 
   @override
@@ -155,7 +219,7 @@ class _MessMenuPageState extends State<MessMenuPage> {
         Column(
           children: [
             const SizedBox(
-              height: 40.0,
+              height: 8.0,
             ),
             if (meals != null) ...[
               ShowMessMenu(

@@ -1,5 +1,4 @@
-import 'package:dashbaord/screens/lost_and_found_add_item_screen.dart';
-import 'package:dashbaord/utils/custom_page_route.dart';
+import 'package:dashbaord/models/user_model.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/models/lost_and_found_model.dart';
@@ -7,10 +6,11 @@ import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/utils/bold_text.dart';
 import 'package:dashbaord/widgets/lost_found_item.dart';
 import 'package:dashbaord/services/api_service.dart';
+import 'package:go_router/go_router.dart';
 
 class LostAndFoundScreen extends StatefulWidget {
   const LostAndFoundScreen({super.key, required this.currentUserEmail});
-  final String currentUserEmail;
+  final String? currentUserEmail;
 
   @override
   State<LostAndFoundScreen> createState() => _LostAndFoundScreenState();
@@ -40,6 +40,21 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
     getItems();
   }
 
+  bool isLoading = true;
+  late UserModel user;
+
+  Future<void> fetchUser() async {
+    final response = await ApiServices().getUserDetails(context);
+    if (response == null) {
+      context.go('/login');
+      return;
+    }
+    setState(() {
+      user = response;
+      isLoading = false;
+    });
+  }
+
   Future<List<Widget>> getItems() async {
     final Map<String, dynamic> data;
     if (_search.isEmpty) {
@@ -58,7 +73,7 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
       final items = data['items'] as List<dynamic>;
       finalItems.addAll(items.map((item) {
         return LostFoundItem(
-          currentUserEmail: widget.currentUserEmail,
+          currentUserEmail: user.email,
           item: LostAndFoundModel.fromJson(item),
         ) as Widget;
       }));
@@ -73,6 +88,12 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
     analyticsService.logScreenView(screenName: "Lost And Found Screen");
     _searchController = TextEditingController();
     super.initState();
+    if (widget.currentUserEmail != null) {
+      user = UserModel(email: widget.currentUserEmail!, name: 'User');
+      isLoading = false;
+    } else {
+      fetchUser();
+    }
   }
 
   @override
@@ -117,182 +138,193 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: const Color.fromARGB(204, 254, 115, 76),
-          child: const Icon(
-            Icons.add,
-            size: 30.0,
-          ),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Alert'),
-                  content: const Text(
-                    'Please delete the item once everything is sorted. If not, it will be removed automatically after 28 days.',
-                  ),
-                  actions: [
-                    SizedBox(
-                      width: 100,
-                      height: 40,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pop();
-                        },
-                        child: const Text('Cancel', 
-                        style: TextStyle(color: Colors.red),),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 100,
-                      height: 40,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                            context,
-                            CustomPageRoute(
-                              startPos: const Offset(0, 1),
-                              child: LostAndFoundAddItemScreen(
-                                currentUserEmail: widget.currentUserEmail,
+    return isLoading
+        ? CustomLoadingScreen()
+        : WillPopScope(
+            onWillPop: _onWillPop,
+            child: Scaffold(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              floatingActionButton: FloatingActionButton(
+                backgroundColor: const Color.fromARGB(204, 254, 115, 76),
+                child: const Icon(
+                  Icons.add,
+                  size: 30.0,
+                ),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Alert'),
+                        content: const Text(
+                          'Please delete the item once everything is sorted. If not, it will be removed automatically after 28 days.',
+                        ),
+                        actions: [
+                          SizedBox(
+                            width: 100,
+                            height: 40,
+                            child: TextButton(
+                              onPressed: () {
+                                // Navigator.of(context)
+                                //     .pop();
+                                context.pop();
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(color: Colors.red),
                               ),
                             ),
-                          );
-                        },
-                        style: TextButton.styleFrom(
-                          backgroundColor:
-                              Colors.green, 
-                        ),
-                        child: const Text(
-                          'Agree',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
-        appBar: AppBar(
-          title: BoldText(
-            text: 'Lost and Found',
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
-            size: 28,
-          ),
-          actions: [
-            PopupMenuButton<int>(
-              onSelected: (value) {
-                if (value == 1) {
-                  getOnlyLostItems();
-                } else if (value == 2) {
-                  getOnlyFoundItems();
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 1,
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: onlyLost,
-                        onChanged: (value) {
-                          Navigator.pop(context);
-                          getOnlyLostItems();
-                        },
-                      ),
-                      const Text('Only Lost Items'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 2,
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: onlyFound,
-                        onChanged: (value) {
-                          Navigator.pop(context);
-                          getOnlyFoundItems();
-                        },
-                      ),
-                      const Text('Only Found Items'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        body: RefreshIndicator(
-          onRefresh: () {
-            return Future.delayed(
-              const Duration(seconds: 1),
-              () {
-                getItems();
-              },
-            );
-          },
-          child: FutureBuilder(
-            future: getItems(),
-            builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.done:
-                  final items = snapshot.data!;
-                  return Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SearchBar(
-                          hintText: 'Search...',
-                          controller: _searchController,
-                          onSubmitted: (value) {
-                            setState(() {
-                              _search = _searchController.text;
-                            });
-                          },
-                          trailing: [
-                            IconButton(
+                          ),
+                          SizedBox(
+                            width: 100,
+                            height: 40,
+                            child: TextButton(
                               onPressed: () {
-                                setState(() {
-                                  _search = _searchController.text;
+                                // Navigator.of(context).pop();
+                                // Navigator.push(
+                                //   context,
+                                //   CustomPageRoute(
+                                //     startPos: const Offset(0, 1),
+                                //     child: LostAndFoundAddItemScreen(
+                                //       currentUserEmail: widget.currentUserEmail,
+                                //     ),
+                                //   ),
+                                // );
+                                context.pop();
+                                context.push('/lnf/add', extra: {
+                                  'currentUserEmail': user.email,
                                 });
                               },
-                              icon: const Icon(Icons.search),
-                            )
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                              child: const Text(
+                                'Agree',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+              appBar: AppBar(
+                title: BoldText(
+                  text: 'Lost and Found',
+                  color: Theme.of(context).textTheme.bodyLarge?.color ??
+                      Colors.black,
+                  size: 28,
+                ),
+                actions: [
+                  PopupMenuButton<int>(
+                    onSelected: (value) {
+                      if (value == 1) {
+                        getOnlyLostItems();
+                      } else if (value == 2) {
+                        getOnlyFoundItems();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 1,
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: onlyLost,
+                              onChanged: (value) {
+                                // Navigator.pop(context);
+                                context.pop();
+                                getOnlyLostItems();
+                              },
+                            ),
+                            const Text('Only Lost Items'),
                           ],
                         ),
-                        const SizedBox(
-                          height: 20,
+                      ),
+                      PopupMenuItem(
+                        value: 2,
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: onlyFound,
+                              onChanged: (value) {
+                                // Navigator.pop(context);
+                                context.pop();
+                                getOnlyFoundItems();
+                              },
+                            ),
+                            const Text('Only Found Items'),
+                          ],
                         ),
-                        Expanded(
-                          child: GridView.count(
-                            shrinkWrap: true,
-                            crossAxisCount: 2,
-                            childAspectRatio: getAspectRatio(context),
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            children: items,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              body: RefreshIndicator(
+                onRefresh: () {
+                  return Future.delayed(
+                    const Duration(seconds: 1),
+                    () {
+                      getItems();
+                    },
                   );
-                default:
-                  return const Center(child: CustomLoadingScreen());
-              }
-            },
-          ),
-        ),
-      ),
-    );
+                },
+                child: FutureBuilder(
+                  future: getItems(),
+                  builder: (context, snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.done:
+                        final items = snapshot.data!;
+                        return Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SearchBar(
+                                hintText: 'Search...',
+                                controller: _searchController,
+                                onSubmitted: (value) {
+                                  setState(() {
+                                    _search = _searchController.text;
+                                  });
+                                },
+                                trailing: [
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _search = _searchController.text;
+                                      });
+                                    },
+                                    icon: const Icon(Icons.search),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Expanded(
+                                child: GridView.count(
+                                  shrinkWrap: true,
+                                  crossAxisCount: 2,
+                                  childAspectRatio: getAspectRatio(context),
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  children: items,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      default:
+                        return const Center(child: CustomLoadingScreen());
+                    }
+                  },
+                ),
+              ),
+            ),
+          );
   }
 }

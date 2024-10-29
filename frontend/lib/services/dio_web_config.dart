@@ -1,8 +1,16 @@
-import 'package:dio/browser.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/browser.dart';
 
 class DioConfig {
   Dio getClient() {
-    return Dio()..httpClientAdapter = BrowserHttpClientAdapter(withCredentials: true);
+    Dio dio = Dio();
+
+    // Assign the BrowserHttpClientAdapter
+    final adapter = HttpClientAdapter() as BrowserHttpClientAdapter;
+    adapter.withCredentials = true;
+    dio.httpClientAdapter = adapter;
+
+    return dio;
   }
+
 }
