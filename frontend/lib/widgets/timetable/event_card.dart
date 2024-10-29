@@ -58,7 +58,7 @@ class EventCard extends StatelessWidget {
             Text(
               time,
               style: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
+                color: Theme.of(context).textTheme.titleSmall?.color,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -67,7 +67,7 @@ class EventCard extends StatelessWidget {
             Text(
               description,
               style: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
+                color: Theme.of(context).textTheme.titleSmall?.color,
                 fontSize: 15,
               ),
             ),

@@ -241,40 +241,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildFABs() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 48,
-          height: 48,
-          child: FloatingActionButton(
-            onPressed: () {
-              _shareSchedule();
-            },
-            backgroundColor: Colors.red,
-            child: Icon(
-              Icons.ios_share,
-              color: Colors.white,
-            ),
-          ),
+    return SizedBox(
+      width: 64,
+      height: 64,
+      child: FloatingActionButton(
+        onPressed: () {
+          _showAddEventBottomSheet(context);
+        },
+        backgroundColor: Colors.red,
+        child: Icon(
+          CupertinoIcons.add,
+          color: Colors.white,
+          size: 36,
         ),
-        SizedBox(height: 12),
-        SizedBox(
-          width: 64,
-          height: 64,
-          child: FloatingActionButton(
-            onPressed: () {
-              _showAddEventBottomSheet(context);
-            },
-            backgroundColor: Colors.red,
-            child: Icon(
-              CupertinoIcons.add,
-              color: Colors.white,
-              size: 36,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

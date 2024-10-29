@@ -119,6 +119,26 @@ class _ListViewScreenState extends State<ListViewScreen> {
       }
     }
 
+    String getFormattedDate(String dateKey) {
+      final DateTime date = DateTime.parse(dateKey);
+      final DateTime now = DateTime.now();
+
+      final int difference = DateTime(date.year, date.month, date.day)
+          .difference(DateTime(now.year, now.month, now.day))
+          .inDays;
+
+      switch (difference) {
+        case 0:
+          return "Today";
+        case 1:
+          return "Tomorrow";
+        case -1:
+          return "Yesterday";
+        default:
+          return DateFormat('E, MMM d, yyyy').format(date);
+      }
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -129,37 +149,33 @@ class _ListViewScreenState extends State<ListViewScreen> {
               final dateKey = groupedEvents.keys.elementAt(index);
               final eventList = groupedEvents[dateKey]!;
 
-              // Formatting the date
-              final formattedDate =
-                  DateFormat('E, MMM d, yyyy').format(DateTime.parse(dateKey));
-
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(100.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color.fromRGBO(
-                                51, 51, 51, 0.10), // Shadow color
-                            blurRadius: 6,
-                            offset: const Offset(0, 4),
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(left: 8.0, bottom: 12.0, top: 12),
+                    child: Row(
+                      children: [
+                        Text(
+                          getFormattedDate(dateKey),
+                          style: TextStyle(
+                            color:
+                                Theme.of(context).textTheme.titleSmall?.color,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 6.0, horizontal: 12.0),
-                      child: Text(
-                        formattedDate,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
                         ),
-                      ),
+                        Expanded(
+                          child: Divider(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withOpacity(0.3), // Soft divider color
+                            thickness: 0.8,
+                            indent: 8,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   ...eventList.map((event) {
