@@ -1,5 +1,6 @@
 import 'package:dashbaord/models/lecture_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
+import 'package:dashbaord/widgets/timetable/manage_lectures_sheet.dart';
 import 'package:flutter/material.dart';
 
 class ManageCoursesBottomSheet extends StatefulWidget {
@@ -19,6 +20,34 @@ class ManageCoursesBottomSheet extends StatefulWidget {
 
 class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
   late Timetable timetable;
+
+  void _showManageLecturesBottomSheet(
+      BuildContext context, String courseCode, String courseName) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ManageLecturesBottomSheet(
+            courseCode: courseCode,
+            courseName: courseName,
+            courseSlots: timetable.getSlotsForCourse(courseCode),
+            onLectureEdited: (courseCode, courseName, lecturelist) {
+              // Step 1: Remove all slots associated with the given courseCode
+              timetable.slots
+                  .removeWhere((slot) => slot.courseCode == courseCode);
+
+              // Step 2: Add the provided lecture list to the slots list
+              timetable.slots.addAll(lecturelist);
+
+              // Step 3: Update the course name in the courses map
+              timetable.courses[courseCode] = courseName;
+
+              // Step 4: Notify the framework of state changes
+              setState(() {});
+            });
+      },
+      isScrollControlled: true,
+    );
+  }
 
   @override
   void initState() {
@@ -97,8 +126,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                       itemCount: timetable.courses.length + 1,
                       itemBuilder: (context, index) {
                         if (index == timetable.courses.length) {
-                          return SizedBox(
-                              height: 35);
+                          return SizedBox(height: 35);
                         }
                         final courseCode =
                             timetable.courses.keys.elementAt(index);
@@ -127,6 +155,8 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                               ),
                               title: Text(
                                 courseName ?? '',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -147,12 +177,24 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                                       ?.color,
                                 ),
                               ),
-                              trailing: IconButton(
-                                icon:
-                                    Icon(Icons.delete, color: Colors.redAccent),
-                                onPressed: () {
-                                  _removeCourse(courseCode);
-                                },
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () {
+                                      _showManageLecturesBottomSheet(context,
+                                          courseCode, courseName ?? '');
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete,
+                                        color: Colors.redAccent),
+                                    onPressed: () {
+                                      _removeCourse(courseCode);
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
                           ),

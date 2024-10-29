@@ -16,6 +16,13 @@ class Timetable {
     return todayCourses;
   }
 
+  List<Lecture> getSlotsForCourse(String courseCode) {
+    List<Lecture> courseSlots =
+        slots.where((lecture) => lecture.courseCode == courseCode).toList();
+
+    return courseSlots;
+  }
+
   factory Timetable.fromJson(Map<String, dynamic> json) {
     var courseMap =
         (json['courses'] as Map<String, dynamic>).map<String, String>(
