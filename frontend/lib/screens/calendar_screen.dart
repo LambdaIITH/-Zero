@@ -259,7 +259,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _shareSchedule() {
-    String eventList = _events.join('\n');
-    Share.share('Here is my schedule: \n$eventList');
+    // Convert the courses and their details to a string
+    final courseDetails = timetable!.courses.entries.map((entry) {
+      final code = entry.key;
+      final name = entry.value;
+      return '$code: $name';
+    }).join('\n');
+
+    String shareableLink =
+        'https://dashboard.iith.dev/share/timetable/RANDOM_CODE';
+
+    String shareMessage = '''
+      I have registered for these courses:
+$courseDetails
+
+Click the link to add these courses to your timetable:
+$shareableLink
+    ''';
+
+    Share.share(shareMessage);
   }
 }
