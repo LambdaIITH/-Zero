@@ -108,25 +108,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchTimetable() async {
-    final response = await ApiServices().getTimetable(context);
-    if (response == null) {
-      showError(
-          msg: "Timetable Fetch Failed. Refreshing from local storage...");
+    Timetable? localTimetable = await SharedService().getTimetable();
 
-      final res = await SharedService().getTimetable();
-
+    if (localTimetable == null) {
+      debugPrint("Timetable not found in local storage");
+      final response = await ApiServices().getTimetable(context);
+      if (response == null) {
+        debugPrint("Timetable API Response $response");
+        showError(msg: "Timetable not found. Please add courses.");
+        setState(() {
+          timetable = Timetable(courses: {}, slots: []);
+          changeState();
+        });
+        return;
+      }
+      debugPrint("$response");
       setState(() {
-        timetable = res;
+        timetable = response;
+        changeState();
+      });
+
+      await SharedService().saveTimetable(response);
+      return;
+    } else {
+      debugPrint("Timetable fetched from local storage");
+      debugPrint(localTimetable.toJson().toString());
+      setState(() {
+        timetable = localTimetable;
         changeState();
       });
       return;
     }
-    setState(() {
-      timetable = response;
-      changeState();
-    });
-
-    await SharedService().saveTimetable(response);
   }
 
   Future<void> fetchUser() async {
@@ -504,13 +516,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               );
                             },
-                            onLectureAdded: (courseCode, courseName, lectures) {
+                            onLectureAdded:
+                                (courseCode, courseName, lectures) async {
                               setState(
                                 () {
                                   timetable = timetable!.addCourse(
                                       courseCode, courseName, lectures);
                                 },
                               );
+                              if (timetable != null) {
+                                await SharedService().saveTimetable(timetable!);
+                                final res = await ApiServices()
+                                    .postTimetable(timetable!);
+                                if (res != 200) {
+                                  showError(msg: "Failed to save timetable.");
+                                }
+                              }
                             },
                           ),
                           const SizedBox(height: 20),

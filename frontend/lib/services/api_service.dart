@@ -200,23 +200,38 @@ class ApiServices {
 
   Future<Timetable?> getTimetable(BuildContext context) async {
     try {
-      final response = await dio.get('/courses');
+      final response = await dio.get('/timetable/courses');
 
       if (response.statusCode == 200) {
+        debugPrint("COURSES RESPONSE ${response.data}");
         return Timetable.fromJson(response.data);
       } else {
         throw Exception('Failed to load timetable');
       }
     } on DioException catch (e) {
+      debugPrint("API EXCEPTION $e");
       if (e.response?.statusCode == 401) {
         await logout(context);
       }
-      return Timetable(courses: {}, slots: []);
+      return null;
     } catch (e) {
-      return Timetable(courses: {}, slots: []);
+      debugPrint("API ERROR $e");
+      return null;
     }
   }
 
+  Future<Map<String, dynamic>> postTimetable(Timetable timetable) async {
+    try {
+      final response = await dio.post('/timetable/', data: timetable.toJson());
+      return {'status': response.statusCode};
+    } on DioException catch (e) {
+      debugPrint("Post edit timetable failed: $e");
+      return {
+        'error': 'Post edit timetable failed',
+        'status': e.response?.statusCode
+      };
+    }
+  }
   // ====================CALENDAR ENDS===================================
 
   // ====================CAB SHARING STARTS===================================
