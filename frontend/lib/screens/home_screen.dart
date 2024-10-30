@@ -114,7 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint("Timetable not found in local storage");
       final response = await ApiServices().getTimetable(context);
       if (response == null) {
-        debugPrint("Timetable API Response $response");
         showError(msg: "Timetable not found. Please add courses.");
         setState(() {
           timetable = Timetable(courses: {}, slots: []);
@@ -132,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     } else {
       debugPrint("Timetable fetched from local storage");
-      debugPrint(localTimetable.toJson().toString());
       setState(() {
         timetable = localTimetable;
         changeState();

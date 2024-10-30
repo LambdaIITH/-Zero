@@ -26,7 +26,12 @@ class Timetable {
   factory Timetable.fromJson(Map<String, dynamic> json) {
     var courseMap =
         (json['courses'] as Map<String, dynamic>).map<String, String>(
-      (key, value) => MapEntry(key, value['title']),
+      (key, value) {
+        if (value is Map<String, dynamic> && value.containsKey('title')) {
+          return MapEntry(key, value['title'].toString());
+        }
+        return MapEntry(key, value.toString());
+      },
     );
 
     List<Lecture> slotList = (json['slots'] as List).map((slotJson) {
