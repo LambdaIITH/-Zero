@@ -64,6 +64,7 @@ dependencies:
   text_scroll: ^0.2.0
   home_widget: ^0.7.0
   calendar_view: ^1.2.0
+  date_picker_timeline: ^1.2.6
   share_plus: ^10.1.1
   paged_vertical_calendar: ^1.1.9
   collection: ^1.18.0
