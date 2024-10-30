@@ -1,5 +1,7 @@
 import 'package:dashbaord/models/lecture_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
+import 'package:dashbaord/services/api_service.dart';
+import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/widgets/timetable/add_lectures_sheet.dart';
 import 'package:dashbaord/widgets/timetable/day_view.dart';
 import 'package:dashbaord/widgets/timetable/list_view.dart';
@@ -32,8 +34,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
   String selectedViewType = "List";
   List<String> viewTypeList = ["List", "Day", "Week", "Month"];
   Timetable? timetable;
-
+  DateTime? initialDate = DateTime.now();
   final List<CalendarEventData> _events = [];
+
+  void showError({String? msg}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg ?? 'Please login to use this feature'),
+        duration: const Duration(milliseconds: 1500),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -68,8 +81,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           actions: [
             PopupMenuButton<String>(
-              onSelected: (value) {
+              onSelected: (value) async {
                 if (value == "refresh") {
+                  final response = await ApiServices().getTimetable(context);
+                  if (response == null) {
+                    showError(msg: "Failed to fetch timetable");
+                    return;
+                  }
+                  setState(() {
+                    timetable = response;
+                  });
+                  SharedService().saveTimetable(response);
                 } else if (value == "manageCourses") {
                   _showManageCoursesBottomSheet(context);
                 } else if (value == "shareCode") {
@@ -181,9 +203,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         );
       case "Day":
         return DayViewScreen(
-          context: context,
-          timetable: timetable,
-        );
+            context: context, timetable: timetable, initialDate: initialDate);
       case "Week":
         return WeekViewScreen(
           context: context,
@@ -193,6 +213,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return MonthViewScreen(
           context: context,
           timetable: timetable,
+          onDayPressed: (date) {
+            setState(() {
+              selectedViewType = "Day";
+              initialDate = date;
+            });
+          },
         );
       default:
         return DayViewScreen(
