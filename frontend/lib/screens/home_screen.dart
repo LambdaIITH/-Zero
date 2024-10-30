@@ -371,100 +371,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         // ),
         key: _scaffoldKey,
-        // body: isLoading
-        //     ? const CustomLoadingScreen()
-        //     : SafeArea(
-        //         child: Padding(
-        //           padding: const EdgeInsets.symmetric(horizontal: 20),
-        //           child: RefreshIndicator(
-        //             onRefresh: () {
-        //               return Future.delayed(const Duration(seconds: 1), _refresh);
-        //             },
-        //             child: ListView(
-        //               children: [
-        //                 const SizedBox(height: 24),
-        //                 HomeScreenAppBar(
-        //                     status: mainGateStatus,
-        //                     onThemeChanged: widget.onThemeChanged,
-        //                     image: image,
-        //                     user: userModel,
-        //                     isGuest: widget.isGuest),
-        //                 if (eventText.isNotEmpty) const SizedBox(height: 28),
-        //                 if (eventText.isNotEmpty)
-        //                   TextScroll(
-        //                     eventText,
-        //                     velocity:
-        //                         const Velocity(pixelsPerSecond: Offset(50, 0)),
-        //                     delayBefore: const Duration(milliseconds: 900),
-        //                     pauseBetween: const Duration(milliseconds: 100),
-        //                     style: const TextStyle(color: Colors.purple),
-        //                     textAlign: TextAlign.center,
-        //                     selectable: true,
-        //                   ),
-        //                   const SizedBox(height: 28),
-        //                   HomeScreenSchedule(
-        //                     timetable: timetable,
-        //                     onEditTimetable: (editedTimetable) {
-        //                       setState(
-        //                         () {
-        //                           timetable = editedTimetable;
-        //                         },
-        //                       );
-        //                     },
-        //                     onLectureAdded: (courseCode, courseName, lectures) {
-        //                       setState(
-        //                         () {
-        //                           timetable = timetable!.addCourse(
-        //                               courseCode, courseName, lectures);
-        //                         },
-        //                       );
-        //                     },
-        //                   ),
-        //                 const SizedBox(height: 20),
-        //                 HomeScreenBusTimings(
-        //                   busSchedule: busSchedule,
-        //                 ),
-        //                 const SizedBox(height: 20),
-        //                 HomeScreenMessMenu(messMenu: messMenu),
-        //                 const SizedBox(height: 20),
-        //                 HomeCardNoOptions(
-        //                   isComingSoon: false,
-        //                   title: 'Cab Sharing',
-        //                   child: 'assets/icons/cab-sharing-icon.svg',
-        //                   onTap: () {
-        //                     widget.isGuest
-        //                         ? showError()
-        //                         : Navigator.of(context).push(MaterialPageRoute(
-        //                             builder: (ctx) => CabSharingScreen(
-        //                               image: image,
-        //                               user: userModel ??
-        //                                   UserModel(
-        //                                       email: "user@iith.ac.in",
-        //                                       name: "User"),
-        //                             ),
-        //                           ));
-        //                   },
-        //                 ),
-        //                 const SizedBox(height: 20),
-        //                 HomeCardNoOptions(
-        //                   isComingSoon: false,
-        //                   isLnF: true,
-        //                   title: 'Lost & Found',
-        //                   child: 'assets/icons/magnifying-icon.svg',
-        //                   onTap: widget.isGuest
-        //                       ? showError
-        //                       : () => Navigator.of(context).push(
-        //                             MaterialPageRoute(
-        //                               builder: (ctx) => LostAndFoundScreen(
-        //                                 currentUserEmail:
-        //                                     userModel?.email ?? 'user@iith.ac.in',
-        //                               ),
-        //                             ),
-        //                           ),
-        //                 ),
-        //                 const SizedBox(height: 20),
-        //               ],
-        //   key: _scaffoldKey,
         body: Builder(builder: (BuildContext bc) {
           if (widget.code != null && !isDialogShown) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -569,19 +475,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     }),
                           ),
                           const SizedBox(height: 20),
-                          HomeCardNoOptions(
-                              isLnF: true,
-                              title: 'Timetable',
-                              child: 'assets/icons/calendar.svg',
-                              onTap: widget.isGuest ? showError : () {}
-                              // : () => Navigator.of(context).push(
-                              //       MaterialPageRoute(
-                              //           builder: (ctx) => Container()),
-                              //     ),
-                              ),
-                          const SizedBox(
-                            height: 50,
-                          )
                         ],
                       ),
                     ),
