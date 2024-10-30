@@ -8,9 +8,13 @@ import 'package:paged_vertical_calendar/paged_vertical_calendar.dart';
 class MonthViewScreen extends StatefulWidget {
   final BuildContext context;
   final Timetable? timetable;
+  final Function(DateTime) onDayPressed;
 
   const MonthViewScreen(
-      {super.key, required this.context, required this.timetable});
+      {super.key,
+      required this.context,
+      required this.timetable,
+      required this.onDayPressed});
 
   @override
   State<MonthViewScreen> createState() => _MonthViewScreenState();
@@ -79,7 +83,7 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
               );
             },
             dayBuilder: (context, date) {
-              double maxOpacity = 0.4;
+              double maxOpacity = 0.8;
               double minOpacity = 0.1;
               int maxLectures = 5;
               int lectureCount =
@@ -98,8 +102,7 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
               return Container(
                 margin: const EdgeInsets.all(2.0),
                 decoration: BoxDecoration(
-                  color:
-                      isToday ? Colors.blueAccent : backgroundColor,
+                  color: isToday ? Colors.blueAccent : backgroundColor,
                   borderRadius: BorderRadius.circular(10.0),
                   boxShadow: isToday
                       ? [
@@ -132,10 +135,7 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
               );
             },
             onDayPressed: (date) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Selected date: ${date.toLocal()}'),
-                backgroundColor: Colors.grey.shade800,
-              ));
+              widget.onDayPressed(date);
             },
           ),
           TodayButton(onPressed: _scrollToToday),
