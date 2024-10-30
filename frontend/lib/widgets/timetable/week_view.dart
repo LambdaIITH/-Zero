@@ -2,15 +2,22 @@ import 'package:calendar_view/calendar_view.dart';
 import 'package:dashbaord/models/lecture_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-DateTime get _now => DateTime.now();
-
-class WeekViewScreen extends StatelessWidget {
+class WeekViewScreen extends StatefulWidget {
   final BuildContext context;
   final Timetable? timetable;
 
-  WeekViewScreen({super.key, required this.context, required this.timetable});
+  const WeekViewScreen(
+      {super.key, required this.context, required this.timetable});
+
+  @override
+  State<WeekViewScreen> createState() => _WeekViewScreenState();
+}
+
+class _WeekViewScreenState extends State<WeekViewScreen> {
+  final weekkey = GlobalKey<WeekViewState>();
 
   List<CalendarEventData> convertTimetableToCalendarEvents(
       List<Lecture> lectures) {
@@ -60,7 +67,7 @@ class WeekViewScreen extends StatelessWidget {
           events.add(CalendarEventData(
             date: date, // Optional, based on your requirements
             title: lecture.courseCode,
-            description: timetable!.courses[lecture.courseCode]!,
+            description: widget.timetable!.courses[lecture.courseCode]!,
             startTime: startTime,
             endTime: endTime,
           ));
@@ -71,11 +78,15 @@ class WeekViewScreen extends StatelessWidget {
     return events;
   }
 
+  DateTime initialDate = DateTime.now();
+
   @override
   Widget build(BuildContext context) {
     final List<CalendarEventData> events =
-        convertTimetableToCalendarEvents(timetable!.slots);
+        convertTimetableToCalendarEvents(widget.timetable!.slots);
+
     return WeekView(
+      key: weekkey,
       controller: EventController()..addAll(events),
       startDay: WeekDays.sunday,
       keepScrollOffset: true,
@@ -103,8 +114,20 @@ class WeekViewScreen extends StatelessWidget {
           ),
         ),
       ),
-      weekPageHeaderBuilder: (startDate, fromDate) {
-        return Container();
+      liveTimeIndicatorSettings: LiveTimeIndicatorSettings(
+        color: Theme.of(context).textTheme.bodyLarge!.color!,
+      ),
+      weekPageHeaderBuilder: (startDate, endDate) {
+        final dateFormat = DateFormat('MMM dd');
+        final String formattedStartDate = dateFormat.format(startDate);
+        final String formattedEndDate = dateFormat.format(endDate);
+        bool isCurrentWeek = (DateTime.now().isBefore(endDate) &&
+            DateTime.now().isAfter(startDate));
+        return WeekPageHeader(
+            formattedStartDate: formattedStartDate,
+            formattedEndDate: formattedEndDate,
+            isCurrentWeek: isCurrentWeek,
+            weekkey: weekkey);
       },
       timeLineBuilder: (date) {
         return Container(
@@ -155,6 +178,91 @@ class WeekViewScreen extends StatelessWidget {
           content: Text(date.toIso8601String()),
         ));
       },
+    );
+  }
+}
+
+class WeekPageHeader extends StatelessWidget {
+  const WeekPageHeader({
+    super.key,
+    required this.formattedStartDate,
+    required this.formattedEndDate,
+    required this.isCurrentWeek,
+    required this.weekkey,
+  });
+
+  final String formattedStartDate;
+  final String formattedEndDate;
+  final bool isCurrentWeek;
+  final GlobalKey<WeekViewState<Object?>> weekkey;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Week Overview",
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                "$formattedStartDate - $formattedEndDate",
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: isCurrentWeek ? FontWeight.w500 : FontWeight.w400,
+                  color: isCurrentWeek
+                      ? Colors.redAccent
+                      : Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  debugPrint("CLICKED PREVIOUS");
+                  weekkey.currentState?.animateToWeek(
+                    weekkey.currentState!.currentDate.subtract(
+                      Duration(days: 7),
+                    ),
+                  );
+                },
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  size: 20,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  debugPrint("CLICKED NEXT ${weekkey.currentState}");
+                  weekkey.currentState?.animateToWeek(
+                    weekkey.currentState!.currentDate.add(
+                      Duration(days: 7),
+                    ),
+                  );
+                },
+                icon: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 20,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
