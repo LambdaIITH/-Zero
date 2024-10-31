@@ -23,6 +23,11 @@ class Timetable {
     return courseSlots;
   }
 
+  void cleanUp() {
+    courses.removeWhere((key, _) => key.trim().isEmpty);
+    slots.removeWhere((lecture) => lecture.courseCode.trim().isEmpty);
+  }
+
   factory Timetable.fromJson(Map<String, dynamic> json) {
     var courseMap = (json['courses'] as Map<String, dynamic>)
         .map<String, Map<String, String>>(

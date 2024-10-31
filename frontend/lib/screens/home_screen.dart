@@ -122,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         return;
       }
-      debugPrint("$response");
+      response.cleanUp();
       setState(() {
         timetable = response;
         changeState();
@@ -132,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     } else {
       debugPrint("Timetable fetched from local storage");
+      localTimetable.cleanUp();
       setState(() {
         timetable = localTimetable;
         changeState();
