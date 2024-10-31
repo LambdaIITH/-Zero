@@ -222,7 +222,8 @@ class ApiServices {
 
   Future<Map<String, dynamic>> postTimetable(Timetable timetable) async {
     try {
-      final response = await dio.post('/schedule/courses', data: timetable.toJson());
+      final response =
+          await dio.post('/schedule/courses', data: timetable.toJson());
       return {'status': response.statusCode, 'data': response.data};
     } on DioException catch (e) {
       debugPrint("Post edit timetable failed: $e");
@@ -230,6 +231,42 @@ class ApiServices {
         'error': 'Post edit timetable failed',
         'status': e.response?.statusCode
       };
+    }
+  }
+
+  Future<Map<String, dynamic>> shareTimetable([Timetable? timetable]) async {
+    try {
+      final response =
+          await dio.post('/schedule/share', data: timetable?.toJson());
+      return {'status': response.statusCode, 'code': response.data['code']};
+    } on DioException catch (e) {
+      return {
+        'error': 'Share timetable failed',
+        'status': e.response?.statusCode
+      };
+    }
+  }
+
+  Future<List<dynamic>> getSharedTimetable(
+      BuildContext context, String code) async {
+    try {
+      final response = await dio.get('/schedule/share/$code');
+
+      if (response.statusCode == 200) {
+        return [Timetable.fromJson(response.data),response.statusCode, "Saved Timetable"];
+      } else if (response.statusCode == 404) {
+        return [null,response.statusCode, "Timetable expired"];
+      } else {
+        throw Exception('Failed to load timetable');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await logout(context);
+      }
+      return [null,0, "Failed to fetch shared timetable"];
+    } catch (e) {
+      debugPrint("API ERROR $e");
+      return [null,0, "Failed to fetch shared timetable"];
     }
   }
   // ====================CALENDAR ENDS===================================

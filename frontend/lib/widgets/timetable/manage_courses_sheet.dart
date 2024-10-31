@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 class ManageCoursesBottomSheet extends StatefulWidget {
   final Timetable? timetable;
   final Function(Timetable)? onEditTimetable;
+  final bool isAddCourses;
 
   const ManageCoursesBottomSheet({
     super.key,
     required this.timetable,
     required this.onEditTimetable,
+    this.isAddCourses = false,
   });
 
   @override
@@ -31,17 +33,16 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
             courseName: courseName,
             courseSlots: timetable.getSlotsForCourse(courseCode),
             onLectureEdited: (courseCode, courseName, lecturelist) {
-              // Step 1: Remove all slots associated with the given courseCode
+              // Remove all slots associated with the given courseCode
               timetable.slots
                   .removeWhere((slot) => slot.courseCode == courseCode);
 
-              // Step 2: Add the provided lecture list to the slots list
+              // Add the provided lecture list to the slots list
               timetable.slots.addAll(lecturelist);
 
-              // Step 3: Update the course name in the courses map
+              // Update the course name in the courses map
               timetable.courses[courseCode] = {'title': courseName};
 
-              // Step 4: Notify the framework of state changes
               setState(() {});
             });
       },
@@ -102,7 +103,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  "Manage Courses",
+                  widget.isAddCourses?"Add Courses": "Manage Courses",
                   style: TextStyle(
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontSize: 26,
@@ -244,7 +245,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                   ),
                   icon: Icon(Icons.check), // Leading icon
                   label: Text(
-                    "Save",
+                    widget.isAddCourses? "Add": "Save",
                     style: TextStyle(fontSize: 18),
                   ),
                 ),

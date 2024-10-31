@@ -77,8 +77,6 @@ class AppRouter {
               data['timeDilationFactor'] as double? ?? 1.0;
           final timetableCode = data['timetableCode'];
 
-          print("timetableCode: $timetableCode");
-
           return LoginScreenWrapper(
             timeDilationFactor: timeDilationFactor,
             onThemeChanged: onThemeChanged,

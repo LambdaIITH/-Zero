@@ -284,18 +284,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  void _shareSchedule() {
-    // Convert the courses and their details to a string
+  void _shareSchedule() async {
     final courseDetails = timetable!.courses.entries.map((entry) {
       final code = entry.key;
-      final name = entry.value;
+      final name = entry.value['title'];
       return '$code: $name';
     }).join('\n');
 
-    String shareableLink =
-        'https://dashboard.iith.dev/share/timetable/RANDOM_CODE';
+    try {
+      final response = await ApiServices().shareTimetable();
 
-    String shareMessage = '''
+      if (response['status'] == 200) {
+        final code = response['code'];
+
+        String shareableLink =
+            'https://dashboard.iith.dev/share/timetable/$code';
+
+        String shareMessage = '''
       I have registered for these courses:
 $courseDetails
 
@@ -303,6 +308,12 @@ Click the link to add these courses to your timetable:
 $shareableLink
     ''';
 
-    Share.share(shareMessage);
+        Share.share(shareMessage);
+      } else {
+        showError(msg: "Failed to share timetable");
+      }
+    } catch (e) {
+      showError(msg: "Failed to share timetable");
+    }
   }
 }

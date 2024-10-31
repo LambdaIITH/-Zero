@@ -13,6 +13,7 @@ import 'package:dashbaord/widgets/home_screen_appbar.dart';
 import 'package:dashbaord/widgets/home_screen_bus_timings.dart';
 import 'package:dashbaord/widgets/home_screen_calendar.dart';
 import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
+import 'package:dashbaord/widgets/timetable/manage_courses_sheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -291,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          backgroundColor: Colors.grey[900], // Dark background for the dialog
+          backgroundColor: Theme.of(context).cardColor,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -310,9 +311,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     TextSpan(
                       text: code,
                       style: TextStyle(
-                        fontFamily: 'Courier', // Code font styling
-                        color: Colors.greenAccent, // Highlighted code color
-                        fontSize: 22, // Slightly larger font size for code
+                        fontFamily: 'Courier',
+                        color: Colors.greenAccent,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -321,17 +322,23 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Note: This will replace your current timetable and this action is not alterable.',
+                'Note: This will replace your current timetable, and this action cannot be undone.',
                 style: TextStyle(
-                    color: const Color.fromARGB(255, 255, 135, 135),
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic),
+                  color: const Color.fromARGB(
+                      255, 255, 210, 100), // Softer warning color
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
+                // Show a friendly cancellation message
+                showError(
+                    msg:
+                        "You have chosen not to change your timetable. No worries!");
                 Navigator.of(context).pop();
               },
               child: Text(
@@ -340,9 +347,40 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                //TODO:
+                final response =
+                    await ApiServices().getSharedTimetable(context, code);
+                Timetable? sharedTimetable = response[0] as Timetable?;
+                int status =
+                    response[1] as int; // Assuming status is in response[1]
+                String message = response[2] as String;
+
+                if (status == 200) {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return ManageCoursesBottomSheet(
+                        timetable: timetable,
+                        onEditTimetable: (editedTimetable) {
+                          setState(() {
+                            timetable = editedTimetable;
+                          });
+                        },
+                      );
+                    },
+                    isScrollControlled: true,
+                  );
+                  setState(() {
+                    timetable = sharedTimetable;
+                  });
+                  showError(msg: "Timetable accepted successfully!");
+                } else {
+                  showError(
+                      msg: message.isNotEmpty
+                          ? message
+                          : "Oops! Something went wrong while fetching the timetable.");
+                }
               },
               child: Text(
                 'Yes',
