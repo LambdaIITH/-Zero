@@ -96,7 +96,7 @@ extension SlotExtension on IITHSlot {
           Lecture(
               day: "Thursday",
               startTime: "9:00 AM",
-              endTime: "10:00 PM",
+              endTime: "10:00 AM",
               courseCode: courseCode),
         ];
       case IITHSlot.D:
