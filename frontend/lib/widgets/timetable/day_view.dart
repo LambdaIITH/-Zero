@@ -75,7 +75,8 @@ class _DayViewScreenState extends State<DayViewScreen> {
           events.add(CalendarEventData(
             date: date,
             title: lecture.courseCode,
-            description: widget.timetable!.courses[lecture.courseCode]!["title"],
+            description:
+                widget.timetable!.courses[lecture.courseCode]!["title"],
             startTime: startTime,
             endTime: endTime,
           ));
@@ -84,6 +85,17 @@ class _DayViewScreenState extends State<DayViewScreen> {
     }
 
     return events;
+  }
+
+  final DatePickerController _controller = DatePickerController();
+  
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.animateToDate(widget.initialDate ?? DateTime.now());
+    });
   }
 
   @override
@@ -98,7 +110,8 @@ class _DayViewScreenState extends State<DayViewScreen> {
         SizedBox(
           height: 100,
           child: DatePicker(
-            currentDate,
+            DateTime.now().subtract(Duration(days: 30)),
+            controller: _controller,
             initialSelectedDate: currentDate,
             selectionColor: Theme.of(context).cardColor,
             selectedTextColor: Colors.redAccent,
@@ -140,6 +153,12 @@ class _DayViewScreenState extends State<DayViewScreen> {
             liveTimeIndicatorSettings: LiveTimeIndicatorSettings(
               color: Theme.of(context).textTheme.bodyLarge!.color!,
             ),
+            onPageChange: (date, index) {
+              _controller.setDateAndAnimate(date);
+              setState(() {
+                currentDate = date;
+              });
+            },
             dayTitleBuilder: (date) {
               return Container();
             },

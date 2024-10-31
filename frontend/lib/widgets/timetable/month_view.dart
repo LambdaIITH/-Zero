@@ -64,6 +64,7 @@ class _MonthViewScreenState extends State<MonthViewScreen> {
       body: Stack(
         children: [
           PagedVerticalCalendar(
+            minDate: DateTime.now().subtract(Duration(days: 30)),
             scrollController: _scrollController,
             addAutomaticKeepAlives: true,
             startWeekWithSunday: true,
