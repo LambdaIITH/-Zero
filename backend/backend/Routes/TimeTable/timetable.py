@@ -114,11 +114,8 @@ def get_timetable(request: Request) -> Timetable:
 @router.post("/courses")
 def post_edit_timetable(request: Request, timetable: Timetable):
     user_id = get_user_id(request)
-    # sanity check
-    course_codes = list(timetable.courses.keys())
-    # check if custom_slot_codes are not same as default slots
 
-    validation_result = validate_course_schedule(timetable)
+    validation_result = validate_course_schedule(timetable.model_dump())
     if not isinstance(validation_result, bool):
         raise HTTPException(status_code=400, detail=validation_result)
 
