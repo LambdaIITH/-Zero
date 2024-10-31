@@ -36,10 +36,16 @@ def validate_course_schedule(data: Dict) -> Union[str, bool]:
             return "Invalid 'courses' format. Expected a dictionary."
 
         for course_code, course_info in courses.items():
+            if not course_code or course_code.strip() == "":
+                return "Course code cannot be empty."
+            
             if not isinstance(course_info, dict):
                 return f"Invalid course info for {course_code}. Expected a dictionary."
             if "title" not in course_info or not isinstance(course_info["title"], str):
                 return f"Missing or invalid 'title' for course {course_code}."
+            
+            if not course_info["title"] or course_info["title"].strip() == "":
+                return f"Course title cannot be empty for course {course_code}."
 
         # Validate 'slots' section
         slots = data['slots']
