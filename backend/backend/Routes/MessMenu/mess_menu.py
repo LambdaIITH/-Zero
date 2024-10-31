@@ -1,10 +1,13 @@
-from fastapi import APIRouter, HTTPException, Success
+from fastapi import APIRouter, HTTPException
 import json
 import os
 import dotenv
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/mess_menu", tags=["mess_menu"])
+password = os.getenv("ADMIN_PASS")
+allowed_numbers = [0,1,2,3]
+
 
 class MenuWeekChangeRequest(BaseModel):
     password: str
@@ -30,11 +33,8 @@ async def get_mess_menu():
 
 @router.post("/")
 async def post_mess_menu(admin: MenuWeekChangeRequest):
-    password = os.getenv("ADMIN_PASS")
     if admin.password != password:
         raise HTTPException(status_code=403, detail="Incorrect password")
-    
-    allowed_numbers = [0,1,2,3]
     
     if admin.number not in allowed_numbers:
         raise HTTPException(status_code=400, detail="Invalid week number")
@@ -42,7 +42,7 @@ async def post_mess_menu(admin: MenuWeekChangeRequest):
     
     dir = os.path.dirname(os.path.realpath(__file__))
     with open(dir + "/config.json", "w") as file:
-        json.dump({"week": admin.number}, file)
+        json.dump({"week": admin.number}, file, indent=1)
 
     
     return {"message": "Week number updated successfully"}
