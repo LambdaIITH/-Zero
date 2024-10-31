@@ -251,11 +251,14 @@ class ApiServices {
       BuildContext context, String code) async {
     try {
       final response = await dio.get('/schedule/share/$code');
-
       if (response.statusCode == 200) {
-        return [Timetable.fromJson(response.data),response.statusCode, "Saved Timetable"];
+        return [
+          Timetable.fromJson(response.data),
+          response.statusCode,
+          "Saved Timetable"
+        ];
       } else if (response.statusCode == 404) {
-        return [null,response.statusCode, "Timetable expired"];
+        return [null, response.statusCode, "Timetable expired"];
       } else {
         throw Exception('Failed to load timetable');
       }
@@ -263,10 +266,10 @@ class ApiServices {
       if (e.response?.statusCode == 401) {
         await logout(context);
       }
-      return [null,0, "Failed to fetch shared timetable"];
+      return [null, 0, "Failed to fetch shared timetable"];
     } catch (e) {
       debugPrint("API ERROR $e");
-      return [null,0, "Failed to fetch shared timetable"];
+      return [null, 0, "Failed to fetch shared timetable"];
     }
   }
   // ====================CALENDAR ENDS===================================

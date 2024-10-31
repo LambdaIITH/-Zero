@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchTimetable() async {
-    Timetable? localTimetable = await ApiServices().getTimetable(context);
+    Timetable? localTimetable = await SharedService().getTimetable();
 
     if (localTimetable == null) {
       debugPrint("Timetable not found in local storage");
@@ -355,18 +355,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 int status =
                     response[1] as int; // Assuming status is in response[1]
                 String message = response[2] as String;
-
                 if (status == 200) {
                   showModalBottomSheet(
                     context: context,
                     builder: (context) {
                       return ManageCoursesBottomSheet(
                         timetable: timetable,
-                        onEditTimetable: (editedTimetable) {
+                        onEditTimetable: (editedTimetable) async {
                           setState(() {
                             timetable = editedTimetable;
                           });
+                          final res =
+                              await ApiServices().postTimetable(timetable!);
+                          if (res['status'] != 200) {
+                            showError(msg: "Failed to save timetable.");
+                          } else {
+                            showError(msg: "Timetable saved successfully!");
+                            await SharedService().saveTimetable(timetable!);
+                          }
                         },
+                        isAddCourses: true,
                       );
                     },
                     isScrollControlled: true,
@@ -457,27 +465,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                   timetable = editedTimetable;
                                 },
                               );
-                              await SharedService().saveTimetable(timetable!);
                               final res =
                                   await ApiServices().postTimetable(timetable!);
-                              if (res != 200) {
+                              if (res['status'] != 200) {
                                 showError(msg: "Failed to save timetable.");
+                              } else {
+                                showError(msg: "Timetable saved successfully!");
+                                await SharedService().saveTimetable(timetable!);
                               }
                             },
                             onLectureAdded:
                                 (courseCode, courseName, lectures) async {
-                              setState(
-                                () {
-                                  timetable = timetable!.addCourse(
-                                      courseCode, courseName, lectures);
-                                },
-                              );
                               if (timetable != null) {
-                                await SharedService().saveTimetable(timetable!);
+                                setState(
+                                  () {
+                                    timetable = timetable!.addCourse(
+                                        courseCode, courseName, lectures);
+                                  },
+                                );
                                 final res = await ApiServices()
                                     .postTimetable(timetable!);
-                                if (res != 200) {
+                                if (res['status'] != 200) {
                                   showError(msg: "Failed to save timetable.");
+                                } else {
+                                  showError(
+                                      msg: "Timetable saved successfully!");
+                                  await SharedService()
+                                      .saveTimetable(timetable!);
                                 }
                               }
                             },
