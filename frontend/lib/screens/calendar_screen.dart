@@ -53,8 +53,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void initState() {
     super.initState();
     timetable = widget.timetable;
-    print(timetable?.courses);
-    print(timetable?.toJson());
   }
 
   @override
@@ -236,7 +234,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context: context,
       builder: (context) {
         return AddLectureBottomSheet(
-          timetable: widget.timetable,
+          timetable: timetable,
           onLectureAdded: (courseCode, courseName, lectures) {
             setState(() {
               timetable =
@@ -250,6 +248,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       isScrollControlled: true,
     );
   }
+
 
   void _showManageCoursesBottomSheet(BuildContext context) {
     showModalBottomSheet(

@@ -30,6 +30,7 @@ class _LectureTimePickerBottomSheetState
   String selectedSlot = "A";
 
   void _addSlots() {
+    print(widget.timetable?.toJson());
     List<Lecture> newLectures = [];
 
     if (isTimePickerSelected) {
@@ -43,6 +44,7 @@ class _LectureTimePickerBottomSheetState
     } else {
       newLectures = getSlotFromString(selectedSlot)!.getLectures();
     }
+
 
     List<Lecture> existingLectures = widget.timetable?.slots ?? [];
     bool hasAnyCollision = false;
@@ -337,7 +339,7 @@ class _LectureTimePickerBottomSheetState
               ),
               onPressed: () {
                 _addSlots();
-                Navigator.of(context).pop();
+                // Navigator.of(context).pop();
               },
               child: const Icon(Icons.check, color: Colors.white),
             ),
