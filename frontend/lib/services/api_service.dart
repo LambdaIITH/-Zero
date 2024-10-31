@@ -200,7 +200,7 @@ class ApiServices {
 
   Future<Timetable?> getTimetable(BuildContext context) async {
     try {
-      final response = await dio.get('/timetable/courses');
+      final response = await dio.get('/schedule/courses');
 
       if (response.statusCode == 200) {
         debugPrint("COURSES RESPONSE ${response.data}");
@@ -222,8 +222,8 @@ class ApiServices {
 
   Future<Map<String, dynamic>> postTimetable(Timetable timetable) async {
     try {
-      final response = await dio.post('/timetable/', data: timetable.toJson());
-      return {'status': response.statusCode};
+      final response = await dio.post('/schedule/courses', data: timetable.toJson());
+      return {'status': response.statusCode, 'data': response.data};
     } on DioException catch (e) {
       debugPrint("Post edit timetable failed: $e");
       return {
@@ -863,6 +863,7 @@ class ApiServices {
   Future<String> getEventText() async {
     try {
       final response = await dio.get('/time');
+      debugPrint("RESPONSE");
       if (response.statusCode == 200) {
         return response.data;
       } else {

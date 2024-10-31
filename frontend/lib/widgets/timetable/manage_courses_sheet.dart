@@ -39,7 +39,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
               timetable.slots.addAll(lecturelist);
 
               // Step 3: Update the course name in the courses map
-              timetable.courses[courseCode] = courseName;
+              timetable.courses[courseCode] = {'title': courseName};
 
               // Step 4: Notify the framework of state changes
               setState(() {});
@@ -53,7 +53,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
   void initState() {
     super.initState();
     timetable = Timetable(
-      courses: Map<String, String>.from(widget.timetable?.courses ?? {}),
+      courses: widget.timetable!.courses,
       slots: List<Lecture>.from(widget.timetable?.slots ?? []),
     );
   }
@@ -130,7 +130,8 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                         }
                         final courseCode =
                             timetable.courses.keys.elementAt(index);
-                        final courseName = timetable.courses[courseCode];
+                        final courseName =
+                            timetable.courses[courseCode]?['title'];
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(

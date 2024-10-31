@@ -237,7 +237,8 @@ Container lectureItem(
               color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
             NormalText(
-              text: timetable!.courses[lecture.courseCode]!,
+              text: timetable!.courses[lecture.courseCode]?['title'] ??
+                  'Unknown Course',
               size: 18,
               color: Theme.of(context).textTheme.bodyLarge?.color,
             ),

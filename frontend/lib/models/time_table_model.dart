@@ -2,7 +2,7 @@ import 'package:dashbaord/models/lecture_model.dart';
 import 'package:intl/intl.dart';
 
 class Timetable {
-  final Map<String, String> courses;
+  final Map<String, Map<String, String>> courses;
   final List<Lecture> slots;
 
   Timetable({required this.courses, required this.slots});
@@ -24,23 +24,18 @@ class Timetable {
   }
 
   factory Timetable.fromJson(Map<String, dynamic> json) {
-    var courseMap =
-        (json['courses'] as Map<String, dynamic>).map<String, String>(
+    var courseMap = (json['courses'] as Map<String, dynamic>)
+        .map<String, Map<String, String>>(
       (key, value) {
         if (value is Map<String, dynamic> && value.containsKey('title')) {
-          return MapEntry(key, value['title'].toString());
+          return MapEntry(key, {'title': value['title'].toString()});
         }
-        return MapEntry(key, value.toString());
+        return MapEntry(key, {'title': ''}); // or handle as needed
       },
     );
 
     List<Lecture> slotList = (json['slots'] as List).map((slotJson) {
-      return Lecture(
-        courseCode: slotJson['course_code'],
-        day: slotJson['day'],
-        startTime: slotJson['start_time'],
-        endTime: slotJson['end_time'],
-      );
+      return Lecture.fromJson(slotJson);
     }).toList();
 
     return Timetable(
@@ -51,7 +46,8 @@ class Timetable {
 
   Map<String, dynamic> toJson() {
     return {
-      'courses': courses,
+      'courses':
+          courses.map((key, value) => MapEntry(key, {'title': value['title']})),
       'slots': slots.map((lecture) => lecture.toJson()).toList(),
     };
   }
@@ -59,7 +55,10 @@ class Timetable {
   Timetable addCourse(
           String courseCode, String courseName, List<Lecture> lectures) =>
       Timetable(
-        courses: {...courses, courseCode: courseName},
+        courses: {
+          ...courses,
+          courseCode: {'title': courseName}
+        },
         slots: [...slots, ...lectures],
       );
 }

@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchTimetable() async {
-    Timetable? localTimetable = await SharedService().getTimetable();
+    Timetable? localTimetable = await ApiServices().getTimetable(context);
 
     if (localTimetable == null) {
       debugPrint("Timetable not found in local storage");
@@ -413,12 +413,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 28),
                           HomeScreenSchedule(
                             timetable: timetable,
-                            onEditTimetable: (editedTimetable) {
+                            onEditTimetable: (editedTimetable) async {
                               setState(
                                 () {
                                   timetable = editedTimetable;
                                 },
                               );
+                              await SharedService().saveTimetable(timetable!);
+                              final res =
+                                  await ApiServices().postTimetable(timetable!);
+                              if (res != 200) {
+                                showError(msg: "Failed to save timetable.");
+                              }
                             },
                             onLectureAdded:
                                 (courseCode, courseName, lectures) async {

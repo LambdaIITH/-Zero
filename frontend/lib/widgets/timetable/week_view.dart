@@ -67,7 +67,7 @@ class _WeekViewScreenState extends State<WeekViewScreen> {
           events.add(CalendarEventData(
             date: date, // Optional, based on your requirements
             title: lecture.courseCode,
-            description: widget.timetable!.courses[lecture.courseCode]!,
+            description: widget.timetable!.courses[lecture.courseCode]!["title"],
             startTime: startTime,
             endTime: endTime,
           ));

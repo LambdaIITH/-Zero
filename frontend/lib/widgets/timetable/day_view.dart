@@ -75,7 +75,7 @@ class _DayViewScreenState extends State<DayViewScreen> {
           events.add(CalendarEventData(
             date: date,
             title: lecture.courseCode,
-            description: widget.timetable!.courses[lecture.courseCode]!,
+            description: widget.timetable!.courses[lecture.courseCode]!["title"],
             startTime: startTime,
             endTime: endTime,
           ));
