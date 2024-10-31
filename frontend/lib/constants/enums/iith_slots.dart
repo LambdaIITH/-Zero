@@ -35,7 +35,8 @@ List<String> getAllSlots() {
 
 IITHSlot? getSlotFromString(String slotString) {
   try {
-    return IITHSlot.values.firstWhere((slot) => slot.toString().split('.').last == slotString);
+    return IITHSlot.values
+        .firstWhere((slot) => slot.toString().split('.').last == slotString);
   } catch (e) {
     return null;
   }
@@ -71,13 +72,13 @@ extension SlotExtension on IITHSlot {
               courseCode: courseCode),
           Lecture(
               day: "Wednesday",
-              startTime: "10:00 AM",
-              endTime: "11:00 AM",
+              startTime: "9:00 AM",
+              endTime: "10:00 AM",
               courseCode: courseCode),
           Lecture(
               day: "Thursday",
-              startTime: "9:00 AM",
-              endTime: "10:00 AM",
+              startTime: "11:00 AM",
+              endTime: "12:00 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.C:
@@ -89,13 +90,13 @@ extension SlotExtension on IITHSlot {
               courseCode: courseCode),
           Lecture(
               day: "Wednesday",
-              startTime: "9:00 AM",
-              endTime: "10:00 AM",
+              startTime: "10:00 AM",
+              endTime: "11:00 AM",
               courseCode: courseCode),
           Lecture(
               day: "Thursday",
-              startTime: "11:00 AM",
-              endTime: "12:00 PM",
+              startTime: "9:00 AM",
+              endTime: "10:00 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.D:
@@ -143,8 +144,8 @@ extension SlotExtension on IITHSlot {
               courseCode: courseCode),
           Lecture(
               day: "Wednesday",
-              startTime: "4:00 PM",
-              endTime: "6:00 PM",
+              startTime: "2:30 PM",
+              endTime: "4:00 PM",
               courseCode: courseCode),
           Lecture(
               day: "Friday",
@@ -199,25 +200,25 @@ extension SlotExtension on IITHSlot {
       case IITHSlot.R:
         return [
           Lecture(
-              day: "Monday",
-              startTime: "5:30 PM",
-              endTime: "7:00 PM",
+              day: "Tuesday",
+              startTime: "2:30 PM",
+              endTime: "4:00 PM",
               courseCode: courseCode),
           Lecture(
               day: "Thursday",
-              startTime: "5:30 PM",
-              endTime: "7:00 PM",
+              startTime: "4:00 PM",
+              endTime: "5:30 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.S:
         return [
           Lecture(
-              day: "Monday",
+              day: "Tuesday",
               startTime: "4:00 PM",
               endTime: "5:30 PM",
               courseCode: courseCode),
           Lecture(
-              day: "Thursday",
+              day: "Friday",
               startTime: "2:30 PM",
               endTime: "4:00 PM",
               courseCode: courseCode),
@@ -227,12 +228,12 @@ extension SlotExtension on IITHSlot {
           Lecture(
               day: "Monday",
               startTime: "6:00 PM",
-              endTime: "7:25 PM",
+              endTime: "7:30 PM",
               courseCode: courseCode),
           Lecture(
-              day: "Wednesday",
+              day: "Thursday",
               startTime: "6:00 PM",
-              endTime: "7:25 PM",
+              endTime: "7:30 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.X:
@@ -243,7 +244,7 @@ extension SlotExtension on IITHSlot {
               endTime: "9:00 PM",
               courseCode: courseCode),
           Lecture(
-              day: "Wednesday",
+              day: "Thursday",
               startTime: "7:30 PM",
               endTime: "9:00 PM",
               courseCode: courseCode),
@@ -253,12 +254,12 @@ extension SlotExtension on IITHSlot {
           Lecture(
               day: "Tuesday",
               startTime: "6:00 PM",
-              endTime: "7:25 PM",
+              endTime: "7:30 PM",
               courseCode: courseCode),
           Lecture(
-              day: "Thursday",
+              day: "Friday",
               startTime: "6:00 PM",
-              endTime: "7:25 PM",
+              endTime: "7:30 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.Z:
@@ -269,7 +270,7 @@ extension SlotExtension on IITHSlot {
               endTime: "9:00 PM",
               courseCode: courseCode),
           Lecture(
-              day: "Thursday",
+              day: "Friday",
               startTime: "7:30 PM",
               endTime: "9:00 PM",
               courseCode: courseCode),
@@ -278,16 +279,16 @@ extension SlotExtension on IITHSlot {
         return [
           Lecture(
               day: "Monday",
-              startTime: "4:00 PM",
+              startTime: "2:30 PM",
               endTime: "5:30 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.AN2:
         return [
           Lecture(
-              day: "Monday",
-              startTime: "5:30 PM",
-              endTime: "7:00 PM",
+              day: "Tuesday",
+              startTime: "2:30 PM",
+              endTime: "5:30 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.AN4:
@@ -295,47 +296,47 @@ extension SlotExtension on IITHSlot {
           Lecture(
               day: "Thursday",
               startTime: "2:30 PM",
-              endTime: "4:00 PM",
+              endTime: "5:30 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.FN1:
         return [
           Lecture(
               day: "Monday",
-              startTime: "10:00 AM",
-              endTime: "11:00 AM",
+              startTime: "9:00 AM",
+              endTime: "12:00 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.FN2:
         return [
           Lecture(
               day: "Tuesday",
-              startTime: "10:00 AM",
-              endTime: "11:00 AM",
+              startTime: "9:00 AM",
+              endTime: "12:00 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.FN3:
         return [
           Lecture(
               day: "Wednesday",
-              startTime: "10:00 AM",
-              endTime: "11:00 AM",
+              startTime: "9:00 AM",
+              endTime: "12:00 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.FN4:
         return [
           Lecture(
               day: "Thursday",
-              startTime: "10:00 AM",
-              endTime: "11:00 AM",
+              startTime: "9:00 AM",
+              endTime: "12:00 AM",
               courseCode: courseCode),
         ];
       case IITHSlot.FN5:
         return [
           Lecture(
               day: "Friday",
-              startTime: "10:00 AM",
-              endTime: "11:00 AM",
+              startTime: "9:00 AM",
+              endTime: "12:00 AM",
               courseCode: courseCode),
         ];
       default:
