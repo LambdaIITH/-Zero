@@ -41,6 +41,11 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
           onSlotSelected: (newSlots) {
             setState(() {
               slots.addAll(newSlots);
+              if (slots.isEmpty) {
+                noSlotsSelected = true;
+              } else {
+                noSlotsSelected = false;
+              }
             });
           },
         );
@@ -54,6 +59,7 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
   final FocusNode _courseCodeFocusNode = FocusNode();
   final FocusNode _courseTitleFocusNode = FocusNode();
   bool isNotFilled = false;
+  bool noSlotsSelected = false;
 
   String courseCode = '';
 
@@ -244,65 +250,74 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: slots.length,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final slot = slots[index];
-                  return Dismissible(
-                    key: Key(slot.day + slot.startTime + slot.endTime),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (direction) {
-                      setState(() {
-                        slots.removeAt(index);
-                      });
-                    },
-                    background: Container(
-                      color: Colors.redAccent,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: const Icon(
-                        Icons.delete,
-                        color: Colors.white,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          NormalText(
-                              text: slot.day,
-                              color:
-                                  Theme.of(context).textTheme.bodyLarge?.color),
-                          Row(
-                            children: [
-                              NormalText(
-                                  text: "${slot.startTime} - ${slot.endTime}",
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.color),
-                              IconButton(
-                                icon:
-                                    Icon(Icons.delete, color: Colors.redAccent),
-                                onPressed: () {
-                                  // Add a confirm dialog if you want to ask before deleting
-                                  setState(() {
-                                    slots.removeAt(index);
-                                  });
-                                },
-                              ),
-                            ],
+              noSlotsSelected
+                  ? Text("Please select at least one slot",
+                      style: TextStyle(
+                        color: Colors.red,
+                      ))
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: slots.length,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final slot = slots[index];
+                        return Dismissible(
+                          key: Key(slot.day + slot.startTime + slot.endTime),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (direction) {
+                            setState(() {
+                              slots.removeAt(index);
+                            });
+                          },
+                          background: Container(
+                            color: Colors.redAccent,
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 16.0),
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                            ),
                           ),
-                        ],
-                      ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                NormalText(
+                                    text: slot.day,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.color),
+                                Row(
+                                  children: [
+                                    NormalText(
+                                        text:
+                                            "${slot.startTime} - ${slot.endTime}",
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.color),
+                                    IconButton(
+                                      icon: Icon(Icons.delete,
+                                          color: Colors.redAccent),
+                                      onPressed: () {
+                                        // Add a confirm dialog if you want to ask before deleting
+                                        setState(() {
+                                          slots.removeAt(index);
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
+              const SizedBox(height: 6),
               Center(
                 child: ElevatedButton(
                   onPressed: () {
@@ -317,6 +332,13 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
                       } else if (courseTitleController.text.isEmpty) {
                         _courseTitleFocusNode.requestFocus();
                       }
+                      return;
+                    }
+
+                    if (slots.isEmpty) {
+                      setState(() {
+                        noSlotsSelected = true;
+                      });
                       return;
                     }
 
