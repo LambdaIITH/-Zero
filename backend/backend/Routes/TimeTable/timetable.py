@@ -162,7 +162,7 @@ def get_shared_timetable(code: str):
 
 
 def generate_random_code() -> str:
-    return str(uuid.uuid4().hex[:6])
+    return str(uuid.uuid4().hex[:6]).upper()
 
 
 @router.post('/share')
@@ -173,28 +173,33 @@ def post_share_timetable(request: Request):
 
     user_id = get_user_id(request)
     code = ''
+    body = request.json()
+    timetable = body.get("timetable") if isinstance(body, dict) else None
+
     try:
-        query = timetable_queries.get_timetable(user_id)
-        with conn.cursor() as cur:
-            cur.execute(query)
-            timetable = cur.fetchone()[0]
+        if timetable is None:
+            query = timetable_queries.get_timetable(user_id)
+            with conn.cursor() as cur:
+                cur.execute(query)
+                timetable = cur.fetchone()[0]
 
-            cur_date = DateTime.now()
-            expiry_days = 120
-            expiry = cur_date + datetime.timedelta(days=expiry_days)
-            while True:
-                code = generate_random_code()
-                insert_query = timetable_queries.post_shared_timetable(
-                    code, user_id, timetable, expiry)
+        cur_date = DateTime.now()
+        expiry_days = 120
+        expiry = cur_date + datetime.timedelta(days=expiry_days)
+        while True:
+            code = generate_random_code()
+            insert_query = timetable_queries.post_shared_timetable(
+                code, user_id, timetable, expiry)
 
-                try:
-                    cur.execute(insert_query)
-                    conn.commit()
-                    return {"code": code}
+            try:
+                cur.execute(insert_query)
+                conn.commit()
+                return {"code": code}
 
-                except Exception as e:
-                    conn.rollback()
-                    continue
+            except Exception as e:
+                conn.rollback()
+                continue
+
     except Exception as e:
         conn.rollback()
         raise HTTPException(
