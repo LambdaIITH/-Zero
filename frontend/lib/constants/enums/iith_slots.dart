@@ -20,6 +20,7 @@ enum IITHSlot {
   AN1,
   AN2,
   AN4,
+  AN5,
   FN1,
   FN2,
   FN3,
@@ -299,6 +300,14 @@ extension SlotExtension on IITHSlot {
               endTime: "5:30 PM",
               courseCode: courseCode),
         ];
+      case IITHSlot.AN5:
+        return [
+          Lecture(
+              day: "Friday",
+              startTime: "2:30 PM",
+              endTime: "5:30 PM",
+              courseCode: courseCode),
+        ];
       case IITHSlot.FN1:
         return [
           Lecture(
@@ -328,7 +337,7 @@ extension SlotExtension on IITHSlot {
           Lecture(
               day: "Thursday",
               startTime: "9:00 AM",
-              endTime: "12:00 AM",
+              endTime: "12:00 PM",
               courseCode: courseCode),
         ];
       case IITHSlot.FN5:
@@ -336,7 +345,7 @@ extension SlotExtension on IITHSlot {
           Lecture(
               day: "Friday",
               startTime: "9:00 AM",
-              endTime: "12:00 AM",
+              endTime: "12:00 PM",
               courseCode: courseCode),
         ];
       default:
