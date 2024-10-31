@@ -8,7 +8,7 @@ from constants import default_slots
 from Routes.Auth.cookie import get_user_id
 import regex as re
 import uuid 
-router = APIRouter(prefix="/timetable", tags=["timetable"])
+router = APIRouter(prefix="/schedule", tags=["schedule"])
 
 import re
 from typing import Dict, List, Union
@@ -117,7 +117,7 @@ def get_timetable(request: Request) -> Timetable:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error : {e}")
 
-@router.post("/")
+@router.post("/courses")
 def post_edit_timetable(request: Request, timetable: Timetable):
     user_id = get_user_id(request)
     # sanity check
