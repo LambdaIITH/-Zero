@@ -1,3 +1,6 @@
+import json
+from fastapi import Request
+from fastapi import HTTPException
 from typing import Dict, Union
 import datetime
 from datetime import datetime as DateTime
@@ -183,7 +186,7 @@ def post_share_timetable(request: Request):
                 cur.execute(query)
                 timetable = cur.fetchone()[0]
 
-        cur_date = DateTime.now()
+        cur_date = datetime.datetime.now()
         expiry_days = 120
         expiry = cur_date + datetime.timedelta(days=expiry_days)
         while True:
@@ -192,9 +195,10 @@ def post_share_timetable(request: Request):
                 code, user_id, timetable, expiry)
 
             try:
-                cur.execute(insert_query)
-                conn.commit()
-                return {"code": code}
+                with conn.cursor() as cur:
+                    cur.execute(insert_query)
+                    conn.commit()
+                    return {"code": code}
 
             except Exception as e:
                 conn.rollback()
@@ -203,7 +207,7 @@ def post_share_timetable(request: Request):
     except Exception as e:
         conn.rollback()
         raise HTTPException(
-            status_code=500, detail=f"Internal Server Error : {e}")
+            status_code=500, detail=f"Internal Server Error : {str(e)}")
 
 
 @router.delete('/share/{code}')
