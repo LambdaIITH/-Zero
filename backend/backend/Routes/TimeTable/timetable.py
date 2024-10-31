@@ -12,8 +12,8 @@ router = APIRouter(prefix="/timetable", tags=["timetable"])
 
 import re
 from typing import Dict, List, Union
-from datetime import datetime
-
+from datetime import datetime as DateTime
+import datetime
 def validate_course_schedule(data: Dict) -> Union[str, bool]:
     """
     Validates the course schedule data structure.
@@ -26,7 +26,7 @@ def validate_course_schedule(data: Dict) -> Union[str, bool]:
     """
     try:
         # Validate 'courses' section
-        courses = data.get("courses")
+        courses = data.courses
         if not isinstance(courses, dict):
             return "Invalid 'courses' format. Expected a dictionary."
         
@@ -37,7 +37,7 @@ def validate_course_schedule(data: Dict) -> Union[str, bool]:
                 return f"Missing or invalid 'title' for course {course_code}."
         
         # Validate 'slots' section
-        slots = data.get("slots")
+        slots = data.slots
         if not isinstance(slots, list):
             return "Invalid 'slots' format. Expected a list."
         
@@ -80,8 +80,9 @@ def validate_course_schedule(data: Dict) -> Union[str, bool]:
             
             # Parse times to compare
             time_format = "%I:%M %p"
-            start_time = datetime.strptime(start_time_str.upper(), time_format)
-            end_time = datetime.strptime(end_time_str.upper(), time_format)
+            print("hello")
+            start_time = DateTime.strptime(start_time_str.upper(), time_format)
+            end_time = DateTime.strptime(end_time_str.upper(), time_format)
             
             if start_time >= end_time:
                 return f"'start_time' {start_time_str} is not earlier than 'end_time' {end_time_str} in slot: {slot}"
@@ -165,8 +166,7 @@ def get_shared_timetable(code: str):
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Internal Server Error : {e}")
 
-from datetime import datetime as DateTime
-import datetime
+
 @router.post('/share')
 def post_share_timetable(request: Request):
     """
