@@ -88,7 +88,10 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Material(
         elevation: 12,
         color: Theme.of(context).canvasColor,
@@ -240,9 +243,6 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                height: MediaQuery.of(context).viewInsets.bottom / 2,
-              ),
               ListView.builder(
                 shrinkWrap: true,
                 itemCount: slots.length,
@@ -318,6 +318,8 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
                       }
                       return;
                     }
+
+
 
                     if (widget.onLectureAdded != null) {
                       widget.onLectureAdded!(

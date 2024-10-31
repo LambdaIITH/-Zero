@@ -5,10 +5,10 @@ class TimePickerBottomSheet extends StatefulWidget {
   final Function(DateTime) onTimeSelected;
 
   const TimePickerBottomSheet({
-    Key? key,
+    super.key,
     required this.initialTime,
     required this.onTimeSelected,
-  }) : super(key: key);
+  });
 
   @override
   _TimePickerBottomSheetState createState() => _TimePickerBottomSheetState();
