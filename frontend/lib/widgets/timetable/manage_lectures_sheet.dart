@@ -1,4 +1,5 @@
 import 'package:dashbaord/models/lecture_model.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:dashbaord/widgets/timetable/lecture_time_picker.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ class ManageLecturesBottomSheet extends StatefulWidget {
   final String courseCode;
   final String courseName;
   final List<Lecture> courseSlots;
+  final Timetable? timetable;
 
   final Function(String, String, List<Lecture>)? onLectureEdited;
 
@@ -16,7 +18,8 @@ class ManageLecturesBottomSheet extends StatefulWidget {
       required this.courseCode,
       required this.courseName,
       required this.courseSlots,
-      required this.onLectureEdited});
+      required this.onLectureEdited,
+      required this.timetable});
 
   @override
   State<ManageLecturesBottomSheet> createState() =>
@@ -39,6 +42,7 @@ class ManageLecturesBottomSheetState extends State<ManageLecturesBottomSheet> {
       context: context,
       builder: (BuildContext context) {
         return LectureTimePickerBottomSheet(
+          timetable: widget.timetable,
           onSlotSelected: (newSlots) {
             setState(() {
               slots.addAll(newSlots);

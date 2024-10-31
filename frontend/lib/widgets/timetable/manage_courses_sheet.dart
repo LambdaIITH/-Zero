@@ -29,6 +29,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
       context: context,
       builder: (context) {
         return ManageLecturesBottomSheet(
+            timetable: widget.timetable,
             courseCode: courseCode,
             courseName: courseName,
             courseSlots: timetable.getSlotsForCourse(courseCode),

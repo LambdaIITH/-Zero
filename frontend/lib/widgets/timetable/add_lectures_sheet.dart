@@ -37,6 +37,7 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
       context: context,
       builder: (BuildContext context) {
         return LectureTimePickerBottomSheet(
+          timetable: widget.timetable,
           onSlotSelected: (newSlots) {
             setState(() {
               slots.addAll(newSlots);
@@ -318,8 +319,6 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
                       }
                       return;
                     }
-
-
 
                     if (widget.onLectureAdded != null) {
                       widget.onLectureAdded!(

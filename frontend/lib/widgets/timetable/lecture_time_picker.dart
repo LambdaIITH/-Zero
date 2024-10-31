@@ -1,5 +1,6 @@
 import 'package:dashbaord/constants/enums/iith_slots.dart';
 import 'package:dashbaord/models/lecture_model.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/utils/normal_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,11 +8,10 @@ import 'package:intl/intl.dart';
 
 class LectureTimePickerBottomSheet extends StatefulWidget {
   final Function(List<Lecture>) onSlotSelected;
+  final Timetable? timetable;
 
-  const LectureTimePickerBottomSheet({
-    super.key,
-    required this.onSlotSelected,
-  });
+  const LectureTimePickerBottomSheet(
+      {super.key, required this.onSlotSelected, required this.timetable});
 
   @override
   State<LectureTimePickerBottomSheet> createState() =>
@@ -20,7 +20,9 @@ class LectureTimePickerBottomSheet extends StatefulWidget {
 
 class _LectureTimePickerBottomSheetState
     extends State<LectureTimePickerBottomSheet> {
-  String selectedDay = "Monday", selectedStartTime = "9:00 AM", selectedEndTime = "10:00 AM";
+  String selectedDay = "Monday",
+      selectedStartTime = "9:00 AM",
+      selectedEndTime = "10:00 AM";
   bool isTimePickerSelected = false;
   DateTime initialDate = DateTime.parse("2024-10-26 09:00:00");
 
@@ -28,17 +30,99 @@ class _LectureTimePickerBottomSheetState
   String selectedSlot = "A";
 
   void _addSlots() {
+    List<Lecture> newLectures = [];
+
     if (isTimePickerSelected) {
-      widget.onSlotSelected([
+      newLectures = [
         Lecture(
             startTime: selectedStartTime,
             endTime: selectedEndTime,
             day: selectedDay,
             courseCode: "")
-      ]);
+      ];
     } else {
-      widget.onSlotSelected(getSlotFromString(selectedSlot)!.getLectures());
+      newLectures = getSlotFromString(selectedSlot)!.getLectures();
     }
+
+    List<Lecture> existingLectures = widget.timetable?.slots ?? [];
+    bool hasAnyCollision = false;
+    List<Lecture> conflictingLectures = [];
+
+    for (Lecture newLecture in newLectures) {
+      for (Lecture existingLecture in existingLectures) {
+        if (lecturesOverlap(newLecture, existingLecture)) {
+          hasAnyCollision = true;
+          conflictingLectures.add(newLecture);
+          break;
+        }
+      }
+    }
+
+    if (hasAnyCollision) {
+
+      String message =
+          'The slots you are trying to add conflict with the following existing lectures in your timetable:\n\n';
+      for (Lecture lecture in conflictingLectures) {
+        message +=
+            '- ${lecture.courseCode.isNotEmpty ? lecture.courseCode : ""} on ${lecture.day} from ${lecture.startTime} to ${lecture.endTime}\n';
+      }
+      message +=
+          '\nPlease select different slots or times that do not conflict with your existing timetable.';
+
+      Future.delayed(Duration(milliseconds: 100), () {
+        showDialog(
+          context: context,
+          useRootNavigator: true,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Conflict Detected'),
+              content: SingleChildScrollView(
+                child: Text(message),
+              ),
+              actionsAlignment: MainAxisAlignment.center, // Center the actions
+              actions: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop(); 
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      });
+    } else {
+      widget.onSlotSelected(newLectures);
+      Navigator.of(context).pop();
+    }
+  }
+
+  bool lecturesOverlap(Lecture a, Lecture b) {
+    if (a.day != b.day) return false;
+
+    DateFormat format = DateFormat('h:mm a');
+
+    DateTime aStart = format.parse(a.startTime);
+    DateTime aEnd = format.parse(a.endTime);
+    DateTime bStart = format.parse(b.startTime);
+    DateTime bEnd = format.parse(b.endTime);
+
+    DateTime referenceDate = DateTime(2000, 1, 1);
+    aStart = DateTime(referenceDate.year, referenceDate.month,
+        referenceDate.day, aStart.hour, aStart.minute);
+    aEnd = DateTime(referenceDate.year, referenceDate.month, referenceDate.day,
+        aEnd.hour, aEnd.minute);
+    bStart = DateTime(referenceDate.year, referenceDate.month,
+        referenceDate.day, bStart.hour, bStart.minute);
+    bEnd = DateTime(referenceDate.year, referenceDate.month, referenceDate.day,
+        bEnd.hour, bEnd.minute);
+
+    return aStart.isBefore(bEnd) && aEnd.isAfter(bStart);
   }
 
   @override

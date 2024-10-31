@@ -11,6 +11,7 @@ import 'package:dashbaord/widgets/timetable/week_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:calendar_view/calendar_view.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -52,6 +53,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void initState() {
     super.initState();
     timetable = widget.timetable;
+    print(timetable?.courses);
+    print(timetable?.toJson());
   }
 
   @override
@@ -308,7 +311,13 @@ Click the link to add these courses to your timetable:
 $shareableLink
     ''';
 
-        Share.share(shareMessage);
+        ShareResult result = await Share.share(shareMessage);
+        if (result.status != ShareResultStatus.success) {
+          await Clipboard.setData(ClipboardData(text: shareMessage));
+          showError(
+              msg:
+                  "Succefully copied to clipboard. You can paste and share it easily!");
+        }
       } else {
         showError(msg: "Failed to share timetable");
       }
