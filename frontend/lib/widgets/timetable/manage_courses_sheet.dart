@@ -103,7 +103,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  widget.isAddCourses?"Add Courses": "Manage Courses",
+                  widget.isAddCourses ? "Add Courses" : "Manage Courses",
                   style: TextStyle(
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontSize: 26,
@@ -149,7 +149,9 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                               leading: CircleAvatar(
                                 backgroundColor: Colors.blueAccent,
                                 child: Text(
-                                  courseCode.substring(0, 2),
+                                  courseCode.length >= 2
+                                      ? courseCode.substring(0, 2)
+                                      : courseCode,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold),
@@ -245,7 +247,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                   ),
                   icon: Icon(Icons.check), // Leading icon
                   label: Text(
-                    widget.isAddCourses? "Add": "Save",
+                    widget.isAddCourses ? "Add" : "Save",
                     style: TextStyle(fontSize: 18),
                   ),
                 ),
