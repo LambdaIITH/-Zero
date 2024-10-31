@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS users
     name VARCHAR NOT NULL,
     cr BOOLEAN DEFAULT FALSE,
     phone_number VARCHAR(15) UNIQUE,
-    timetable JSON DEFAULT '{"courses": {}, "custom_slots": {}}'
+    timetable JSON DEFAULT '{"courses": {}, "slots": {}}'
 );
 
 CREATE TABLE IF NOT EXISTS shared_timetable
