@@ -145,7 +145,7 @@ extension SlotExtension on IITHSlot {
           Lecture(
               day: "Wednesday",
               startTime: "2:30 PM",
-              endTime: "4:00 PM",
+              endTime: "3:30 PM",
               courseCode: courseCode),
           Lecture(
               day: "Friday",
