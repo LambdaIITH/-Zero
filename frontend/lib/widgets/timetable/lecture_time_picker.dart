@@ -59,7 +59,6 @@ class _LectureTimePickerBottomSheetState
     }
 
     if (hasAnyCollision) {
-
       String message =
           'The slots you are trying to add conflict with the following existing lectures in your timetable:\n\n';
       for (Lecture lecture in conflictingLectures) {
@@ -83,12 +82,25 @@ class _LectureTimePickerBottomSheetState
               actions: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: Colors.grey, // Grey background for cancel
                     foregroundColor: Colors.white,
                   ),
-                  child: Text('OK'),
+                  child: Text('Cancel'),
                   onPressed: () {
-                    Navigator.of(context).pop(); 
+                    Navigator.of(context).pop();
+                  },
+                ),
+                SizedBox(width: 10), // Add space between buttons
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text('Add Anyway'),
+                  onPressed: () {
+                    widget.onSlotSelected(newLectures);
+                    Navigator.of(context).pop();
                   },
                 ),
               ],
