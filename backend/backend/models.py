@@ -32,38 +32,34 @@ class User(BaseModel):
 
 
 
+
 class Timetable(BaseModel):
     """TimeTable Model:
         courses: Mapping of course_code to slots
-        custom_slots: List of custom slots
-        
+        slots: List of slots
         custom_slot is a mapping of slot to a mapping of day to timings
-        
-        Example:
-        {
-            "courses": {
-                "CS101": "A1",
-                "CS102": "B1"
-            },
-            "custom_slots": [
-                {
-                    "slot": {
-                        "day": "Monday",
-                        "timings": "10:00-11:00"
-                    }
-                }
-            ]
-        }
-        
-        
     """
-    courses: Dict[str, Dict[str, str]]  = Field(default_factory=dict)
-    slots: List[Dict[str, str]] = Field(default_factory=list)
     
+    courses: Dict[str, Dict[str, str]] = Field(
+        default_factory=dict,
+        example={"CS101": {"title": "Introduction to Computer Science"}}
+    )
+    slots: List[Dict[str, str]] = Field(
+        default_factory=list,
+        example=[
+            {
+                "course_code": "CS101",
+                "day": "Monday",
+                "start_time": "9:00 AM",
+                "end_time": "10:30 AM"
+            }
+        ]
+    )
+
     @classmethod
     def from_row(cls, timetable):
-        return Timetable(courses=timetable['courses'], slots=timetable['slots'])
-    
+        return cls(courses=timetable['courses'], slots=timetable['slots'])
+
 
 class LfItem(BaseModel):
     id: int 
