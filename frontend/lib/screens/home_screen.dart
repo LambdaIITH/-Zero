@@ -110,18 +110,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> fetchTimetable() async {
     Timetable? localTimetable = await SharedService().getTimetable();
+    final response = await ApiServices().getTimetable(context);
 
-    if (localTimetable == null) {
-      debugPrint("Timetable not found in local storage");
-      final response = await ApiServices().getTimetable(context);
-      if (response == null) {
+    if (response == null) {
+      if (localTimetable == null) {
         showError(msg: "Timetable not found. Please add courses.");
         setState(() {
           timetable = Timetable(courses: {}, slots: []);
           changeState();
         });
         return;
+      } else {
+        showError(msg: "Timetable Server refresh failed...");
+        localTimetable.cleanUp();
+        setState(() {
+          timetable = localTimetable;
+          changeState();
+        });
+        return;
       }
+    } else {
       response.cleanUp();
       setState(() {
         timetable = response;
@@ -129,15 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
       await SharedService().saveTimetable(response);
-      return;
-    } else {
-      debugPrint("Timetable fetched from local storage");
-      localTimetable.cleanUp();
-      setState(() {
-        timetable = localTimetable;
-        changeState();
-      });
-      return;
     }
   }
 
