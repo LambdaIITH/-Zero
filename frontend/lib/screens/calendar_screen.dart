@@ -9,6 +9,7 @@ import 'package:dashbaord/widgets/timetable/manage_courses_sheet.dart';
 import 'package:dashbaord/widgets/timetable/month_view.dart';
 import 'package:dashbaord/widgets/timetable/week_view.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/services.dart';
@@ -249,7 +250,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-
   void _showManageCoursesBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -310,12 +310,19 @@ Click the link to add these courses to your timetable:
 $shareableLink
     ''';
 
-        ShareResult result = await Share.share(shareMessage);
-        if (result.status != ShareResultStatus.success) {
+        if (kIsWeb) {
           await Clipboard.setData(ClipboardData(text: shareMessage));
           showError(
               msg:
                   "Succefully copied to clipboard. You can paste and share it easily!");
+        } else {
+          ShareResult result = await Share.share(shareMessage);
+          if (result.status != ShareResultStatus.success) {
+            await Clipboard.setData(ClipboardData(text: shareMessage));
+            showError(
+                msg:
+                    "Succefully copied to clipboard. You can paste and share it easily!");
+          }
         }
       } else {
         showError(msg: "Failed to share timetable");
