@@ -123,6 +123,38 @@ class ApiServices {
     }
   }
 
+  Future<dynamic> getWeekNumber(BuildContext context) async {
+    try {
+      debugPrint("Making request to: ${dio.options.baseUrl}/mess_menu/week");
+      final response = await dio.get('/mess_menu/week');
+
+      if (response.statusCode == 401) {
+        return null;
+      }
+
+      final data = response.data;
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> updateWeekNumber(BuildContext context, int value) async {
+    try {
+      final response = await dio.post('/mess_menu/', data: {
+        "number": value,
+        "password": "someSecret"
+      });
+
+      print(response);
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
   Future<BusSchedule?> getBusSchedule(BuildContext context) async {
     try {
       debugPrint("Making request to: ${dio.options.baseUrl}/transport");

@@ -1,3 +1,4 @@
+import 'package:dashbaord/constants/admins.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
@@ -35,6 +36,19 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
     );
   }
 
+  int status = 0;
+  int totalOperation = 2;
+
+  void changeState() {
+    setState(() {
+      status++;
+      if (status >= totalOperation) {
+        isLoading = false;
+      }
+    });
+  }
+
+
   void fetchMessMenu() async {
     final response = await ApiServices().getMessMenu(context);
     if (response == null) {
@@ -46,15 +60,41 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
       }
       setState(() {
         messMenu = res;
-        isLoading = false;
+        // isLoading = false;
+        changeState();
       });
 
       return;
     }
     setState(() {
       messMenu = response;
-      isLoading = false;
+      // isLoading = false;
+      changeState();
     });
+  }
+
+  int? week;
+
+  // Future<void> fetchUser() async {
+  //   final response = await ApiServices().getUserDetails(context);
+  //   if (response != null) {
+  //     if (Admins().admins.contains(response.email)) {
+  //       setState(() {
+  //         isAdmin = true;
+  //       });
+  //     }
+  //   }
+  // }
+
+  Future<void> fetchWeekNumber() async {
+    final response = await ApiServices().getWeekNumber(context);
+    if (response != null) {
+      setState(() {
+        week = response['week'];
+        week = week != null ? week! + 1 : week;
+      });
+    }
+    changeState();
   }
 
   @override
@@ -64,8 +104,10 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
       fetchMessMenu();
     } else {
       messMenu = widget.messMenu;
-      isLoading = false;
+      // isLoading = false;
+      changeState();
     }
+    fetchWeekNumber();
   }
 
   @override
@@ -106,6 +148,7 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
                         child: SingleChildScrollView(
                             child: MessMenuPage(
                       messMenu: messMenu!,
+                      week: week,
                     ))),
                   ]),
             ),
@@ -115,10 +158,8 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
 
 class MessMenuPage extends StatefulWidget {
   final MessMenuModel messMenu;
-  const MessMenuPage({
-    super.key,
-    required this.messMenu,
-  });
+  final int? week;
+  const MessMenuPage({super.key, required this.messMenu, this.week});
 
   @override
   State<MessMenuPage> createState() => _MessMenuPageState();
@@ -152,15 +193,30 @@ class _MessMenuPageState extends State<MessMenuPage> {
 
   final analyticsService = FirebaseAnalyticsService();
 
+  int? week;
+
   @override
   void initState() {
     whichDay = getCurrentDay();
     super.initState();
     analyticsService.logScreenView(screenName: "Mess Menu Screen");
+    print(widget.week);
+    week = widget.week;
   }
 
   bool isWeekend() {
     return whichDay == 'Sunday' || whichDay == 'Saturday';
+  }
+
+  void showError({String? msg}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg ?? 'Please login to use this feature'),
+        duration: const Duration(milliseconds: 1500),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
@@ -214,6 +270,47 @@ class _MessMenuPageState extends State<MessMenuPage> {
                 focusColor: textColor,
               ),
             ),
+            if (week != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 3, 36, 0),
+                child: DropdownButton<int>(
+                  elevation: 0,
+                  underline: Container(),
+                  value: week,
+                  items:
+                      <int>[1, 2, 3, 4].map<DropdownMenuItem<int>>((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text(
+                        "$value",
+                        style: GoogleFonts.inter(
+                          color: textColor,
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (int? value) async {
+                    if (value == null) {
+                      return;
+                    }
+
+                    bool resp = await ApiServices()
+                        .updateWeekNumber(context, value - 1);
+                    if (resp) {
+                      setState(() {
+                        week = value;
+                      });
+                      showError(msg: "Week number updated successfully");
+                    }else{
+                      showError(msg: "Failed to update Week number");
+                    }
+                  },
+                  focusColor: textColor,
+                ),
+              ),
           ],
         ),
         Column(
