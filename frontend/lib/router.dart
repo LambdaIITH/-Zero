@@ -59,7 +59,7 @@ class AppRouter {
         path: '/home',
         builder: (context, state) {
           final data = state.extra as Map<String, dynamic>? ?? {};
-          final isGuest = data['isGuest'] as bool? ?? false;
+          final isGuest = data['isGuest'] as bool? ?? true;
           final code = data['code'] as String?;
 
           return HomeScreen(

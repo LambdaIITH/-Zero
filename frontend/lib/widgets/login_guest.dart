@@ -29,7 +29,7 @@ class ContinueAsGuest extends StatelessWidget {
             //     isGuest: true,
             //   ),
             // ));
-            context.go('/', extra: {
+            context.go('/home', extra: {
               'onThemeChanged': onThemeChanged,
               'isGuest': true,
             });
