@@ -1,13 +1,10 @@
-package auth
+package helpers
 
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
-
-var cookieDomain string = os.Getenv("COOKIE_DOMAIN")
 
 // setCookie sets a cookie with the given parameters
 func SetCookie(w http.ResponseWriter, key string, value string, daysExpire int) {
@@ -19,7 +16,6 @@ func SetCookie(w http.ResponseWriter, key string, value string, daysExpire int) 
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
-		Domain:   cookieDomain,
 		Path:     "/",
 		MaxAge:   daysExpire * 24 * 60 * 60, // seconds
 	})
