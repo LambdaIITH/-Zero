@@ -110,7 +110,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> fetchTimetable() async {
     Timetable? localTimetable = await SharedService().getTimetable();
-    final response = await ApiServices().getTimetable(context);
+    Timetable? response;
+    if (!widget.isGuest) {
+      response = await ApiServices().getTimetable(context);
+    }
 
     if (response == null) {
       if (localTimetable == null) {
@@ -231,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
     checkForUpdates();
     getMainGateStatus();
     if (!widget.isGuest) {
-      totalOperation = totalOperation + 2;
+      totalOperation = totalOperation + 3;
       fetchUser();
       fetchUserProfile();
     }

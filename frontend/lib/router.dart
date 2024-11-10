@@ -58,9 +58,15 @@ class AppRouter {
       GoRoute(
         path: '/home',
         builder: (context, state) {
+          final isLoggedIn = getAuthStatus();
+
           final data = state.extra as Map<String, dynamic>? ?? {};
-          final isGuest = data['isGuest'] as bool? ?? true;
+          bool isGuest = data['isGuest'] as bool? ?? true;
           final code = data['code'] as String?;
+
+          if (isLoggedIn) {
+            isGuest = false;
+          }
 
           return HomeScreen(
             isGuest: isGuest,
