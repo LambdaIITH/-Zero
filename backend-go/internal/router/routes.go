@@ -3,9 +3,8 @@ package router
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-
 	"github.com/LambdaIITH/Dashboard/backend/internal/controller"
+	"github.com/gin-gonic/gin"
 )
 
 func home(c *gin.Context) {
@@ -19,7 +18,11 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/", home)
 	router.POST("/auth/login", controller.LoginHandler)
 	router.POST("/auth/logout", controller.LogoutHandler)
-
-
+	router.POST("/lost/add_item", controller.AddItemHandler)
+	router.GET("/lost/all", controller.GetAllItemsHandler)
+	router.GET("/lost/get_item/:id", controller.GetItemByIdHandler)
+	router.PUT("/lost/edit_item", controller.EditItemHandler)
+	router.POST("/lost/delete_item", controller.DeleteItemHandler)
+	router.GET("/lost/search", controller.SearchItemHandler)
 
 }
