@@ -8,6 +8,7 @@ import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
+import 'package:dashbaord/widgets/homeScreenCardSmall.dart';
 import 'package:dashbaord/widgets/home_card_no_options.dart';
 import 'package:dashbaord/widgets/home_screen_appbar.dart';
 import 'package:dashbaord/widgets/home_screen_bus_timings.dart';
@@ -506,36 +507,86 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 20),
                           HomeScreenMessMenu(messMenu: messMenu),
                           const SizedBox(height: 20),
-                          HomeCardNoOptions(
-                            isComingSoon: false,
-                            title: 'Cab Sharing',
-                            child: 'assets/icons/cab-sharing-icon.svg',
-                            onTap: () {
-                              widget.isGuest
-                                  ? showError()
-                                  : context.push('/cabsharing', extra: {
-                                      'user': userModel ??
-                                          UserModel(
-                                              email: "user@iith.ac.in",
-                                              name: "User"),
-                                      'image': image,
-                                    });
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          HomeCardNoOptions(
-                            isComingSoon: false,
-                            isLnF: true,
-                            title: 'Lost & Found',
-                            child: 'assets/icons/magnifying-icon.svg',
-                            onTap: widget.isGuest
-                                ? showError
-                                : () => context.push('/lnf', extra: {
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Row(
+                                children: [
+                                  HomeScreenCardSmall(
+                                    isComingSoon: false,
+                                    title: 'Cab Sharing',
+                                    child: 'assets/icons/cab-sharing-icon.svg',
+                                    onTap: () {
+                                      widget.isGuest
+                                          ? showError()
+                                          : context.push('/cabsharing', extra: {
+                                        'user': userModel ??
+                                            UserModel(
+                                                email: "user@iith.ac.in",
+                                                name: "User"),
+                                        'image': image,
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(width: 10),
+                                  HomeScreenCardSmall(
+                                    isComingSoon: false,
+                                    isLnF: true,
+                                    title: 'Lost & Found',
+                                    child: 'assets/icons/magnifying-icon.svg',
+                                    onTap: widget.isGuest
+                                        ? showError
+                                        : () => context.push('/lnf', extra: {
                                       'currentUserEmail':
-                                          userModel?.email ?? 'user@iith.ac.in'
+                                      userModel?.email ?? 'user@iith.ac.in'
                                     }),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  HomeScreenCardSmall(
+                                    isComingSoon: false,
+                                    title: 'Patencheru Bus',
+                                    child: 'assets/icons/cab-sharing-icon.svg',
+                                    onTap: () {
+                                      context.push('/bus_ticket');
+                                    },
+                                  ),
+
+                                ],
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 20),
+                          // HomeCardNoOptions(
+                          //   isComingSoon: true,
+                          //   title: 'Cab Sharing',
+                          //   child: 'assets/icons/cab-sharing-icon.svg',
+                          //   onTap: () {
+                          //     widget.isGuest
+                          //         ? showError()
+                          //         : context.push('/cabsharing', extra: {
+                          //             'user': userModel ??
+                          //                 UserModel(
+                          //                     email: "user@iith.ac.in",
+                          //                     name: "User"),
+                          //             'image': image,
+                          //           });
+                          //   },
+                          // ),
+                          // const SizedBox(height: 20),
+                          // HomeCardNoOptions(
+                          //   isComingSoon: false,
+                          //   isLnF: true,
+                          //   title: 'Lost & Found',
+                          //   child: 'assets/icons/magnifying-icon.svg',
+                          //   onTap: widget.isGuest
+                          //       ? showError
+                          //       : () => context.push('/lnf', extra: {
+                          //             'currentUserEmail':
+                          //                 userModel?.email ?? 'user@iith.ac.in'
+                          //           }),
+                          // ),
+                          // const SizedBox(height: 20),
                         ],
                       ),
                     ),

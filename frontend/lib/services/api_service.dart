@@ -31,7 +31,8 @@ class ApiServices {
   ApiServices._internal();
 
   PersistCookieJar? cookieJar;
-  String backendUrl = dotenv.env["BACKEND_URL"] ?? "";
+  // String backendUrl = dotenv.env["BACKEND_URL"] ?? "https://api.iith.dev/";
+  String backendUrl = "https://api.iith.dev/";
 
   Dio dio = Dio();
 

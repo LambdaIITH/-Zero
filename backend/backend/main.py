@@ -16,6 +16,8 @@ from Routes.User.controller import router as user_router
 from Routes.Auth.tokens import verify_token
 from fastapi.responses import JSONResponse
 from Routes.Transport.transport_schedule import router as transport_router
+from Routes.Transport.qr import router as transaction_verification_route
+
 
 load_dotenv()
 
@@ -46,6 +48,7 @@ app.include_router(lost_router)
 app.include_router(cab_router)
 app.include_router(user_router)
 app.include_router(transport_router)
+app.include_router(transaction_verification_route)
 
 async def cookie_verification_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
@@ -61,14 +64,14 @@ async def cookie_verification_middleware(request: Request, call_next):
     else:
         return JSONResponse(status_code=401, content={"detail": "Session cookie is missing"})
     response = await call_next(request)
-    
+
     #updating the cookie
     set_cookie(response=response, key="session", value=token, days_expire=15)
     return response
 
 @app.middleware("http")
 async def apply_middleware(request: Request, call_next):
-    excluded_routes = ["/auth/login", "/auth/logout", "/docs", "/openapi.json", "/transport/", "/mess_menu/"]  # Add routes to exclude guard here
+    excluded_routes = ["/transport/qr","/auth/login", "/auth/logout", "/docs", "/openapi.json", "/transport/", "/mess_menu/"]  # Add routes to exclude guard here
 
     if request.url.path not in excluded_routes:
         return await cookie_verification_middleware(request, call_next)

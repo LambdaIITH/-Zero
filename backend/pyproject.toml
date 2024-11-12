@@ -27,6 +27,8 @@ html2text = "^2024.2.26"
 aiosql = "^10.2"
 gunicorn = "^22.0.0"
 pytz = "^2024.1"
+regex = "^2024.11.6"
+
 
 
 [tool.poetry.group.dev.dependencies]
