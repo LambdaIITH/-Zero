@@ -11,11 +11,17 @@ from external_services import ElasticsearchManager, S3Manager
 
 load_dotenv()
 
-DATABASE = os.getenv("DATABASE")
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASS = os.getenv("POSTGRES_PASS")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+# DATABASE = os.getenv("DATABASE")
+# POSTGRES_USER = os.getenv("POSTGRES_USER")
+# POSTGRES_PASS = os.getenv("POSTGRES_PASS")
+# POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+# POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+
+DATABASE = 'sample_db'
+POSTGRES_USER = 'skgezhil2005'
+POSTGRES_PASS = 'EzHiL2005&&'
+POSTGRES_HOST = 'localhost'
+POSTGRES_PORT = 5432
 
 try: 
     conn = psycopg2.connect(
