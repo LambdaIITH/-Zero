@@ -507,55 +507,60 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 20),
                           HomeScreenMessMenu(messMenu: messMenu),
                           const SizedBox(height: 20),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: Row(
-                                children: [
-                                  HomeScreenCardSmall(
-                                    isComingSoon: false,
-                                    title: 'Cab Sharing',
-                                    child: 'assets/icons/cab-sharing-icon.svg',
-                                    onTap: () {
-                                      widget.isGuest
-                                          ? showError()
-                                          : context.push('/cabsharing', extra: {
-                                        'user': userModel ??
-                                            UserModel(
-                                                email: "user@iith.ac.in",
-                                                name: "User"),
-                                        'image': image,
-                                      });
-                                    },
-                                  ),
-                                  const SizedBox(width: 10),
-                                  HomeScreenCardSmall(
-                                    isComingSoon: false,
-                                    isLnF: true,
-                                    title: 'Lost & Found',
-                                    child: 'assets/icons/magnifying-icon.svg',
-                                    onTap: widget.isGuest
-                                        ? showError
-                                        : () => context.push('/lnf', extra: {
-                                      'currentUserEmail':
-                                      userModel?.email ?? 'user@iith.ac.in'
-                                    }),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  HomeScreenCardSmall(
-                                    isComingSoon: false,
-                                    title: 'Patencheru Bus',
-                                    child: 'assets/icons/cab-sharing-icon.svg',
-                                    onTap: () {
-                                      context.push('/city_bus');
-                                    },
-                                  ),
 
-                                ],
+                          Wrap(
+                            spacing: 10.0, // Horizontal spacing between cards
+                            runSpacing: 10.0, // Vertical spacing between rows
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width / 2 - 25, // Half of the screen width minus spacing
+                                child: HomeScreenCardSmall(
+                                  isComingSoon: false,
+                                  title: 'Cab Sharing',
+                                  child: 'assets/icons/cab-sharing-icon.svg',
+                                  onTap: () {
+                                    widget.isGuest
+                                        ? showError()
+                                        : context.push('/cabsharing', extra: {
+                                      'user': userModel ??
+                                          UserModel(
+                                              email: "user@iith.ac.in",
+                                              name: "User"),
+                                      'image': image,
+                                    });
+                                  },
+                                ),
                               ),
-                            ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width / 2 - 25,
+                                child: HomeScreenCardSmall(
+                                  isComingSoon: false,
+                                  isLnF: true,
+                                  title: 'Lost & Found',
+                                  child: 'assets/icons/magnifying-icon.svg',
+                                  onTap: widget.isGuest
+                                      ? showError
+                                      : () => context.push('/lnf', extra: {
+                                    'currentUserEmail': userModel?.email ?? 'user@iith.ac.in'
+                                  }),
+                                ),
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width / 2 - 25,
+                                child: HomeScreenCardSmall(
+                                  isComingSoon: false,
+                                  title: 'Patencheru Bus',
+                                  child: 'assets/icons/cab-sharing-icon.svg',
+                                  onTap: () {
+                                    widget.isGuest ?
+                                        showError() :
+                                    context.push('/city_bus');
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
+
                           const SizedBox(height: 20),
                           // HomeCardNoOptions(
                           //   isComingSoon: true,

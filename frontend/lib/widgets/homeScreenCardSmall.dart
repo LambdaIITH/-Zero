@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+
 class HomeScreenCardSmall extends StatelessWidget {
   final String title;
   final dynamic child;
@@ -27,8 +28,6 @@ class HomeScreenCardSmall extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        // clipBehavior: Clip.hardEdge,
-        height: 170,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
@@ -41,52 +40,57 @@ class HomeScreenCardSmall extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          children: [
-            Stack(
-              children: [
+        child: Align(
+          alignment: Alignment.center,
+          child: Wrap(
+            direction: Axis.vertical,
+            children: [
                 Stack(
                   children: [
-                    isImageShow
-                        ? SvgPicture.asset(
-                            child,
-                            width: min(0.32 * screenWidth, 200),
-                          )
-                        : Container(),
+                    Stack(
+                      children: [
+                        isImageShow
+                            ? SvgPicture.asset(
+                                child,
+                                fit: BoxFit.contain,
+                                height: min(0.32 * screenWidth, 200),
+                              )
+                            : Container(),
+                      ],
+                    ),
+                    if (isComingSoon)
+                      Container(
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color.fromARGB(255, 57, 57, 57)
+                                    .withOpacity(0.5)
+                                : Colors.white.withOpacity(0.5)),
+                        child: Center(
+                            child: SizedBox(
+                                height: 100,
+                                child: Image.asset(
+                                  "assets/icons/comingsoon.png",
+                                ))),
+                      )
                   ],
                 ),
-                if (isComingSoon)
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? const Color.fromARGB(255, 57, 57, 57)
-                                .withOpacity(0.5)
-                            : Colors.white.withOpacity(0.5)),
-                    child: Center(
-                        child: SizedBox(
-                            height: 100,
-                            child: Image.asset(
-                              "assets/icons/comingsoon.png",
-                            ))),
-                  )
+                // Expanded(child: SizedBox()),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
               ],
             ),
-            Expanded(child: SizedBox()),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
         ),
-      ),
-    );
+        ),
+      );
   }
 }

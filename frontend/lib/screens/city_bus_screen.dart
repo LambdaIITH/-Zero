@@ -83,8 +83,8 @@ class _CityBusScreenState extends State<CityBusScreen>
     final result =
         await apiServices.submitTransactionID(transactionIdController.text);
 
-    SharedService()
-        .saveUserDetails(name: "SKGEzhil", email: "ep23btech11016@iith.ac.in");
+    // SharedService()
+    //     .saveUserDetails(name: "SKGEzhil", email: "ep23btech11016@iith.ac.in");
 
     final email = (await SharedService().getUserDetails())['email'];
     final name = (await SharedService().getUserDetails())['name'];
