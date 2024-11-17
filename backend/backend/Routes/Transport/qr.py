@@ -16,7 +16,8 @@ class TransactionRequest(BaseModel):
 # Response model
 class TransactionResponse(BaseModel):
     transactionId: str
-    payment_time: str  # hh:mm dd/mm/yy
+    paymentTime: str  # hh:mm dd/mm/yy
+    travelDate: str  # dd/mm/yy
     busTiming: str  # hh:mm
 
 
@@ -24,10 +25,12 @@ class TransactionResponse(BaseModel):
 async def process_transaction(request: TransactionRequest):
     # Sample data generation for the response
     payment_time = datetime.now().strftime("%H:%M %d/%m/%y")
+    travel_date = datetime.now().strftime("%d/%m/%y")
     bus_timing = "14:30"  # Example bus timing; replace with actual data logic if needed
 
     return TransactionResponse(
         transactionId=request.transactionId,
-        payment_time=payment_time,
+        paymentTime=payment_time,
+        travelDate=travel_date,
         busTiming=bus_timing
     )

@@ -66,3 +66,54 @@ class BusSchedule {
     };
   }
 }
+
+class CityBusSchedule {
+  final Map<String, int> fromIITH;
+  final Map<String, int> toIITH;
+
+  CityBusSchedule({
+    required this.fromIITH,
+    required this.toIITH,
+  });
+
+  factory CityBusSchedule.fromJson(Map<String, dynamic> json) {
+    Map<String, int> fromIITH = {};
+    json['bus']['iith-ptc'].forEach((item) {
+      fromIITH[item] = 0; // Bus values should be 0
+    });
+
+    Map<String, int> toIITH = {};
+    json['bus']['ptc-iith'].forEach((item) {
+      toIITH[item] = 0; // Bus values should be 0
+    });
+
+    return CityBusSchedule(
+      fromIITH: fromIITH,
+      toIITH: toIITH,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    List<String> busFromIITH = [];
+    List<String> busToIITH = [];
+
+    fromIITH.forEach((key, value) {
+      if (value == 0) {
+        busFromIITH.add(key);
+      }
+    });
+
+    toIITH.forEach((key, value) {
+      if (value == 0) {
+        busToIITH.add(key);
+      }
+    });
+
+    return {
+      'bus': {
+        'iith-ptc': busFromIITH,
+        'ptc-iith': busToIITH,
+      }
+    };
+  }
+}

@@ -69,6 +69,7 @@ dependencies:
   paged_vertical_calendar: ^1.1.9
   collection: ^1.18.0
   go_router: ^14.3.0
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -129,7 +130,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/lost_and_found/
-    - .env
+#    - .env
     - shorebird.yaml
   #   - images/a_dot_ham.jpeg
 
