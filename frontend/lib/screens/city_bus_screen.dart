@@ -93,6 +93,7 @@ class _CityBusScreenState extends State<CityBusScreen>
       final transactionId = (result['data']).transactionId;
       final PaymentTime = result['data'].paymentTime;
       final BusTime = result['data'].busTiming;
+      final isUsed = result['data'].isUsed;
 
       transactionDetails = {
         'transactionId': transactionId,
@@ -101,6 +102,7 @@ class _CityBusScreenState extends State<CityBusScreen>
         'busTiming': BusTime,
         'name': name,
         'email': email,
+        'isUsed': isUsed,
       };
     });
 
@@ -154,7 +156,7 @@ class _CityBusScreenState extends State<CityBusScreen>
                         fontSize: 25),
                   ),
                   Text(
-                    'Destination',
+                    destination,
                     style: TextStyle(
                         color: Colors.black.withOpacity(0.8),
                         fontWeight: FontWeight.bold,
@@ -163,7 +165,13 @@ class _CityBusScreenState extends State<CityBusScreen>
                 ],
               ),
               IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    setState(() {
+                      final temp = startingPoint;
+                      startingPoint = destination;
+                      destination = temp;
+                    });
+                  },
                   icon: Icon(
                     Icons.swap_vert_rounded,
                     size: 40,
@@ -252,6 +260,11 @@ class _CityBusScreenState extends State<CityBusScreen>
                       fontWeight: FontWeight.w500,
                       color: Colors.black.withOpacity(0.8),
                       fontSize: 24
+                  ),),
+                  Text('isUsed: ${transactionDetails?['isUsed'].toString()}', style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black.withOpacity(0.8),
+                      fontSize: 16
                   ),),
                 SizedBox(height: 20,),
                 Text('Transaction ID: ${transactionDetails?['transactionId']}', style: TextStyle(
