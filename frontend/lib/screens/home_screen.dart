@@ -548,7 +548,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     title: 'Patencheru Bus',
                                     child: 'assets/icons/cab-sharing-icon.svg',
                                     onTap: () {
-                                      context.push('/bus_ticket');
+                                      context.push('/city_bus');
                                     },
                                   ),
 

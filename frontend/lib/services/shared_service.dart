@@ -11,6 +11,7 @@ class SharedService {
   static const String _keyTimetable = 'timetable';
   static const String _keyMessMenu = 'mess_menu';
   static const String _keyBusSchedule = 'bus_schedule';
+  static const String _keyCityBusSchedule = 'city_bus_schedule';
 
   Future<void> saveUserDetails({
     required String name,
@@ -87,12 +88,28 @@ class SharedService {
     await prefs.setString(_keyBusSchedule, busScheduleJson);
   }
 
+  Future<void> saveCityBusSchedule(CityBusSchedule cityBusSchedule) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cityBusScheduleJson = jsonEncode(cityBusSchedule.toJson());
+    await prefs.setString(_keyCityBusSchedule, cityBusScheduleJson);
+  }
+
   Future<BusSchedule?> getBusSchedule() async {
     final prefs = await SharedPreferences.getInstance();
     final busScheduleJson = prefs.getString(_keyBusSchedule);
     if (busScheduleJson != null) {
       final Map<String, dynamic> busScheduleMap = jsonDecode(busScheduleJson);
       return BusSchedule.fromJson(busScheduleMap);
+    }
+    return null;
+  }
+
+  Future<CityBusSchedule?> getCityBusSchedule() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cityBusScheduleJson = prefs.getString(_keyCityBusSchedule);
+    if (cityBusScheduleJson != null) {
+      final Map<String, dynamic> cityBusScheduleMap = jsonDecode(cityBusScheduleJson);
+      return CityBusSchedule.fromJson(cityBusScheduleMap);
     }
     return null;
   }
