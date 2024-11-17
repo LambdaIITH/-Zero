@@ -3,12 +3,14 @@ class TransactionQRModel {
   final String paymentTime;
   final String travelDate;
   final String busTiming;
+  final bool isUsed;
 
   TransactionQRModel({
     required this.transactionId,
     required this.paymentTime,
     required this.travelDate,
     required this.busTiming,
+    required this.isUsed,
   });
 
   // Factory constructor to create a TransactionResponse from JSON
@@ -18,6 +20,7 @@ class TransactionQRModel {
       paymentTime: json['paymentTime'] as String,
       travelDate: json['travelDate'] as String,
       busTiming: json['busTiming'] as String,
+      isUsed: json['isUsed'] as bool,
     );
   }
 
@@ -28,6 +31,7 @@ class TransactionQRModel {
       'paymentTime': paymentTime,
       'travelDate': travelDate,
       'busTiming': busTiming,
+      'isUsed': isUsed,
     };
   }
 
@@ -41,6 +45,7 @@ class TransactionQRModel {
     String paymentTime = '';
     String travelDate = '';
     String busTiming = '';
+    bool isUsed = false;
 
     // Extract the key-value pairs
     for (String part in parts) {
@@ -62,6 +67,9 @@ class TransactionQRModel {
           case 'travelDate':
             travelDate = value;
             break;
+          case 'isUsed':
+            isUsed = value.toLowerCase() == 'true';
+            break;
         }
       }
     }
@@ -71,6 +79,7 @@ class TransactionQRModel {
         transactionId: transactionId,
         paymentTime: paymentTime,
         busTiming: busTiming,
-        travelDate: travelDate);
+        travelDate: travelDate,
+        isUsed: isUsed);
   }
 }

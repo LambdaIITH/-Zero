@@ -986,6 +986,7 @@ class ApiServices {
         print("Payment Time: ${data['paymentTime']}");
         print("Travel Date: ${data['travelDate']}");
         print("But Timing: ${data['busTiming']}");
+        print("Is Used: ${data['isUsed']}");
 
         final transaction = TransactionQRModel.fromJson(data);
         return {
