@@ -22,6 +22,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../models/transport_qr_model.dart';
 import 'dio_non_web_config.dart' if (dart.library.html) 'dio_web_config.dart';
 
 class ApiServices {
@@ -962,4 +963,64 @@ class ApiServices {
       return -1;
     }
   }
+
+  Future<Map<String, dynamic>> submitTransactionID(String transactionId) async {
+    final dio = Dio();
+
+    // Define the request URL
+    const url = 'http://10.0.2.2:8000/transport/qr';
+
+    try {
+      // Sending the POST request
+      final response = await dio.post(
+        url,
+        data: {
+          'transactionId': transactionId,
+        },
+      );
+
+      // Handling the response
+      if (response.statusCode == 200) {
+        final data = response.data;
+        print("Transaction ID: ${data['transactionId']}");
+        print("Payment Time: ${data['paymentTime']}");
+        print("Travel Date: ${data['travelDate']}");
+        print("But Timing: ${data['busTiming']}");
+
+        final transaction = TransactionQRModel.fromJson(data);
+        return {
+          'status': response.statusCode,
+          'data': transaction,
+        };
+
+      } else {
+        print('Error: ${response.statusCode}');
+        return {
+          'error': 'Failed to send request ${response.statusMessage}',
+          'status': response.statusCode
+        };
+      }
+    } on DioException catch (e) {
+      print('Request failed: $e');
+      return {
+        'error': e.response?.data['detail'],
+        'status': e.response?.statusCode
+      };
+    }
+  }
+
+  Future<CityBusSchedule?> getCityBusSchedule(BuildContext context) async {
+    try {
+      debugPrint("Making request to: ${dio.options.baseUrl}/transport/cityBus");
+      final response = await dio.get('http://10.0.2.2:8000/transport/cityBus');
+
+      final data = response.data;
+      return CityBusSchedule.fromJson(data);
+    } catch (e) {
+      debugPrint("Failed to fetch bus schedule: $e");
+      return null;
+    }
+  }
+
+
 }
