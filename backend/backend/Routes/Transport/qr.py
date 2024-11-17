@@ -3,6 +3,9 @@ import json
 import os
 from pydantic import BaseModel
 from datetime import datetime
+from backend.backend.utils import conn
+
+from backend.backend.queries.transport import log_transaction_to_db, scan_qr
 
 router = APIRouter(prefix="/transport", tags=["transport_schedule"])
 dir = os.path.dirname(os.path.realpath(__file__))
@@ -19,7 +22,10 @@ class TransactionResponse(BaseModel):
     paymentTime: str  # hh:mm dd/mm/yy
     travelDate: str  # dd/mm/yy
     busTiming: str  # hh:mm
+    isUsed: bool
 
+class ScanQRModel(BaseModel):
+    isScanned: bool
 
 @router.post("/qr", response_model=TransactionResponse)
 async def process_transaction(request: TransactionRequest):
@@ -28,9 +34,69 @@ async def process_transaction(request: TransactionRequest):
     travel_date = datetime.now().strftime("%d/%m/%y")
     bus_timing = "14:30"  # Example bus timing; replace with actual data logic if needed
 
-    return TransactionResponse(
+    # Prepare the response
+    response = TransactionResponse(
         transactionId=request.transactionId,
         paymentTime=payment_time,
         travelDate=travel_date,
-        busTiming=bus_timing
+        busTiming=bus_timing,
+        isUsed=False
     )
+
+    # Log the transaction in the database
+    transaction_data = {
+        "transaction_id": response.transactionId,
+        "payment_time": datetime.now(),
+        "travel_date": datetime.now(),
+        "bus_timing": response.busTiming,
+        "isUsed": False
+    }
+    result = log_transaction_to_db(transaction_data)
+
+    if not result:
+        query = """
+        SELECT payment_time, travel_date, bus_timing, isUsed
+        FROM transactions
+        WHERE transaction_id = %s;
+        """
+
+        try:
+            with conn.cursor() as cur:
+                cur.execute(query, (request.transactionId,))
+                result = cur.fetchone()
+                if not result:
+                    return {"error": "Transaction not found"}, 404
+
+                payment_time, travel_date, bus_timing, is_used = result
+
+            # Prepare the response
+            response = TransactionResponse(
+                transactionId=request.transactionId,
+                paymentTime=payment_time.strftime("%H:%M %d/%m/%y"),
+                travelDate=travel_date.strftime("%d/%m/%y"),
+                busTiming=bus_timing.strftime("%H:%M"),
+                isUsed=is_used
+            )
+
+            return response
+
+        except Exception as e:
+            print(f"Error fetching transaction: {e}")
+            return {"error": "Internal server error"}, 500
+
+    return response
+
+@router.post("/qr/scan", response_model= ScanQRModel)
+async def scan_qr_code(request: TransactionRequest):
+    # Sample QR code scanning logic
+
+    transaction_data = {
+        "transaction_id": request.transactionId,
+    }
+
+    result = scan_qr(transaction_data)
+
+    return ScanQRModel(isScanned=result)
+
+
+
