@@ -32,8 +32,8 @@ class ApiServices {
   ApiServices._internal();
 
   PersistCookieJar? cookieJar;
-  // String backendUrl = dotenv.env["BACKEND_URL"] ?? "https://api.iith.dev/";
-  String backendUrl = "https://api.iith.dev/";
+  String backendUrl = dotenv.env["BACKEND_URL"] ?? "https://api.iith.dev/";
+  // String backendUrl = "https://api.iith.dev/";
 
   Dio dio = Dio();
 
@@ -968,8 +968,8 @@ class ApiServices {
     final dio = Dio();
 
     // Define the request URL
-    const url = 'http://10.0.2.2:8000/transport/qr';
-
+    // const url = 'http://10.0.2.2:8000/transport/qr';
+    final url = '${dio.options.baseUrl}/transport/qr';
     try {
       // Sending the POST request
       final response = await dio.post(
@@ -1013,7 +1013,8 @@ class ApiServices {
   Future<CityBusSchedule?> getCityBusSchedule(BuildContext context) async {
     try {
       debugPrint("Making request to: ${dio.options.baseUrl}/transport/cityBus");
-      final response = await dio.get('http://10.0.2.2:8000/transport/cityBus');
+      // final response = await dio.get('http://10.0.2.2:8000/transport/cityBus');
+      final response = await dio.get('${dio.options.baseUrl}/transport/cityBus');
 
       final data = response.data;
       return CityBusSchedule.fromJson(data);
