@@ -130,7 +130,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/lost_and_found/
-#    - .env
+    - .env
     - shorebird.yaml
   #   - images/a_dot_ham.jpeg
 
