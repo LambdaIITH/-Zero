@@ -9,7 +9,6 @@ import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:dashbaord/widgets/homeScreenCardSmall.dart';
-import 'package:dashbaord/widgets/home_card_no_options.dart';
 import 'package:dashbaord/widgets/home_screen_appbar.dart';
 import 'package:dashbaord/widgets/home_screen_bus_timings.dart';
 import 'package:dashbaord/widgets/home_screen_calendar.dart';
@@ -20,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:text_scroll/text_scroll.dart';
@@ -507,13 +507,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 20),
                           HomeScreenMessMenu(messMenu: messMenu),
                           const SizedBox(height: 20),
-
+                          Padding(
+                            padding: const EdgeInsets.only(left: 18, top: 0),
+                            child: Text(
+                              'Services',
+                              style: GoogleFonts.inter(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 28,
+                              ),
+                            ),
+                          ),
                           Wrap(
                             spacing: 10.0, // Horizontal spacing between cards
                             runSpacing: 10.0, // Vertical spacing between rows
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 2 - 25, // Half of the screen width minus spacing
+                                width: MediaQuery.of(context).size.width / 2 -
+                                    25, // Half of the screen width minus spacing
                                 child: HomeScreenCardSmall(
                                   isComingSoon: false,
                                   title: 'Cab Sharing',
@@ -522,17 +536,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     widget.isGuest
                                         ? showError()
                                         : context.push('/cabsharing', extra: {
-                                      'user': userModel ??
-                                          UserModel(
-                                              email: "user@iith.ac.in",
-                                              name: "User"),
-                                      'image': image,
-                                    });
+                                            'user': userModel ??
+                                                UserModel(
+                                                    email: "user@iith.ac.in",
+                                                    name: "User"),
+                                            'image': image,
+                                          });
                                   },
                                 ),
                               ),
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 2 - 25,
+                                width:
+                                    MediaQuery.of(context).size.width / 2 - 25,
                                 child: HomeScreenCardSmall(
                                   isComingSoon: false,
                                   isLnF: true,
@@ -541,57 +556,31 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onTap: widget.isGuest
                                       ? showError
                                       : () => context.push('/lnf', extra: {
-                                    'currentUserEmail': userModel?.email ?? 'user@iith.ac.in'
-                                  }),
+                                            'currentUserEmail':
+                                                userModel?.email ??
+                                                    'user@iith.ac.in'
+                                          }),
                                 ),
                               ),
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 2 - 25,
+                                width:
+                                    MediaQuery.of(context).size.width / 2 - 25,
                                 child: HomeScreenCardSmall(
                                   isComingSoon: false,
                                   title: 'Patencheru Bus',
                                   child: 'assets/icons/cab-sharing-icon.svg',
                                   onTap: () {
-                                    widget.isGuest ?
-                                        showError() :
-                                    context.push('/city_bus');
+                                    widget.isGuest
+                                        ? showError()
+                                        : context.push('/city_bus');
                                   },
                                 ),
                               ),
                             ],
                           ),
 
-                          const SizedBox(height: 20),
-                          // HomeCardNoOptions(
-                          //   isComingSoon: true,
-                          //   title: 'Cab Sharing',
-                          //   child: 'assets/icons/cab-sharing-icon.svg',
-                          //   onTap: () {
-                          //     widget.isGuest
-                          //         ? showError()
-                          //         : context.push('/cabsharing', extra: {
-                          //             'user': userModel ??
-                          //                 UserModel(
-                          //                     email: "user@iith.ac.in",
-                          //                     name: "User"),
-                          //             'image': image,
-                          //           });
-                          //   },
-                          // ),
-                          // const SizedBox(height: 20),
-                          // HomeCardNoOptions(
-                          //   isComingSoon: false,
-                          //   isLnF: true,
-                          //   title: 'Lost & Found',
-                          //   child: 'assets/icons/magnifying-icon.svg',
-                          //   onTap: widget.isGuest
-                          //       ? showError
-                          //       : () => context.push('/lnf', extra: {
-                          //             'currentUserEmail':
-                          //                 userModel?.email ?? 'user@iith.ac.in'
-                          //           }),
-                          // ),
-                          // const SizedBox(height: 20),
+                          const SizedBox(height: 48),
+                          
                         ],
                       ),
                     ),
