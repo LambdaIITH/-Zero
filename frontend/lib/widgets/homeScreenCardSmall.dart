@@ -29,7 +29,7 @@ class HomeScreenCardSmall extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(10),
           boxShadow: const [
             BoxShadow(
@@ -79,8 +79,8 @@ class HomeScreenCardSmall extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 8.0, right: 8.0),
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.black,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                     ),

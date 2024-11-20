@@ -115,9 +115,9 @@ class _CityBusScreenState extends State<CityBusScreen>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-            title: const Text('City Bus',
+            title: Text('City Bus',
                 style: TextStyle(
-                    color: Colors.black,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontSize: 20,
                     fontWeight: FontWeight.bold)),
             bottom: TabBar(
@@ -151,14 +151,22 @@ class _CityBusScreenState extends State<CityBusScreen>
                   Text(
                     startingPoint,
                     style: TextStyle(
-                        color: Colors.black.withOpacity(0.8),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.8),
                         fontWeight: FontWeight.bold,
                         fontSize: 25),
                   ),
                   Text(
                     destination,
                     style: TextStyle(
-                        color: Colors.black.withOpacity(0.8),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.8),
                         fontWeight: FontWeight.bold,
                         fontSize: 25),
                   ),
@@ -184,7 +192,11 @@ class _CityBusScreenState extends State<CityBusScreen>
           child: Text(
             'Transaction ID for next bus will be noted from 4pm',
             style: TextStyle(
-                color: Colors.black.withOpacity(0.8),
+                color: Theme.of(context)
+                    .textTheme
+                    .bodyLarge
+                    ?.color
+                    ?.withOpacity(0.8),
                 fontWeight: FontWeight.w500,
                 fontSize: 16),
           ),
@@ -200,7 +212,11 @@ class _CityBusScreenState extends State<CityBusScreen>
                 // labelText: 'Transaction ID',
                 hintText: 'Transaction ID',
                 filled: true,
-                fillColor: Colors.black.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .textTheme
+                    .bodyLarge
+                    ?.color
+                    ?.withOpacity(0.1),
                 border: InputBorder.none,
               ),
             ),
@@ -217,7 +233,10 @@ class _CityBusScreenState extends State<CityBusScreen>
               onTap: submitTransactionID,
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black.withOpacity(0.3)),
+                  border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Colors.black.withOpacity(0.3)
+                          : Colors.white.withOpacity(0.3)),
                   borderRadius: BorderRadius.circular(50),
                 ),
                 child: Padding(
@@ -239,47 +258,67 @@ class _CityBusScreenState extends State<CityBusScreen>
       children: [
         transactionDetails != null
             ? Column(
-              children: [
-                QrImageView(
+                children: [
+                  QrImageView(
                     data: transactionDetails.toString(),
+                    eyeStyle: QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                    dataModuleStyle: QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
                     version: QrVersions.auto,
                     size: 200.0,
                   ),
                   SizedBox(height: 20),
-                  Text('${transactionDetails?['name']}', style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black.withOpacity(0.8),
-                    fontSize: 24
-                  ),),
-                  Text('${transactionDetails?['email']}', style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black.withOpacity(0.8),
-                      fontSize: 20
-                  ),),
-                  Text('${transactionDetails?['travelDate']}, ${transactionDetails?['busTiming']}', style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black.withOpacity(0.8),
-                      fontSize: 24
-                  ),),
-                  Text('isUsed: ${transactionDetails?['isUsed'].toString()}', style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black.withOpacity(0.8),
-                      fontSize: 16
-                  ),),
-                SizedBox(height: 20,),
-                Text('Transaction ID: ${transactionDetails?['transactionId']}', style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black.withOpacity(0.8),
-                      fontSize: 16
-                  ),),
-              ],
-            )
+                  Text(
+                    '${transactionDetails?['name']}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        fontSize: 24),
+                  ),
+                  Text(
+                    '${transactionDetails?['email']}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        fontSize: 20),
+                  ),
+                  Text(
+                    '${transactionDetails?['travelDate']}, ${transactionDetails?['busTiming']}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        fontSize: 24),
+                  ),
+                  Text(
+                    'isUsed: ${transactionDetails?['isUsed'].toString()}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    'Transaction ID: ${transactionDetails?['transactionId']}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        fontSize: 16),
+                  ),
+                ],
+              )
             : SizedBox(),
       ],
     );
   }
 
-  Column schedule(){
+  Column schedule() {
     return Column(
       children: [
         Expanded(
@@ -308,7 +347,6 @@ class _CityBusScreenState extends State<CityBusScreen>
       ],
     );
   }
-
 }
 
 class FullScheduleWidget extends StatelessWidget {
