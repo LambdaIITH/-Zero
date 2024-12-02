@@ -25,4 +25,5 @@ func SetupRoutes(router *gin.Engine) {
 	router.POST("/lost/delete_item", controller.DeleteItemHandler)
 	router.GET("/lost/search", controller.SearchItemHandler)
 	router.GET("/announcements", controller.GetAnnouncements)
+	router.POST("/announcements", controller.PostAnnouncement)
 }

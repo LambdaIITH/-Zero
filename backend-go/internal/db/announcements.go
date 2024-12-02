@@ -17,7 +17,6 @@ func GetAllAnnouncements(c *gin.Context) ([]schema.Announcement, error) {
 		fmt.Printf("ERROR: Querying Announcement Tables")
 		return nil, err
 	}
-
 	var announcements []schema.Announcement
 
 	for rows.Next() {
@@ -37,4 +36,14 @@ func GetAllAnnouncements(c *gin.Context) ([]schema.Announcement, error) {
 	}
 
 	return announcements, nil
+}
+
+func PostAnnouncementToDB(c *gin.Context, announcement *schema.Announcement) error {
+	query := `INSERT INTO announcements (title, description, createdat, createdby, tags) VALUES ($1, $2, $3, $4, $5)`
+	_, err := config.DB.Exec(c, query, announcement.Title, announcement.Description, announcement.CreatedAt, announcement.CreatedBy, announcement.Tags)
+	if err != nil {
+		fmt.Printf("ERROR: Adding Announcement to DB\n")
+		return err
+	}
+	return nil
 }
