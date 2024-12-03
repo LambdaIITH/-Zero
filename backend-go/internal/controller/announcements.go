@@ -20,4 +20,5 @@ func PostAnnouncement(c *gin.Context) {
 		fmt.Printf("ERROR: Post Announcement Data could not bind\n")
 	}
 	db.PostAnnouncementToDB(c, &announcement)
+	c.Status(http.StatusOK)
 }
