@@ -24,6 +24,8 @@ func SetupRoutes(router *gin.Engine) {
 	router.PUT("/lost/edit_item", controller.EditItemHandler)
 	router.POST("/lost/delete_item", controller.DeleteItemHandler)
 	router.GET("/lost/search", controller.SearchItemHandler)
+
+	// GET : /announcements?limit=4&offset=4
 	router.GET("/announcements", controller.GetAnnouncements)
 	router.POST("/announcements", controller.PostAnnouncement)
 }

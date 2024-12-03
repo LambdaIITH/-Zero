@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllAnnouncements(c *gin.Context) ([]schema.Announcement, error) {
+func GetAnnouncementsFromDB(c *gin.Context, limit int, offset int) ([]schema.Announcement, error) {
 
-	query := `SELECT (title, description, createdat, createdby, tags) FROM announcements`
-	rows, err := config.DB.Query(c, query)
+	query := `SELECT (id,title, description, createdat, createdby, tags) FROM announcements ORDER BY id LIMIT $1 OFFSET $2`
+	rows, err := config.DB.Query(c, query, limit, offset)
 
 	if err != nil {
 		fmt.Printf("ERROR: Querying Announcement Tables")
@@ -21,8 +21,6 @@ func GetAllAnnouncements(c *gin.Context) ([]schema.Announcement, error) {
 
 	for rows.Next() {
 		var announcement schema.Announcement
-		val, _ := rows.Values()
-		fmt.Printf("%+v\n", val)
 		if err := rows.Scan(&announcement); err != nil {
 			fmt.Printf("Error: Scanning Rows for Announcements\n")
 			return nil, err
@@ -38,7 +36,7 @@ func GetAllAnnouncements(c *gin.Context) ([]schema.Announcement, error) {
 	return announcements, nil
 }
 
-func PostAnnouncementToDB(c *gin.Context, announcement *schema.Announcement) error {
+func PostAnnouncementToDB(c *gin.Context, announcement *schema.RequestAnnouncement) error {
 	query := `INSERT INTO announcements (title, description, createdat, createdby, tags) VALUES ($1, $2, $3, $4, $5)`
 	_, err := config.DB.Exec(c, query, announcement.Title, announcement.Description, announcement.CreatedAt, announcement.CreatedBy, announcement.Tags)
 	if err != nil {
