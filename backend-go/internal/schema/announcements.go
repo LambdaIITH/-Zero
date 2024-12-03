@@ -1,7 +1,7 @@
 package schema
 
 type Announcement struct {
-	id          string   `db:"id"`
+	ID          int      `db:"id"`
 	Title       string   `db:"title"`
 	Description string   `db:"description"`
 	CreatedAt   int      `db:"createdAt"`
@@ -14,5 +14,5 @@ type RequestAnnouncement struct {
 	Description string   `json:"description"`
 	CreatedAt   int      `json:"createdAt"`
 	CreatedBy   string   `json:"createdBy"`
-	Tags        []string `json:"tags"`
+	Tags        []string `json:"tags[]"`
 }
