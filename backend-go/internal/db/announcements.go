@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/LambdaIITH/Dashboard/backend/config"
 	"github.com/LambdaIITH/Dashboard/backend/internal/schema"
@@ -27,8 +26,8 @@ func GetAnnouncementsFromDB(c *gin.Context, limit int, offset int) ([]schema.Ann
 			fmt.Printf("Error: Scanning Rows for Announcements\n")
 			return nil, err
 		}
-		//announcement.ImageUrl = os.Getenv("WEB_URL") + `/announcements/images/` + strconv.Itoa(announcement.ID)
-		announcement.ImageUrl = os.Getenv("WEB_URL") + `/announcements/images/1.jpg`
+		//announcement.ImageUrl = `/announcements/images/` + strconv.Itoa(announcement.ID)
+		announcement.ImageUrl = `/announcements/images/1.jpg`
 		announcements = append(announcements, announcement)
 	}
 
