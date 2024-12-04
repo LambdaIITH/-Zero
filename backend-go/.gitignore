@@ -25,6 +25,9 @@ tmp/
 # .env file
 .env
 
+# Images stored for announcements
+announcementImages/
+
 # Project build
 main
 *templ.go

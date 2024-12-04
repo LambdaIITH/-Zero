@@ -9,6 +9,11 @@ type Announcement struct {
 	Tags        []string `json:"tags"`
 }
 
+type AnnouncementWithImages struct {
+	Announcement
+	ImageUrl string `json:"imageUrl"`
+}
+
 type RequestAnnouncement struct {
 	Title       string   `json:"title"`
 	Description string   `json:"description"`

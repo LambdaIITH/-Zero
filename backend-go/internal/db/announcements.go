@@ -2,13 +2,14 @@ package db
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/LambdaIITH/Dashboard/backend/config"
 	"github.com/LambdaIITH/Dashboard/backend/internal/schema"
 	"github.com/gin-gonic/gin"
 )
 
-func GetAnnouncementsFromDB(c *gin.Context, limit int, offset int) ([]schema.Announcement, error) {
+func GetAnnouncementsFromDB(c *gin.Context, limit int, offset int) ([]schema.AnnouncementWithImages, error) {
 
 	query := `SELECT (id ,title, description, createdat, createdby, tags) FROM announcements ORDER BY createdat LIMIT $1 OFFSET $2`
 	rows, err := config.DB.Query(c, query, limit, offset)
@@ -18,14 +19,16 @@ func GetAnnouncementsFromDB(c *gin.Context, limit int, offset int) ([]schema.Ann
 		fmt.Printf("ERROR: Querying Announcement Tables")
 		return nil, err
 	}
-	var announcements []schema.Announcement
+	var announcements []schema.AnnouncementWithImages
 
 	for rows.Next() {
-		var announcement schema.Announcement
-		if err := rows.Scan(&announcement); err != nil {
+		var announcement schema.AnnouncementWithImages
+		if err := rows.Scan(&announcement.Announcement); err != nil {
 			fmt.Printf("Error: Scanning Rows for Announcements\n")
 			return nil, err
 		}
+		//announcement.ImageUrl = os.Getenv("WEB_URL") + `\announcements\images\` + strconv.Itoa(announcement.ID)
+		announcement.ImageUrl = os.Getenv("WEB_URL") + `\announcements\images\1.jpg`
 		announcements = append(announcements, announcement)
 	}
 

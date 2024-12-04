@@ -27,5 +27,6 @@ func SetupRoutes(router *gin.Engine) {
 
 	// GET : /announcements?limit=4&offset=4
 	router.GET("/announcements", controller.GetAnnouncements)
+	router.Static("/announcements/images", "announcementImages/")
 	router.POST("/announcements", controller.PostAnnouncement)
 }
