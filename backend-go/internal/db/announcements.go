@@ -10,7 +10,7 @@ import (
 
 func GetAnnouncementsFromDB(c *gin.Context, limit int, offset int) ([]schema.Announcement, error) {
 
-	query := `SELECT (id ,title, description, createdat, createdby, tags) FROM announcements ORDER BY id LIMIT $1 OFFSET $2`
+	query := `SELECT (id ,title, description, createdat, createdby, tags) FROM announcements ORDER BY createdat LIMIT $1 OFFSET $2`
 	rows, err := config.DB.Query(c, query, limit, offset)
 	defer rows.Close()
 
