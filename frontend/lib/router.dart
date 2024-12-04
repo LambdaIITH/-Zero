@@ -2,6 +2,7 @@ import 'package:dashbaord/constants/enums/lost_and_found.dart';
 import 'package:dashbaord/error.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/models/user_model.dart';
+import 'package:dashbaord/screens/announcement_screen.dart';
 import 'package:dashbaord/screens/city_bus_screen.dart';
 import 'package:dashbaord/screens/bus_timings_screen.dart';
 import 'package:dashbaord/screens/cab_add_screen.dart';
@@ -416,6 +417,25 @@ class AppRouter {
           );
         },
       ),
+      GoRoute(
+        path: '/announcements',
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const AnnouncementScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
+          );
+        },
+      )
     ],
     errorBuilder: (context, state) => const ErrorScreen(),
   );

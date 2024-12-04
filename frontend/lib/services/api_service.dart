@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:dashbaord/models/announcement_model.dart';
 import 'package:dashbaord/models/lecture_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/screens/login_screen.dart';
@@ -1024,5 +1025,20 @@ class ApiServices {
     }
   }
 
+  Future<List<AnnouncementModel>?> getAnnouncements(num limit, num offset) async {
+    try {
+      debugPrint("Making request to: ${dio.options.baseUrl}/announcements");
 
+      final response = await dio.get('${dio.options.baseUrl}/announcements', queryParameters: {
+        'limit': limit,
+        'offset': offset,
+      });
+
+      final data = response.data as List;
+      return data.map((item) => AnnouncementModel.fromJson(item)).toList();
+    } catch (e) {
+      debugPrint("Failed to fetch announcements: $e");
+      return null;
+    }
+  }
 }
