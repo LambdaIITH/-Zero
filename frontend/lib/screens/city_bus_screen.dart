@@ -347,7 +347,7 @@ class _CityBusScreenState extends State<CityBusScreen>
       ],
     );
   }
-}
+
 
 class FullScheduleWidget extends StatelessWidget {
   final Map<String, int> toIITH;
