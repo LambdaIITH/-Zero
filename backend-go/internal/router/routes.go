@@ -24,6 +24,14 @@ func SetupRoutes(router *gin.Engine) {
 	router.PUT("/lost/edit_item", controller.EditItemHandler)
 	router.POST("/lost/delete_item", controller.DeleteItemHandler)
 	router.GET("/lost/search", controller.SearchItemHandler)
+
+	router.POST("found/add_item", controller.AddFoundItemHandler)
+	router.GET("/found/all", controller.GetAllFoundItemsHandler)
+	router.GET("/found/get_item/:id", controller.GetFoundItemByIdHandler)
+	router.PUT("/found/edit_item", controller.EditFoundItemHandler)
+	router.POST("/found/delete_item", controller.AddFoundItemHandler)
+	router.GET("/found/search", controller.SearchFoundItemHandler)
+
 	router.GET("/transport", controller.GetBusSchedule)
 	router.GET("/transport/cityBus", controller.GetCityBusSchedule)
 	router.POST("/transport/qr", controller.ProcessTransaction)
