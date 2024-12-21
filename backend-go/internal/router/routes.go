@@ -15,18 +15,45 @@ func home(c *gin.Context) {
 }
 
 func SetupRoutes(router *gin.Engine) {
+	
+	// Home route
 	router.GET("/", home)
-	router.POST("/auth/login", controller.LoginHandler)
-	router.POST("/auth/logout", controller.LogoutHandler)
-	router.POST("/lost/add_item", controller.AddItemHandler)
-	router.GET("/lost/all", controller.GetAllItemsHandler)
-	router.GET("/lost/get_item/:id", controller.GetItemByIdHandler)
-	router.PUT("/lost/edit_item", controller.EditItemHandler)
-	router.POST("/lost/delete_item", controller.DeleteItemHandler)
-	router.GET("/lost/search", controller.SearchItemHandler)
-	router.GET("/transport", controller.GetBusSchedule)
-	router.GET("/transport/cityBus", controller.GetCityBusSchedule)
-	router.POST("/transport/qr", controller.ProcessTransaction)
-	router.POST("/transport/qr/scan", controller.ScanQRCode)
+
+	// Group routes for authentication
+	authGroup := router.Group("/auth")
+	{
+		authGroup.POST("/login", controller.LoginHandler)
+		authGroup.POST("/logout", controller.LogoutHandler)
+	}
+
+	// Group routes for lost items
+	lostGroup := router.Group("/lost")
+	{
+		lostGroup.POST("/add_item", controller.AddItemHandler)
+		lostGroup.GET("/all", controller.GetAllItemsHandler)
+		lostGroup.GET("/get_item/:id", controller.GetItemByIdHandler)
+		lostGroup.PUT("/edit_item", controller.EditItemHandler)
+		lostGroup.POST("/delete_item", controller.DeleteItemHandler)
+		lostGroup.GET("/search", controller.SearchItemHandler)
+	}
+	
+	// Group routes for transport
+	transportGroup := router.Group("/transport")
+	{
+		transportGroup.GET("/", controller.GetBusSchedule)
+		transportGroup.GET("/cityBus", controller.GetCityBusSchedule)
+		transportGroup.POST("/qr", controller.ProcessTransaction)
+		transportGroup.POST("/qr/scan", controller.ScanQRCode)
+	}
+
+	sellGroup := router.Group("/sell")
+	{
+		sellGroup.POST("/add_item", controller.AddSellItemHandler)
+		sellGroup.GET("/all", controller.GetAllSellItemsHandler)
+		sellGroup.GET("/get_item/:id", controller.GetSellItemByIdHandler)
+		sellGroup.PUT("/edit_item", controller.EditSellItemHandler)
+		sellGroup.POST("/delete_item", controller.DeleteSellItemHandler)
+		sellGroup.GET("/search", controller.SearchSellItemHandler)
+	}
 
 }
