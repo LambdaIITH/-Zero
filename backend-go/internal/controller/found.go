@@ -188,7 +188,7 @@ func DeleteFoundItemHandler(c *gin.Context) {
 		return
 	}
 
-	// This step deletes the item images from the 'found_images' table in the database
+	// Deletes the images uris from the 'found_images' table in the database
 	_, err = found.DeleteAnItemImagesFromFound(context.Background(), id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete images from database"})
