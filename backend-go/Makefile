@@ -10,7 +10,7 @@ build:
 
 # Run the application
 run:
-	@go run cmd/api/main.go
+	@go run kmain.go
 # Create DB container
 docker-run:
 	@if docker compose up 2>/dev/null; then \
