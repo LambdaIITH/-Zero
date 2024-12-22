@@ -55,5 +55,12 @@ func SetupRoutes(router *gin.Engine) {
 		sellGroup.POST("/delete_item", controller.DeleteSellItemHandler)
 		sellGroup.GET("/search", controller.SearchSellItemHandler)
 	}
+  
+	router.POST("found/add_item", controller.AddFoundItemHandler)
+	router.GET("/found/all", controller.GetAllFoundItemsHandler)
+	router.GET("/found/get_item/:id", controller.GetFoundItemByIdHandler)
+	router.PUT("/found/edit_item", controller.EditFoundItemHandler)
+	router.POST("/found/delete_item", controller.DeleteFoundItemHandler)
+	router.GET("/found/search", controller.SearchFoundItemHandler)
 
 }
