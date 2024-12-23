@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/LambdaIITH/Dashboard/backend/config"
 )
 
@@ -13,7 +15,7 @@ func IsUserExists(ctx context.Context, email string) (bool, int, error) {
 
 	err := config.DB.QueryRow(ctx, query, email).Scan(&userID)
 	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
+		if err == pgx.ErrNoRows {
 			return false, 0, nil
 		}
 		return false, 0, fmt.Errorf("failed to check if user exists: %v", err)

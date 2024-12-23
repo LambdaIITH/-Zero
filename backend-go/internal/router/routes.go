@@ -3,8 +3,9 @@ package router
 import (
 	"net/http"
 
-	"github.com/LambdaIITH/Dashboard/backend/internal/controller"
 	"github.com/gin-gonic/gin"
+
+	"github.com/LambdaIITH/Dashboard/backend/internal/controller"
 )
 
 func home(c *gin.Context) {
@@ -15,7 +16,7 @@ func home(c *gin.Context) {
 }
 
 func SetupRoutes(router *gin.Engine) {
-	
+
 	// Home route
 	router.GET("/", home)
 
@@ -23,7 +24,7 @@ func SetupRoutes(router *gin.Engine) {
 	authGroup := router.Group("/auth")
 	{
 		authGroup.POST("/login", controller.LoginHandler)
-		authGroup.POST("/logout", controller.LogoutHandler)
+		authGroup.GET("/logout", controller.LogoutHandler)
 	}
 
 	// Group routes for lost items
@@ -36,7 +37,7 @@ func SetupRoutes(router *gin.Engine) {
 		lostGroup.POST("/delete_item", controller.DeleteItemHandler)
 		lostGroup.GET("/search", controller.SearchItemHandler)
 	}
-	
+
 	// Group routes for transport
 	transportGroup := router.Group("/transport")
 	{
@@ -55,7 +56,7 @@ func SetupRoutes(router *gin.Engine) {
 		sellGroup.POST("/delete_item", controller.DeleteSellItemHandler)
 		sellGroup.GET("/search", controller.SearchSellItemHandler)
 	}
-  
+
 	router.POST("found/add_item", controller.AddFoundItemHandler)
 	router.GET("/found/all", controller.GetAllFoundItemsHandler)
 	router.GET("/found/get_item/:id", controller.GetFoundItemByIdHandler)
