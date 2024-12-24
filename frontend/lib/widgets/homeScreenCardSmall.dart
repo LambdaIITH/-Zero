@@ -3,16 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-
-import 'package:dashbaord/extensions.dart';
-import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
 class HomeScreenCardSmall extends StatelessWidget {
   final String title;
   final dynamic child;
-  final bool isLnF;
+  final bool reduceImageSize;
   final bool isImageShow;
   final bool isComingSoon;
   final void Function() onTap;
@@ -21,7 +15,7 @@ class HomeScreenCardSmall extends StatelessWidget {
       {super.key,
       required this.title,
       this.child,
-      this.isLnF = false,
+      this.reduceImageSize = false,
       this.isImageShow = true,
       this.isComingSoon = true,
       required this.onTap});
@@ -32,11 +26,12 @@ class HomeScreenCardSmall extends StatelessWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
+      onTap: isComingSoon ? null : onTap,
       child: Container(
+        height: 170,
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
           boxShadow: const [
             BoxShadow(
               color: Color.fromRGBO(51, 51, 51, 0.10), // Shadow color
@@ -51,52 +46,68 @@ class HomeScreenCardSmall extends StatelessWidget {
           child: Wrap(
             direction: Axis.vertical,
             children: [
-                Stack(
-                  children: [
-                    Stack(
+              Stack(
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(bottom: 12),
+                    child: Column(
+                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Container(),
+                        Spacer(),
                         isImageShow
-                            ? SvgPicture.asset(
-                                child,
-                                fit: BoxFit.contain,
-                                height: min(0.32 * screenWidth, 200),
-                              )
+                            ? reduceImageSize
+                                ? SvgPicture.asset(
+                                    child,
+                                    fit: BoxFit.contain,
+                                    height: min(0.25 * screenWidth, 200),
+                                  )
+                                : SvgPicture.asset(
+                                    child,
+                                    fit: BoxFit.contain,
+                                    height: min(0.32 * screenWidth, 200),
+                                  )
                             : Container(),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                          child: Center(
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                    if (isComingSoon)
-                      Container(
-                        decoration: BoxDecoration(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? const Color.fromARGB(255, 57, 57, 57)
-                                    .withOpacity(0.5)
-                                : Colors.white.withOpacity(0.5)),
-                        child: Center(
-                            child: SizedBox(
-                                height: 100,
-                                child: Image.asset(
-                                  "assets/icons/comingsoon.png",
-                                ))),
-                      )
-                  ],
-                ),
-                // Expanded(child: SizedBox()),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-              ],
-            ),
+                  if (isComingSoon)
+                    Container(
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color.fromARGB(255, 57, 57, 57)
+                                  .withOpacity(0.5)
+                              : Colors.white.withOpacity(0.5)),
+                      child: Center(
+                          child: SizedBox(
+                              height: 120,
+                              child: Image.asset(
+                                "assets/icons/comingsoon.png",
+                              ))),
+                    )
+                ],
+              ),
+              // Expanded(child: SizedBox()),
+            ],
+          ),
         ),
-        ),
-      );
+      ),
+    );
   }
 }

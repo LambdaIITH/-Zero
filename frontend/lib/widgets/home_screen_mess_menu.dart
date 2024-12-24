@@ -8,10 +8,8 @@ import 'package:intl/intl.dart';
 
 class HomeScreenMessMenu extends StatelessWidget {
   final MessMenuModel? messMenu;
-  const HomeScreenMessMenu({
-    super.key,
-    this.messMenu,
-  });
+  final int? week;
+  const HomeScreenMessMenu({super.key, this.messMenu, this.week});
 
   bool isWeekend() {
     DateTime today = DateTime.now();
@@ -68,11 +66,12 @@ class HomeScreenMessMenu extends StatelessWidget {
     }
 
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
         if (messMenu == null) {
           return;
         }
-        context.push('/mess', extra: {'messMenu': messMenu!});
+        context.push('/mess', extra: {'messMenu': messMenu!, 'week': week});
         // Navigator.of(context).push(
         //   CustomPageRoute(child: MessMenuScreen(messMenu: messMenu!)),
         // );
@@ -123,11 +122,12 @@ class HomeScreenMessMenu extends StatelessWidget {
 
   Widget noMealToday(String msg, BuildContext context) {
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
         if (messMenu == null) {
           return;
         }
-        context.push('/mess', extra: {'messMenu': messMenu!});
+        context.push('/mess', extra: {'messMenu': messMenu!, 'week': week});
         // Navigator.of(context).push(
         //   CustomPageRoute(child: MessMenuScreen(messMenu: messMenu!)),
         // );

@@ -111,6 +111,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  int? week;
+  Future<void> fetchWeekNumber() async {
+    final response = await ApiServices().getWeekNumber(context);
+    if (response != null) {
+      setState(() {
+        week = response['week'];
+        week = week != null ? week! + 1 : week;
+      });
+    }
+  }
+
   void fetchMessMenu() async {
     final response = await ApiServices().getMessMenu(context);
     if (response == null) {
@@ -122,6 +133,8 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       return;
     }
+
+    await fetchWeekNumber();
     setState(() {
       messMenu = response;
       changeState();
@@ -551,13 +564,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               }
                             },
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 15),
                           HomeScreenBusTimings(
                             busSchedule: busSchedule,
                           ),
-                          const SizedBox(height: 20),
-                          HomeScreenMessMenu(messMenu: messMenu),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 15),
+                          HomeScreenMessMenu(messMenu: messMenu, week: week),
+                          const SizedBox(height: 15),
 
                           Wrap(
                             spacing: 10.0, // Horizontal spacing between cards
@@ -588,7 +601,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     MediaQuery.of(context).size.width / 2 - 25,
                                 child: HomeScreenCardSmall(
                                   isComingSoon: false,
-                                  isLnF: true,
+                                  reduceImageSize: true,
                                   title: 'Lost & Found',
                                   child: 'assets/icons/magnifying-icon.svg',
                                   onTap: widget.isGuest
@@ -604,9 +617,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width:
                                     MediaQuery.of(context).size.width / 2 - 25,
                                 child: HomeScreenCardSmall(
-                                  isComingSoon: false,
+                                  isComingSoon: true,
+                                  reduceImageSize: true,
                                   title: 'Patencheru Bus',
-                                  child: 'assets/icons/cab-sharing-icon.svg',
+                                  child: 'assets/icons/bus-svg.svg',
                                   onTap: () {
                                     widget.isGuest
                                         ? showError()

@@ -339,11 +339,13 @@ class AppRouter {
         pageBuilder: (context, state) {
           final data = state.extra as Map<String, dynamic>? ?? {};
           final messMenu = data['messMenu'] as MessMenuModel?;
+          final week = data['week'] as int?;
 
           return CustomTransitionPage(
             key: state.pageKey,
             child: MessMenuScreen(
               messMenu: messMenu,
+              week: week,
             ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
