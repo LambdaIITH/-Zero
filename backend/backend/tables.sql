@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS traveller CASCADE;
 DROP TABLE IF EXISTS cab_booking CASCADE;
 DROP TABLE IF EXISTS locations CASCADE;
 DROP TYPE IF EXISTS request_status CASCADE;
+DROP TYPE IF EXISTS fcm_tokens CASCADE;
 
 -- Re-create the tables and types
 CREATE TABLE IF NOT EXISTS courses
@@ -31,6 +32,15 @@ CREATE TABLE IF NOT EXISTS users
     cr BOOLEAN DEFAULT FALSE,
     phone_number VARCHAR(15) UNIQUE,
     timetable JSON DEFAULT '{"courses": {}, "slots": {}}'
+);
+
+-- Store FCM token of user
+CREATE TABLE IF NOT EXISTS fcm_tokens (
+    user_id       BIGINT NOT NULL,
+    token         TEXT   NOT NULL,
+    device_type   VARCHAR(50) NOT NULL,
+    PRIMARY KEY (user_id, token),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS shared_timetable
@@ -178,3 +188,4 @@ CREATE TABLE request
     FOREIGN KEY (booking_id) REFERENCES cab_booking(id) ON DELETE CASCADE,
     FOREIGN KEY (request_email) REFERENCES users(email)
 );
+

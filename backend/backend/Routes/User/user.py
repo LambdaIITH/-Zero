@@ -14,7 +14,6 @@ def get_user(user_id: int) -> Optional[Dict[str, str]]:
     with conn.cursor() as cursor:
         cursor.execute(query.get_sql(), (user_id,))
         user = cursor.fetchone()
-    print(user)
     if user:
         return {
             "id": user[0],
@@ -45,3 +44,40 @@ def update_phone(user_id: int, phone: str) -> Optional[Dict[str, str]]:
             "phone_number": user[4]
         }
     return None
+
+def upsert_fcm_token(user_id: int, token: str, device_type: str) -> bool:
+    """
+    Insert or update (upsert) an FCM token record for the given user. 
+
+    :param user_id:     The ID of the user for whom the token is being stored.
+    :param token:       The FCM token to be inserted or updated.
+    :param device_type: A string indicating the device type, 
+                        e.g. "web", "android", "ios", etc.
+                        
+    :return:            True if the operation succeeded (insert or update), 
+                        otherwise False.
+    """
+    
+    query = """
+        INSERT INTO fcm_tokens (user_id, token, device_type)
+        VALUES (%s, %s, %s)
+        ON CONFLICT (user_id, token)
+        DO UPDATE
+            SET device_type = EXCLUDED.device_type,
+                token = EXCLUDED.token,
+        RETURNING 1;
+    """
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (user_id, token, device_type))
+            row = cur.fetchone()
+
+        conn.commit()
+
+        # row will be None if no row was returned, otherwise it will contain (1, ).
+        return bool(row)
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error upserting FCM token for user_id={user_id}: {e}")
+        return False
