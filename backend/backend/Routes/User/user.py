@@ -64,7 +64,7 @@ def upsert_fcm_token(user_id: int, token: str, device_type: str) -> bool:
         ON CONFLICT (user_id, token)
         DO UPDATE
             SET device_type = EXCLUDED.device_type,
-                token = EXCLUDED.token,
+                token = EXCLUDED.token
         RETURNING 1;
     """
     try:
