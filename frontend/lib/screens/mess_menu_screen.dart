@@ -200,7 +200,6 @@ class _MessMenuPageState extends State<MessMenuPage> {
     whichDay = getCurrentDay();
     super.initState();
     analyticsService.logScreenView(screenName: "Mess Menu Screen");
-    print(widget.week);
     week = widget.week;
   }
 

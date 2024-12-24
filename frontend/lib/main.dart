@@ -1,16 +1,21 @@
 import 'package:dashbaord/router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:dashbaord/constants/app_theme.dart';
 import 'package:dashbaord/firebase_options.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 void main() async {
-  await dotenv.load(fileName: ".env");
+  await dotenv.load();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -18,7 +23,44 @@ void main() async {
 
   final apiServices = ApiServices();
   await apiServices.configureDio();
+
+  _initializeNotifications();
+  _requestNotificationPermissions();
+
   runApp(const MyApp());
+}
+
+Future<void> _initializeNotifications() async {
+  final AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('assets/icons/logo.png');
+
+  final DarwinInitializationSettings initializationSettingsIOS =
+      DarwinInitializationSettings();
+
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      //TODO: Handle tapping on a notification
+    },
+  );
+}
+
+Future<void> _requestNotificationPermissions() async {
+  final settings = await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+  debugPrint('User granted permission: ${settings.authorizationStatus}');
+}
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
 }
 
 class MyApp extends StatefulWidget {
@@ -45,6 +87,38 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  setupFirebaseListeners() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      await handleMessage(message);
+    });
+  }
+
+  //handling foreground messages
+  Future<void> handleMessage(RemoteMessage message) async {
+    final notificationTitle = message.notification?.title ?? 'No Title';
+    final notificationBody = message.notification?.body ?? 'No Body';
+
+    // Show local notification
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails('dashboard-channel', 'IITH Dashboard Channel', // TODO: later use good channel id and names [like differnt for each type of notification]
+            importance: Importance.max, priority: Priority.high);
+
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+        DarwinNotificationDetails();
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      notificationTitle,
+      notificationBody,
+      platformChannelSpecifics,
+    );
+  }
+
   getAuthStatus() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
@@ -61,8 +135,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     FlutterNativeSplash.remove();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     getAuthStatus();
     getThemeMode();
+    setupFirebaseListeners();
   }
 
   getThemeMode() async {

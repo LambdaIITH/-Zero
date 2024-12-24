@@ -148,11 +148,9 @@ class ApiServices {
         "password": "someSecret"
       });
 
-      print(response);
-
       return response.statusCode == 200;
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
       return false;
     }
   }
@@ -982,11 +980,11 @@ class ApiServices {
       // Handling the response
       if (response.statusCode == 200) {
         final data = response.data;
-        print("Transaction ID: ${data['transactionId']}");
-        print("Payment Time: ${data['paymentTime']}");
-        print("Travel Date: ${data['travelDate']}");
-        print("But Timing: ${data['busTiming']}");
-        print("Is Used: ${data['isUsed']}");
+        debugPrint("Transaction ID: ${data['transactionId']}");
+        debugPrint("Payment Time: ${data['paymentTime']}");
+        debugPrint("Travel Date: ${data['travelDate']}");
+        debugPrint("But Timing: ${data['busTiming']}");
+        debugPrint("Is Used: ${data['isUsed']}");
 
         final transaction = TransactionQRModel.fromJson(data);
         return {
@@ -995,14 +993,14 @@ class ApiServices {
         };
 
       } else {
-        print('Error: ${response.statusCode}');
+        debugPrint('Error: ${response.statusCode}');
         return {
           'error': 'Failed to send request ${response.statusMessage}',
           'status': response.statusCode
         };
       }
     } on DioException catch (e) {
-      print('Request failed: $e');
+      debugPrint('Request failed: $e');
       return {
         'error': e.response?.data['detail'],
         'status': e.response?.statusCode

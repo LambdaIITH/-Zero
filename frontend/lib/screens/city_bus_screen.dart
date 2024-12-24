@@ -277,28 +277,44 @@ class _CityBusScreenState extends State<CityBusScreen>
                     '${transactionDetails?['name']}',
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.8),
                         fontSize: 24),
                   ),
                   Text(
                     '${transactionDetails?['email']}',
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.8),
                         fontSize: 20),
                   ),
                   Text(
                     '${transactionDetails?['travelDate']}, ${transactionDetails?['busTiming']}',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.8),
                         fontSize: 24),
                   ),
                   Text(
                     'isUsed: ${transactionDetails?['isUsed'].toString()}',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.8),
                         fontSize: 16),
                   ),
                   SizedBox(
@@ -308,7 +324,11 @@ class _CityBusScreenState extends State<CityBusScreen>
                     'Transaction ID: ${transactionDetails?['transactionId']}',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.8),
                         fontSize: 16),
                   ),
                 ],
@@ -347,7 +367,7 @@ class _CityBusScreenState extends State<CityBusScreen>
       ],
     );
   }
-
+}
 
 class FullScheduleWidget extends StatelessWidget {
   final Map<String, int> toIITH;

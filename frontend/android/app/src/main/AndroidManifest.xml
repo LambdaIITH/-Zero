@@ -1,14 +1,16 @@
-<?xml
-    version="1.0"
-    encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="dev.iith.dashboard">
+
     <uses-permission
         android:name="com.google.android.gms.permission.AD_ID"
-        tools:node="remove"/>
+        tools:node="remove" />
     <uses-permission
-        android:name="android.permission.INTERNET"/>
+        android:name="android.permission.INTERNET" />
+    <uses-permission 
+        android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
@@ -19,11 +21,11 @@
             android:exported="true">
             <intent-filter>
                 <action
-                    android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                    android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/mess_menu_widget_info"/>
+                android:resource="@xml/mess_menu_widget_info" />
         </receiver>
         <activity
             android:name=".MainActivity"
@@ -41,56 +43,62 @@
             -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme"/>
+                android:resource="@style/NormalTheme" />
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <meta-data
                 android:name="flutter_deeplinking_enabled"
-                android:value="true"/>
+                android:value="true" />
             <intent-filter
                 android:autoVerify="true">
                 <action
-                    android:name="android.intent.action.VIEW"/>
+                    android:name="android.intent.action.VIEW" />
                 <category
-                    android:name="android.intent.category.DEFAULT"/>
+                    android:name="android.intent.category.DEFAULT" />
                 <category
-                    android:name="android.intent.category.BROWSABLE"/>
+                    android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:host="cabsharing.iith.dev"
-                    android:scheme="https"/>
+                    android:scheme="https" />
                 <data
                     android:host="cabsharing.iith.dev"
-                    android:scheme="http"/>
+                    android:scheme="http" />
             </intent-filter>
             <intent-filter
                 android:autoVerify="true">
                 <action
-                    android:name="android.intent.action.VIEW"/>
+                    android:name="android.intent.action.VIEW" />
                 <category
-                    android:name="android.intent.category.DEFAULT"/>
+                    android:name="android.intent.category.DEFAULT" />
                 <category
-                    android:name="android.intent.category.BROWSABLE"/>
+                    android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:host="dashboard.iith.dev"
-                    android:scheme="https"/>
+                    android:scheme="https" />
                 <data
                     android:host="dashboard.iith.dev"
-                    android:scheme="http"/>
+                    android:scheme="http" />
             </intent-filter>
         </activity>
 
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <!--
  Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
         -->
         <meta-data
             android:name="flutterEmbedding"
-            android:value="2"/>
+            android:value="2" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="dashboard-channel"/>
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
+        
     </application>
 </manifest>
