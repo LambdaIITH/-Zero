@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -141,6 +142,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
     FlutterNativeSplash.remove();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     getAuthStatus();
@@ -180,8 +182,19 @@ class _MyAppState extends State<MyApp> {
     setThemeMode(theme);
   }
 
+  statusIconBarColor() {
+    final brightness = MediaQuery.platformBrightnessOf(context);
+    if (brightness == Brightness.light) {
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarIconBrightness: Brightness.dark));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    statusIconBarColor();
     return MaterialApp.router(
       routerConfig: AppRouter(onThemeChanged: handleThemeChange).router,
       title: 'Dashboard',

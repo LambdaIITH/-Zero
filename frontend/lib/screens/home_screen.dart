@@ -15,6 +15,7 @@ import 'package:dashbaord/widgets/home_screen_appbar.dart';
 import 'package:dashbaord/widgets/home_screen_bus_timings.dart';
 import 'package:dashbaord/widgets/home_screen_calendar.dart';
 import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
+import 'package:dashbaord/widgets/notif_perm.dart';
 import 'package:dashbaord/widgets/timetable/manage_courses_sheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -465,7 +466,6 @@ class _HomeScreenState extends State<HomeScreen> {
             });
             isDialogShown = true;
           }
-
           return isLoading
               ? const CustomLoadingScreen()
               : SafeArea(
