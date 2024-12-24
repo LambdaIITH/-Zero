@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
@@ -16,9 +17,12 @@ import 'package:dashbaord/widgets/home_screen_calendar.dart';
 import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
 import 'package:dashbaord/widgets/timetable/manage_courses_sheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:home_widget/home_widget.dart';
@@ -41,6 +45,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   void showError({String? msg}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -60,6 +65,36 @@ class _HomeScreenState extends State<HomeScreen> {
   String image = '';
   int mainGateStatus = -1;
   Timetable? timetable;
+
+  void sendTokenToServer(String token, String deviceType) async {
+    final response =
+        await ApiServices().updateFCMToken(context, token, deviceType);
+    if (response) {
+      debugPrint("FCM Token updated successfully");
+    } else {
+      debugPrint("Failed to update FCM Token");
+    }
+  }
+
+  setUpFirebaseMessaging() async {
+    if (kIsWeb) {
+      final fcmToken = await FirebaseMessaging.instance
+          .getToken(vapidKey: dotenv.env["VAPID_KEY"] ?? "VAPID_KEY_NOT_FOUND");
+      if (fcmToken != null) {
+        sendTokenToServer(fcmToken, "web");
+      }
+      return;
+    }
+
+    String? token = await _firebaseMessaging.getToken();
+    if (token != null) {
+      sendTokenToServer(token, Platform.isAndroid ? "android" : "ios");
+    }
+
+    _firebaseMessaging.onTokenRefresh.listen((newToken) {
+      sendTokenToServer(newToken, Platform.isAndroid ? "android" : "ios");
+    });
+  }
 
   void fetchMessMenu() async {
     final response = await ApiServices().getMessMenu(context);
@@ -243,6 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchMessMenu();
     fetchBus();
     fetchTimetable();
+    setUpFirebaseMessaging();
     analyticsService.logScreenView(screenName: "HomeScreen");
   }
 
@@ -514,7 +550,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             runSpacing: 10.0, // Vertical spacing between rows
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 2 - 25, // Half of the screen width minus spacing
+                                width: MediaQuery.of(context).size.width / 2 -
+                                    25, // Half of the screen width minus spacing
                                 child: HomeScreenCardSmall(
                                   isComingSoon: false,
                                   title: 'Cab Sharing',
@@ -523,18 +560,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     widget.isGuest
                                         ? showError()
                                         : context.push('/cabsharing', extra: {
-                                      'user': userModel ??
-                                          UserModel(
-                                              email: "user@iith.ac.in",
-                                              name: "User"),
-                                      'image': image,
-                                    });
-
+                                            'user': userModel ??
+                                                UserModel(
+                                                    email: "user@iith.ac.in",
+                                                    name: "User"),
+                                            'image': image,
+                                          });
                                   },
                                 ),
                               ),
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 2 - 25,
+                                width:
+                                    MediaQuery.of(context).size.width / 2 - 25,
                                 child: HomeScreenCardSmall(
                                   isComingSoon: false,
                                   isLnF: true,
@@ -543,20 +580,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onTap: widget.isGuest
                                       ? showError
                                       : () => context.push('/lnf', extra: {
-                                    'currentUserEmail': userModel?.email ?? 'user@iith.ac.in'
-                                  }),
+                                            'currentUserEmail':
+                                                userModel?.email ??
+                                                    'user@iith.ac.in'
+                                          }),
                                 ),
                               ),
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 2 - 25,
+                                width:
+                                    MediaQuery.of(context).size.width / 2 - 25,
                                 child: HomeScreenCardSmall(
                                   isComingSoon: false,
                                   title: 'Patencheru Bus',
                                   child: 'assets/icons/cab-sharing-icon.svg',
                                   onTap: () {
-                                    widget.isGuest ?
-                                        showError() :
-                                    context.push('/city_bus');
+                                    widget.isGuest
+                                        ? showError()
+                                        : context.push('/city_bus');
                                   },
                                 ),
                               ),

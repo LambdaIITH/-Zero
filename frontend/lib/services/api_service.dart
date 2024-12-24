@@ -143,10 +143,8 @@ class ApiServices {
 
   Future<bool> updateWeekNumber(BuildContext context, int value) async {
     try {
-      final response = await dio.post('/mess_menu/', data: {
-        "number": value,
-        "password": "someSecret"
-      });
+      final response = await dio.post('/mess_menu/',
+          data: {"number": value, "password": "someSecret"});
 
       return response.statusCode == 200;
     } catch (e) {
@@ -226,6 +224,18 @@ class ApiServices {
       return null;
     }
     return null;
+  }
+
+  Future<bool> updateFCMToken(
+      BuildContext context, String token, String deviceType) async {
+    try {
+      final response = await dio.patch("/user/fcm/update",
+          data: {"token": token, "device_type": deviceType});
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint(e.toString());
+      return false;
+    }
   }
 
   // ====================CALENDAR STARTS===================================
@@ -991,7 +1001,6 @@ class ApiServices {
           'status': response.statusCode,
           'data': transaction,
         };
-
       } else {
         debugPrint('Error: ${response.statusCode}');
         return {
@@ -1012,7 +1021,8 @@ class ApiServices {
     try {
       debugPrint("Making request to: ${dio.options.baseUrl}/transport/cityBus");
       // final response = await dio.get('http://10.0.2.2:8000/transport/cityBus');
-      final response = await dio.get('${dio.options.baseUrl}/transport/cityBus');
+      final response =
+          await dio.get('${dio.options.baseUrl}/transport/cityBus');
 
       final data = response.data;
       return CityBusSchedule.fromJson(data);
@@ -1021,6 +1031,4 @@ class ApiServices {
       return null;
     }
   }
-
-
 }

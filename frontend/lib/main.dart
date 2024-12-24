@@ -26,13 +26,14 @@ void main() async {
 
   _initializeNotifications();
   _requestNotificationPermissions();
+  clearAllNotifications();
 
   runApp(const MyApp());
 }
 
 Future<void> _initializeNotifications() async {
   final AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('assets/icons/logo.png');
+      AndroidInitializationSettings('@mipmap/launcher_icon');
 
   final DarwinInitializationSettings initializationSettingsIOS =
       DarwinInitializationSettings();
@@ -61,6 +62,10 @@ Future<void> _requestNotificationPermissions() async {
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+}
+
+Future<void> clearAllNotifications() async {
+  await flutterLocalNotificationsPlugin.cancelAll();
 }
 
 class MyApp extends StatefulWidget {
@@ -100,8 +105,10 @@ class _MyAppState extends State<MyApp> {
 
     // Show local notification
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails('dashboard-channel', 'IITH Dashboard Channel', // TODO: later use good channel id and names [like differnt for each type of notification]
-            importance: Importance.max, priority: Priority.high);
+        AndroidNotificationDetails('dashboard-channel',
+            'IITH Dashboard Channel', // TODO: later use good channel id and names [like differnt for each type of notification]
+            importance: Importance.max,
+            priority: Priority.high);
 
     const DarwinNotificationDetails iOSPlatformChannelSpecifics =
         DarwinNotificationDetails();
