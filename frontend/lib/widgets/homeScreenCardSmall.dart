@@ -31,6 +31,7 @@ class HomeScreenCardSmall extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(

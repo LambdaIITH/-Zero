@@ -2,6 +2,7 @@ import 'package:dashbaord/models/lecture_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/services/shared_service.dart';
+import 'package:dashbaord/widgets/notif_perm.dart';
 import 'package:dashbaord/widgets/timetable/add_lectures_sheet.dart';
 import 'package:dashbaord/widgets/timetable/day_view.dart';
 import 'package:dashbaord/widgets/timetable/list_view.dart';
@@ -14,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -50,10 +53,51 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  void requestNotifPerms(BuildContext bc) async {
+    PermissionStatus status = await Permission.notification.status;
+    if (status.isGranted) {
+      return;
+    }
+
+    DateTime now = DateTime.now();
+    String? lastDate = await SharedService().getLastPermsRequestDate();
+
+    bool shouldAsk = false;
+
+    if (lastDate != null) {
+      DateTime lastDateParsed = DateFormat('dd-MM-yyyy').parse(lastDate.trim());
+      Duration difference = now.difference(lastDateParsed);
+      if (difference.inDays >= 1) {
+        //TODO: change if it is annoying
+        shouldAsk = true;
+      }
+    } else {
+      shouldAsk = true;
+    }
+
+    if (shouldAsk) {
+      _showNotificationPermissionSheet(context);
+    }
+  }
+
+  void _showNotificationPermissionSheet(BuildContext context) {
+    showModalBottomSheet(
+      isDismissible: false,
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return const NotificationPermissionRequestBottomSheet();
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     timetable = widget.timetable;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      requestNotifPerms(context);
+    });
   }
 
   @override

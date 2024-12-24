@@ -12,6 +12,7 @@ class SharedService {
   static const String _keyMessMenu = 'mess_menu';
   static const String _keyBusSchedule = 'bus_schedule';
   static const String _keyCityBusSchedule = 'city_bus_schedule';
+  static const String _keyLastPermsReq = 'last_perms_request_date';
 
   Future<void> saveUserDetails({
     required String name,
@@ -108,10 +109,33 @@ class SharedService {
     final prefs = await SharedPreferences.getInstance();
     final cityBusScheduleJson = prefs.getString(_keyCityBusSchedule);
     if (cityBusScheduleJson != null) {
-      final Map<String, dynamic> cityBusScheduleMap = jsonDecode(cityBusScheduleJson);
+      final Map<String, dynamic> cityBusScheduleMap =
+          jsonDecode(cityBusScheduleJson);
       return CityBusSchedule.fromJson(cityBusScheduleMap);
     }
     return null;
+  }
+
+  Future<void> saveLastPermsRequestDate({
+    required String date, // format DD-MM-YYYY
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyLastPermsReq, date);
+  }
+
+  Future<String?> getLastPermsRequestDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyLastPermsReq);
+  }
+
+  Future<void> storeToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fcm_token', token);
+  }
+
+  Future<String?> getStoredToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('fcm_token');
   }
 
   Future<void> clearAllData() async {

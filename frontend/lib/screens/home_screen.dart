@@ -72,28 +72,42 @@ class _HomeScreenState extends State<HomeScreen> {
         await ApiServices().updateFCMToken(context, token, deviceType);
     if (response) {
       debugPrint("FCM Token updated successfully");
+      await SharedService().storeToken(token);
     } else {
       debugPrint("Failed to update FCM Token");
     }
   }
 
-  setUpFirebaseMessaging() async {
+  Future<void> setUpFirebaseMessaging() async {
+    String? oldToken = await SharedService().getStoredToken();
+
     if (kIsWeb) {
       final fcmToken = await FirebaseMessaging.instance
           .getToken(vapidKey: dotenv.env["VAPID_KEY"] ?? "VAPID_KEY_NOT_FOUND");
-      if (fcmToken != null) {
+      if (fcmToken != null && fcmToken != oldToken) {
         sendTokenToServer(fcmToken, "web");
       }
       return;
     }
 
-    String? token = await _firebaseMessaging.getToken();
-    if (token != null) {
-      sendTokenToServer(token, Platform.isAndroid ? "android" : "ios");
+    String? newToken = await _firebaseMessaging.getToken();
+
+    if (newToken == null) {
+      debugPrint("No FCM token available");
+      return;
+    }
+    if (newToken == oldToken) {
+      debugPrint("FCM token unchanged, no need to update server");
+    } else {
+      sendTokenToServer(newToken, Platform.isAndroid ? "android" : "ios");
     }
 
-    _firebaseMessaging.onTokenRefresh.listen((newToken) {
-      sendTokenToServer(newToken, Platform.isAndroid ? "android" : "ios");
+    _firebaseMessaging.onTokenRefresh.listen((refreshedToken) async {
+      String? storedToken = await SharedService().getStoredToken();
+      if (refreshedToken != storedToken) {
+        sendTokenToServer(
+            refreshedToken, Platform.isAndroid ? "android" : "ios");
+      }
     });
   }
 
