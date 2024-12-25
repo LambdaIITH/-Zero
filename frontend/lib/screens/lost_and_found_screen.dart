@@ -49,6 +49,8 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
 
     if (shouldAsk) {
       _showNotificationPermissionSheet(context);
+      SharedService().saveLastPermsRequestDate(
+          date: DateFormat("dd-MM-yyyy").format(now).trim());
     }
   }
 
