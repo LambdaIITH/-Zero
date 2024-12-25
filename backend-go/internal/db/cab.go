@@ -1,3 +1,5 @@
+package db
+
 import (
 	"bytes"
 	"context"
@@ -9,41 +11,18 @@ import (
 	"os"
 	"sync"
 
-	"schema"
-
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/LambdaIITH/Dashboard/backend-go/config"
-	"github.com/LambdaIITH/Dashboard/backend-go/internal/schema"
+
+	"github.com/LambdaIITH/Dashboard/backend/config"
+	"github.com/LambdaIITH/Dashboard/backend/internal/schema"
 )
 
-var (
-	MailUser  string
-	MailPass  string
-	MailMutex sync.Mutex
-)
-
-func Init() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
-
-	var err error
-	dsn := os.Getenv("DATABASE_URL")
-	config.DB, err = sql.Open("postgres", dsn)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-
-	MailUser = os.Getenv("GMAIL")
-	MailPass = os.Getenv("GMAIL_PASSWORD")
-}
 
 // verifyEmailExists checks if the email exists in the database
 func VerifyEmailExists(ctx context.Context, email string) error {
 	query := "SELECT phone_number FROM users WHERE email = $1"
 	var phoneNumber string
-	if err := config.DB.QueryRowContext(ctx, query, email).Scan(&phoneNumber); err != nil {
+	if err := config.DB.QueryRow(ctx, query, email).Scan(&phoneNumber); err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("email not found: %s", email)
 		}
@@ -58,7 +37,7 @@ func GetBookings(ctx context.Context) ([]schema.Booking, error) {
 		SELECT id, start_time, end_time, capacity, from_location, to_location, owner_email
 		FROM bookings
 	`
-	rows, err := config.DB.QueryContext(ctx, query)
+	rows, err := config.DB.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +50,13 @@ func GetBookings(ctx context.Context) ([]schema.Booking, error) {
 			return nil, err
 		}
 
-		b.Travellers, err = getTravellers(ctx, b.ID)
+		b.Travellers, err = GetTravellers(ctx, b.ID)
 		if err != nil {
 			return nil, err
 		}
 
 		if b.OwnerEmail != "" {
-			b.Requests, err = getRequests(ctx, b.ID)
+			b.Requests, err = GetRequests(ctx, b.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -96,7 +75,7 @@ func GetTravellers(ctx context.Context, bookingID int) ([]schema.UserDetails, er
 		FROM travellers
 		WHERE booking_id = $1
 	`
-	rows, err := config.DB.QueryContext(ctx, query, bookingID)
+	rows, err := config.DB.Query(ctx, query, bookingID)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +101,7 @@ func GetRequests(ctx context.Context, bookingID int) ([]schema.JoinBooking, erro
 		INNER JOIN travellers t u ON t.email = r.email
 		WHERE r.status = $1 AND r.booking_id = $2
 	`
-	rows, err := config.DB.QueryContext(ctx, query, schema.StatusPending, bookingID)
+	rows, err := config.DB.Query(ctx, query, schema.StatusPending, bookingID)
 	if err != nil {
 		return nil, err
 	}
@@ -151,22 +130,22 @@ func SendEmail(receiver, mailType string, booking schema.Booking, substitutions 
 	subjectTemplate := fmt.Sprintf("github.com/LambdaIITH/Dashboard/backend-go/internal/templates/%s/subject.txt", mailType)
 	bodyTemplate := fmt.Sprintf("github.com/LambdaIITH/Dashboard/backend-go/internal/templates/%s/body.html", mailType)
 
-	subject, err := parseTemplate(subjectTemplate, substitutions)
+	subject, err := ParseTemplate(subjectTemplate, substitutions)
 	if err != nil {
 		return err
 	}
 
-	body, err := parseTemplate(bodyTemplate, substitutions)
+	body, err := ParseTemplate(bodyTemplate, substitutions)
 	if err != nil {
 		return err
 	}
 
-	return sendSMTPMail(receiver, subject, body)
+	return SendSMTPMail(receiver, subject, body)
 }
 
 func SendEmailAsync(receiver, mailType string, booking schema.Booking, substitutions map[string]string) {
 	go func() {
-		if err := sendEmail(receiver, mailType, booking, substitutions); err != nil {
+		if err := SendEmail(receiver, mailType, booking, substitutions); err != nil {
 			log.Printf("Failed to send email to %s: %v", receiver, err)
 		} else {
 			log.Printf("Email sent successfully to %s", receiver)
@@ -188,12 +167,18 @@ func ParseTemplate(filepath string, substitutions map[string]string) (string, er
 	return buf.String(), nil
 }
 
+var MailMutex sync.Mutex
+
 func SendSMTPMail(receiver, subject, body string) error {
 	MailMutex.Lock()
 	defer MailMutex.Unlock()
 
-	auth := smtp.PlainAuth("", MailUser, MailPass, "smtp.gmail.com")
-	msg := fmt.Sprintf("From: %s\nTo: %s\nSubject: %s\n\n%s", MailUser, receiver, subject, body)
-	err := smtp.SendMail("smtp.gmail.com:587", auth, MailUser, []string{receiver}, []byte(msg))
+	mailUser := os.Getenv("GMAIL")
+	mailPass := os.Getenv("GMAIL_PASSWORD")
+
+	auth := smtp.PlainAuth("", mailUser, mailPass, "smtp.gmail.com")
+
+	msg := fmt.Sprintf("From: %s\nTo: %s\nSubject: %s\n\n%s", mailUser, receiver, subject, body)
+	err := smtp.SendMail("smtp.gmail.com:587", auth, mailUser, []string{receiver}, []byte(msg))
 	return err
 }
