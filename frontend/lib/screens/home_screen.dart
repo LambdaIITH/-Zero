@@ -80,7 +80,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> setUpFirebaseMessaging() async {
     String? oldToken = await SharedService().getStoredToken();
-
     if (kIsWeb) {
       final fcmToken = await FirebaseMessaging.instance
           .getToken(vapidKey: dotenv.env["VAPID_KEY"] ?? "VAPID_KEY_NOT_FOUND");
@@ -577,9 +576,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             runSpacing: 10.0, // Vertical spacing between rows
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 2 -
-                                    25, // Half of the screen width minus spacing
+                                width: MediaQuery.of(context).size.width > 450
+                                    ? 200
+                                    : MediaQuery.of(context).size.width / 2 -
+                                        25, // Half of the screen width minus spacing
                                 child: HomeScreenCardSmall(
+                                  width: MediaQuery.of(context).size.width > 450
+                                      ? 200
+                                      : MediaQuery.of(context).size.width / 2 -
+                                          25,
                                   isComingSoon: false,
                                   title: 'Cab Sharing',
                                   child: 'assets/icons/cab-sharing-icon.svg',
@@ -597,9 +602,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               SizedBox(
-                                width:
-                                    MediaQuery.of(context).size.width / 2 - 25,
+                                width: MediaQuery.of(context).size.width > 450
+                                    ? 200
+                                    : MediaQuery.of(context).size.width / 2 -
+                                        25,
                                 child: HomeScreenCardSmall(
+                                  width: MediaQuery.of(context).size.width > 450
+                                      ? 200
+                                      : MediaQuery.of(context).size.width / 2 -
+                                          25,
                                   isComingSoon: false,
                                   reduceImageSize: true,
                                   title: 'Lost & Found',
@@ -614,9 +625,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               SizedBox(
-                                width:
-                                    MediaQuery.of(context).size.width / 2 - 25,
+                                width: MediaQuery.of(context).size.width > 450
+                                    ? 200
+                                    : MediaQuery.of(context).size.width / 2 -
+                                        25,
                                 child: HomeScreenCardSmall(
+                                  width: MediaQuery.of(context).size.width > 450
+                                      ? 200
+                                      : MediaQuery.of(context).size.width / 2 -
+                                          25,
                                   isComingSoon: true,
                                   reduceImageSize: true,
                                   title: 'Patencheru Bus',

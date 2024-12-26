@@ -16,16 +16,16 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 void main() async {
-  await dotenv.load();
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-  );
+  );e
 
   final apiServices = ApiServices();
   await apiServices.configureDio();
 
-  _initializeNotifications();
+  await _initializeNotifications();
   _requestNotificationPermissions();
   clearAllNotifications();
 
