@@ -20,4 +20,5 @@ type RequestAnnouncement struct {
 	CreatedAt   int      `json:"createdAt"`
 	CreatedBy   string   `json:"createdBy"`
 	Tags        []string `json:"tags"`
+	Base64Image string   `json:"image"`
 }
