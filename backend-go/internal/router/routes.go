@@ -64,4 +64,14 @@ func SetupRoutes(router *gin.Engine) {
 	router.POST("/found/delete_item", controller.DeleteFoundItemHandler)
 	router.GET("/found/search", controller.SearchFoundItemHandler)
 
+	//Group routes for timetable/calendar
+	timetableGroup := router.Group("/timetable")
+	{
+		timetableGroup.GET("/courses", controller.GetTimetable)
+		timetableGroup.POST("/courses", controller.PostEditTimetable)
+		timetableGroup.GET("/share/{code}", controller.GetSharedTimetable)
+		timetableGroup.POST("/share", controller.PostSharedTimetable)
+		timetableGroup.DELETE("/share/{code}", controller.DeleteSharedTimetable)
+	}
+
 }
