@@ -13,8 +13,8 @@ def log_transaction_to_db(transaction_data: Dict[str, Any], user_id: int) -> boo
     values = (
         transaction_data["transaction_id"],
         transaction_data["payment_time"],
-        transaction_data["travel_date"],
         user_id,
+        transaction_data["travel_date"],
         transaction_data["bus_timing"],
         transaction_data["isUsed"]
     )

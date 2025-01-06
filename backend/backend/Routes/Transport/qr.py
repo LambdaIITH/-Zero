@@ -68,7 +68,7 @@ async def process_transaction(request: Request, transaction: TransactionRequest)
                 cur.execute(query, (transaction.transactionId,))
                 result = cur.fetchone()
                 if not result:
-                    return {"error": "Transaction not found"}, 404
+                    raise HTTPException(status_code=404, detail="Transaction not found")
 
                 payment_time, travel_date, bus_timing, is_used = result
 
