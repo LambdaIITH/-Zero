@@ -1,6 +1,6 @@
 from pypika import Query, Table, functions as fn, Order
 from typing import Dict, Any, Optional
-from backend.backend.utils import conn
+from utils import conn
 
 def log_transaction_to_db(transaction_data: Dict[str, Any], user_id: int) -> bool:
     """
@@ -29,6 +29,7 @@ def log_transaction_to_db(transaction_data: Dict[str, Any], user_id: int) -> boo
         print(f"Error logging transaction: {e}")
         return False
 
+
 def scan_qr(transaction_data: Dict[str, Any]) -> bool:
     """
     Function to log transaction data into PostgreSQL.
@@ -51,7 +52,8 @@ def scan_qr(transaction_data: Dict[str, Any]) -> bool:
         conn.rollback()
         print(f"Error logging transaction: {e}")
         return False
-    
+
+
 def get_last_transaction(user_id: int) -> Optional[Dict[str, Any]]:
     """
     Function to retrieve the most recent transaction data within the last 2 hours for a user from PostgreSQL.
@@ -64,7 +66,7 @@ def get_last_transaction(user_id: int) -> Optional[Dict[str, Any]]:
     LIMIT 1
     """
     values = (user_id,)
-    
+
     try:
         with conn.cursor() as cur:
             cur.execute(query, values)
