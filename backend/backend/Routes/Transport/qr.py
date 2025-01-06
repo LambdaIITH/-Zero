@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 import json
 import os
 from pydantic import BaseModel
@@ -29,7 +29,7 @@ class ScanQRModel(BaseModel):
     isScanned: bool
 
 @router.post("/qr", response_model=TransactionResponse)
-async def process_transaction(request: TransactionRequest):
+async def process_transaction(request: Request, transaction: TransactionRequest):
     # Sample data generation for the response
     user_id = get_user_id(request)
 
@@ -39,7 +39,7 @@ async def process_transaction(request: TransactionRequest):
 
     # Prepare the response
     response = TransactionResponse(
-        transactionId=request.transactionId,
+        transactionId=transaction.transactionId,
         paymentTime=payment_time,
         travelDate=travel_date,
         busTiming=bus_timing,
@@ -65,7 +65,7 @@ async def process_transaction(request: TransactionRequest):
 
         try:
             with conn.cursor() as cur:
-                cur.execute(query, (request.transactionId,))
+                cur.execute(query, (transaction.transactionId,))
                 result = cur.fetchone()
                 if not result:
                     return {"error": "Transaction not found"}, 404
@@ -74,7 +74,7 @@ async def process_transaction(request: TransactionRequest):
 
             # Prepare the response
             response = TransactionResponse(
-                transactionId=request.transactionId,
+                transactionId=transaction.transactionId,
                 paymentTime=payment_time.strftime("%H:%M %d/%m/%y"),
                 travelDate=travel_date.strftime("%d/%m/%y"),
                 busTiming=bus_timing.strftime("%H:%M"),
