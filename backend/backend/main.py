@@ -103,6 +103,8 @@ def get_session_info(response: Response):
 
 @app.get("/main-gate/status")
 async def get_main_gate_status(user_id: int = Depends(get_user_id)):
+    return JSONResponse(content="Non-Authoritative Information", status_code=203)
+
     user_details = get_user(user_id=user_id)
     if not user_details:
         raise HTTPException(status_code=404, detail="User not found")
