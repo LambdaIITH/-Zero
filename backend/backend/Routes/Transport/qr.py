@@ -3,10 +3,10 @@ import json
 import os
 from pydantic import BaseModel
 from datetime import datetime
-from backend.backend.utils import conn
+from utils import conn
 from Routes.Auth.cookie import get_user_id
 
-from backend.backend.queries.transport import log_transaction_to_db, scan_qr, get_last_transaction
+from queries.transport import log_transaction_to_db, scan_qr, get_last_transaction
 
 router = APIRouter(prefix="/transport", tags=["transport_schedule"])
 dir = os.path.dirname(os.path.realpath(__file__))
@@ -31,6 +31,8 @@ class ScanQRModel(BaseModel):
 @router.post("/qr", response_model=TransactionResponse)
 async def process_transaction(request: TransactionRequest):
     # Sample data generation for the response
+    user_id = get_user_id(request)
+
     payment_time = datetime.now().strftime("%H:%M %d/%m/%y")
     travel_date = datetime.now().strftime("%d/%m/%y")
     bus_timing = "14:30"  # Example bus timing; replace with actual data logic if needed
@@ -52,7 +54,7 @@ async def process_transaction(request: TransactionRequest):
         "bus_timing": response.busTiming,
         "isUsed": False
     }
-    result = log_transaction_to_db(transaction_data)
+    result = log_transaction_to_db(transaction_data, user_id)
 
     if not result:
         query = """
