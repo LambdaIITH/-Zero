@@ -4,8 +4,9 @@ import os
 from pydantic import BaseModel
 from datetime import datetime
 from backend.backend.utils import conn
+from Routes.Auth.cookie import get_user_id
 
-from backend.backend.queries.transport import log_transaction_to_db, scan_qr
+from backend.backend.queries.transport import log_transaction_to_db, scan_qr, get_last_transaction
 
 router = APIRouter(prefix="/transport", tags=["transport_schedule"])
 dir = os.path.dirname(os.path.realpath(__file__))
@@ -98,5 +99,13 @@ async def scan_qr_code(request: TransactionRequest):
 
     return ScanQRModel(isScanned=result)
 
+@router.get("/qr/recent", response_model= ScanQRModel)
+async def get_recent_transaction(request: TransactionRequest):
+    user_id = get_user_id(request)
+    
+    transaction_data = get_last_transaction(user_id=user_id)
+    
+    if transaction_data is None:
+        raise HTTPException(status_code=404, detail="No recent transaction found.")
 
-
+    return ScanQRModel(**transaction_data)

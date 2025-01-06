@@ -189,3 +189,16 @@ CREATE TABLE request
     FOREIGN KEY (request_email) REFERENCES users(email)
 );
 
+
+-- using nanoid function for creating a key for transactions
+-- so later it can be used for generating QR code
+CREATE TABLE IF NOT EXISTS transactions (
+    id TEXT DEFAULT nanoid() PRIMARY KEY,
+    transaction_id TEXT UNIQUE,
+    payment_time TIMESTAMP NOT NULL,
+    user_id BIGINT NOT NULL,
+    travel_date DATE NOT NULL,
+    bus_timing TIME NOT NULL,
+    isUsed BOOLEAN DEFAULT FALSE
+);
+
