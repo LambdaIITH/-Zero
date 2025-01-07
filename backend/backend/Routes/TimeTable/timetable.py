@@ -17,7 +17,7 @@ from Routes.Auth.cookie import get_user_id
 import regex as re
 import uuid
 router = APIRouter(prefix="/schedule", tags=["schedule"])
-
+import os
 
 def validate_course_schedule(data: Dict) -> Union[str, bool]:
     """
@@ -140,6 +140,7 @@ def post_edit_timetable(request: Request, timetable: Timetable):
 @router.get("/all_courses")
 async def get_all_courses():
     try:
+        dir = os.path.dirname(os.path.realpath(__file__))
         file = open(dir + "/all_courses.json")
         menu = json.load(file)
         file.close()
