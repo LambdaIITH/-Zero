@@ -19,7 +19,8 @@ class CityBusScreen extends StatefulWidget {
 class _CityBusScreenState extends State<CityBusScreen>
     with TickerProviderStateMixin {
   final TextEditingController transactionIdController = TextEditingController();
-
+  final TextEditingController transactionAmountController =
+      TextEditingController();
   late final Map<String, int> toIITH;
   late final Map<String, int> fromIITH;
 
@@ -69,7 +70,33 @@ class _CityBusScreenState extends State<CityBusScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _fetchRecentTransaction();
     fetchBus();
+  }
+
+  Future<void> _fetchRecentTransaction() async {
+    try {
+      final result = await ApiServices().getRecentTransaction(context);
+      if (result != null) {
+        final user = await SharedService().getUserDetails();
+        DateTime paymentDateTime = DateTime.parse(result['payment_time']);
+        String paymentDate =
+            "${paymentDateTime.year}-${paymentDateTime.month.toString().padLeft(2, '0')}-${paymentDateTime.day.toString().padLeft(2, '0')}";
+
+        setState(() {
+          transactionDetails = {
+            'transactionId': result['transaction_id'],
+            'travelDate': paymentDate,
+            'paymentTime': result['payment_time'],
+            'busTiming': result['bus_timing'],
+            'name': user['name'],
+            'email': user['email'],
+          };
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching recent transaction: $e");
+    }
   }
 
   @override
@@ -82,9 +109,6 @@ class _CityBusScreenState extends State<CityBusScreen>
   Future<void> submitTransactionID() async {
     final result =
         await apiServices.submitTransactionID(transactionIdController.text);
-
-    // SharedService()
-    //     .saveUserDetails(name: "SKGEzhil", email: "ep23btech11016@iith.ac.in");
 
     final email = (await SharedService().getUserDetails())['email'];
     final name = (await SharedService().getUserDetails())['name'];
@@ -107,6 +131,13 @@ class _CityBusScreenState extends State<CityBusScreen>
     });
 
     _tabController.animateTo(2);
+  }
+
+  String? _validateTransactionId(String value) {
+    if (!RegExp(r'^\d{12}$').hasMatch(value)) {
+      return 'UPI transaction ID must be 12 digits';
+    }
+    return null;
   }
 
   @override
@@ -207,9 +238,31 @@ class _CityBusScreenState extends State<CityBusScreen>
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: TextField(
-              controller: transactionIdController,
+              controller: transactionAmountController,
+              keyboardType: TextInputType.numberWithOptions(
+                  decimal: false, signed: false),
               decoration: InputDecoration(
-                // labelText: 'Transaction ID',
+                hintText: 'Transaction Amount',
+                filled: true,
+                fillColor: Theme.of(context)
+                    .textTheme
+                    .bodyLarge
+                    ?.color
+                    ?.withOpacity(0.1),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: TextField(
+              controller: transactionIdController,
+              keyboardType: TextInputType.numberWithOptions(
+                  decimal: false, signed: false),
+              decoration: InputDecoration(
                 hintText: 'Transaction ID',
                 filled: true,
                 fillColor: Theme.of(context)
@@ -230,7 +283,12 @@ class _CityBusScreenState extends State<CityBusScreen>
               customBorder: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),
               ),
-              onTap: submitTransactionID,
+              onTap: () {
+                if (_validateTransactionId(transactionIdController.text) ==
+                    null) {
+                  submitTransactionID();
+                }
+              },
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -254,23 +312,26 @@ class _CityBusScreenState extends State<CityBusScreen>
   }
 
   Column showQRTab() {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Column(
       children: [
         transactionDetails != null
             ? Column(
                 children: [
-                  QrImageView(
-                    data: transactionDetails.toString(),
-                    eyeStyle: QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                    ),
-                    dataModuleStyle: QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.square,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                    ),
-                    version: QrVersions.auto,
-                    size: 200.0,
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    'Transaction Details',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.8),
+                        fontSize: 24),
                   ),
                   SizedBox(height: 20),
                   Text(
@@ -306,8 +367,11 @@ class _CityBusScreenState extends State<CityBusScreen>
                             ?.withOpacity(0.8),
                         fontSize: 24),
                   ),
+                  SizedBox(
+                    height: 20,
+                  ),
                   Text(
-                    'isUsed: ${transactionDetails?['isUsed'].toString()}',
+                    'Amount Paid: 60',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
                         color: Theme.of(context)
@@ -315,10 +379,7 @@ class _CityBusScreenState extends State<CityBusScreen>
                             .bodyLarge
                             ?.color
                             ?.withOpacity(0.8),
-                        fontSize: 16),
-                  ),
-                  SizedBox(
-                    height: 20,
+                        fontSize: 24),
                   ),
                   Text(
                     'Transaction ID: ${transactionDetails?['transactionId']}',
@@ -329,7 +390,7 @@ class _CityBusScreenState extends State<CityBusScreen>
                             .bodyLarge
                             ?.color
                             ?.withOpacity(0.8),
-                        fontSize: 16),
+                        fontSize: 24),
                   ),
                 ],
               )

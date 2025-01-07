@@ -636,7 +636,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           25,
                                   isComingSoon: true,
                                   reduceImageSize: true,
-                                  title: 'Patencheru Bus',
+                                  title: 'Patancheru Bus',
                                   child: 'assets/icons/bus-svg.svg',
                                   onTap: () {
                                     widget.isGuest

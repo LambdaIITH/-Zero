@@ -973,15 +973,10 @@ class ApiServices {
   }
 
   Future<Map<String, dynamic>> submitTransactionID(String transactionId) async {
-    final dio = Dio();
-
-    // Define the request URL
-    // const url = 'http://10.0.2.2:8000/transport/qr';
-    final url = '${dio.options.baseUrl}/transport/qr';
     try {
       // Sending the POST request
       final response = await dio.post(
-        url,
+        '/transport/qr',
         data: {
           'transactionId': transactionId,
         },
@@ -1021,13 +1016,35 @@ class ApiServices {
     try {
       debugPrint("Making request to: ${dio.options.baseUrl}/transport/cityBus");
       // final response = await dio.get('http://10.0.2.2:8000/transport/cityBus');
-      final response =
-          await dio.get('${dio.options.baseUrl}/transport/cityBus');
+      final response = await dio.get('/transport/cityBus');
 
       final data = response.data;
       return CityBusSchedule.fromJson(data);
     } catch (e) {
       debugPrint("Failed to fetch bus schedule: $e");
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getRecentTransaction(
+      BuildContext context) async {
+    try {
+      final url = '/transport/qr/recent';
+      debugPrint("Making request to: $url");
+
+      final response = await dio.get(
+        url,
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return data;
+      } else {
+        debugPrint("Unexpected response format: $data");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch recent transaction: $e");
       return null;
     }
   }
