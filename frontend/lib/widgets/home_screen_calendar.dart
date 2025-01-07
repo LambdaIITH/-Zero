@@ -229,21 +229,24 @@ Container lectureItem(
           ),
         ),
         SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            NormalText(
-              text: lecture.courseCode,
-              size: 12,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-            NormalText(
-              text: timetable!.courses[lecture.courseCode]?['title'] ??
-                  'Unknown Course',
-              size: 18,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              NormalText(
+                text: lecture.courseCode,
+                size: 12,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+              NormalText(
+                text: timetable!.courses[lecture.courseCode]?['title'] ??
+                    'Unknown Course',
+                size: 18,
+                limit: 1,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ],
+          ),
         ),
       ],
     ),
