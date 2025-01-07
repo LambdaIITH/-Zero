@@ -173,6 +173,7 @@ def send_email(
         "delete_notif",
     ],
     booking_id: int,
+    reply_to = None,
     **kwargs,
 ):
     """
@@ -225,6 +226,8 @@ def send_email(
     message["From"] = GMAIL_USER
     message["To"] = receiver
     message["Subject"] = subject
+    if reply_to is not None:
+        message["Reply-To"] = reply_to
     # need to compose a proper email with accept and reject options
     part1 = MIMEText(text, "plain")
     part2 = MIMEText(html, "html")

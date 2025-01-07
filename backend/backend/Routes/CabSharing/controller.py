@@ -254,6 +254,7 @@ async def request_to_join_booking(
             owner_email,
             "request",
             booking_id,
+            email,
             x_requester_name=name,
             x_requester_phone=phone,
             x_requester_email=email,
@@ -344,7 +345,7 @@ async def accept_request(
         conn.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-    send_email(response.requester_email, "accept", booking_id)
+    send_email(response.requester_email, "accept", booking_id, email)
 
     name = queries.get_name(conn, email=response.requester_email)
     phone = queries.get_phone_number(conn, email=response.requester_email)
@@ -358,6 +359,7 @@ async def accept_request(
             traveller_email,
             "accept_notif",
             booking_id,
+            response.requester_email,
             x_accepted_email=response.requester_email,
             x_accepted_name=name,
             x_accepted_phone=phone,
@@ -402,7 +404,7 @@ async def reject_request(
         conn.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-    send_email(response.requester_email, "reject", booking_id)
+    send_email(response.requester_email, "reject", booking_id, email)
 
 
 @app.delete("/bookings/{booking_id}")
@@ -463,7 +465,7 @@ async def exit_booking(booking_id: int, user_id: str = Depends(get_user_id),):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
     # confimation email to exiting user
-    send_email(email, "exit", booking_id)
+    send_email(email, "exit", booking_id, owner_email)
 
     name = queries.get_name(conn, email=email)
 
@@ -474,6 +476,7 @@ async def exit_booking(booking_id: int, user_id: str = Depends(get_user_id),):
             traveller_email,
             "exit_notif",
             booking_id,
+            email,
             x_exited_email=email,
             x_exited_name=name,
         )
