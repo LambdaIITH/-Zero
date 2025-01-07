@@ -1,39 +1,18 @@
-package main
+package controller
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
-	"context"
-	"encoding/json"
-	"net/http"
-	"os"
 	"strconv"
 	"time"
 
-	
-	"github.com/LambdaIITH/Dashboard/backend/config"
-	queries "github.com/LambdaIITH/Dashboard/backend/internal/db"
+	"github.com/gin-gonic/gin"
+
+	db "github.com/LambdaIITH/Dashboard/backend/internal/db"
 	helpers "github.com/LambdaIITH/Dashboard/backend/internal/helpers"
 	schema "github.com/LambdaIITH/Dashboard/backend/internal/schema"
-	
-	"github.com/gin-gonic/gin"
 )
 
-
-// func initDB() {
-// 	var err error
-// 	db, err = sql.Open("postgres", "user=youruser dbname=yourdb sslmode=disable")
-// 	if err != nil {
-// 		log.Fatalf("Failed to connect to database: %v", err)
-// 	}
-// }
-
-// Middleware to extract user ID from cookie
-
-
-
-// Handlers
 func checkAuth(c *gin.Context) {
 
 	userID, err := helpers.GetUserID(c.Request)
@@ -42,14 +21,14 @@ func checkAuth(c *gin.Context) {
 		return
 	}
 
-	email, err := helpers.GetUserEmail(c, userID)
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		log.Printf("Error fetching user email: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user email"})
 		return
 	}
 
-	phoneNumber, err := helpers.GetPhoneNumber(c, email)
+	phoneNumber, err := db.GetPhoneNumber(c, email)
 	if err != nil {
 		log.Printf("Error fetching phone number: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch phone number"})
@@ -62,7 +41,7 @@ func checkAuth(c *gin.Context) {
 }
 
 func CreateBooking(c *gin.Context) {
-	var booking schema.Booking
+	var booking schema.CabBooking
 
 	// Bind the request body to the Booking struct
 	if err := c.ShouldBindJSON(&booking); err != nil {
@@ -78,7 +57,7 @@ func CreateBooking(c *gin.Context) {
 	}
 
 	// Fetch user email
-	email, err := helpers.GetUserEmail(c, userID)
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		log.Printf("Error fetching user email: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user email"})
@@ -86,40 +65,28 @@ func CreateBooking(c *gin.Context) {
 	}
 
 	// Get location IDs
-	fromID := helpers.GetLocationID(c, booking.FromLoc)
-	toID := helpers.GetLocationID(c, booking.ToLoc)
+	fromID, err := db.GetLocationID(c, booking.FromLocation)
+	toID, err := db.GetLocationID(c, booking.ToLocation)
 	if fromID == 0 || toID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid location"})
 		return
 	}
 
-	// Prepare booking data
-	bookingData := map[string]interface{}{
-		"startTime":  booking.StartTime,
-		"endTime":    booking.EndTime,
-		"capacity":   booking.Capacity,
-		"fromLoc":    fromID,
-		"toLoc":      toID,
-		"ownerEmail": email,
-		"comments":   booking.Comments,
-	}
-
-	// Create booking
-	bookingID, err := queries.CreateBooking(c, bookingData)
+	bookingID, err := db.CreateBooking(c, booking.StartTime, booking.EndTime, booking.Capacity, &fromID, &toID, email, booking.Comments)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking"})
 		return
 	}
 
 	// Add traveller
-	err = queries.AddTraveller(c, bookingID, email, booking.Comments)
+	err = db.AddTraveller(c, email, bookingID, booking.Comments)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add traveller"})
 		return
 	}
 
 	// Send email notification
-	err = helpers.SendEmail(email, "create", booking, map[string]string{"booking_id": strconv.Itoa(bookingID)})
+	err = helpers.SendEmail(email, "create", int(booking.ID), map[string]interface{}{"booking_id": bookingID})
 	if err != nil {
 		log.Printf("Error sending email notification: %v", err)
 	}
@@ -137,7 +104,7 @@ func UpdateBooking(c *gin.Context) {
 	}
 
 	// Parse the BookingUpdate object from the request body
-	var patch schema.BookingUpdate
+	var patch schema.CabBooking
 	if err := c.ShouldBindJSON(&patch); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking update data"})
 		return
@@ -151,16 +118,15 @@ func UpdateBooking(c *gin.Context) {
 	}
 
 	// Fetch user email
-	email, err := helpers.GetUserEmail(c, userID)
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		log.Printf("Error fetching user email: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user email"})
 		return
 	}
 
-	helpers.VerifyExists(email)
 
-	ownerEmail, err := queries.GetOwnerEmail(c, bookingID)
+	ownerEmail, err := db.GetOwnerEmail(c, bookingID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking ID"})
 		return
@@ -172,7 +138,7 @@ func UpdateBooking(c *gin.Context) {
 	}
 
 	// Update booking
-	err = queries.UpdateBooking(c, patch.StartTime, patch.EndTime, bookingID)
+	err = db.UpdateBooking(c, bookingID, patch.StartTime, patch.EndTime)
 	if err != nil {
 		log.Printf("Error updating booking: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update booking"})
@@ -192,7 +158,7 @@ func UserBookings(c *gin.Context) {
 	}
 
 	// Fetch user email
-	email, err := helpers.GetUserEmail(c, userID)
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		log.Printf("Error fetching user email: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user email"})
@@ -200,14 +166,14 @@ func UserBookings(c *gin.Context) {
 	}
 
 	// Fetch past and future bookings
-	pastBookings, err := queries.GetUserPastBookings(c, email)
+	pastBookings, err := db.GetUserPastBookings(c, email)
 	if err != nil {
 		log.Printf("Error fetching past bookings: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch past bookings"})
 		return
 	}
 
-	futureBookings, err := queries.GetUserFutureBookings(c, email)
+	futureBookings, err := db.GetUserFutureBookings(c, email)
 	if err != nil {
 		log.Printf("Error fetching future bookings: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch future bookings"})
@@ -246,29 +212,29 @@ func SearchBookings(c *gin.Context) {
 		return
 	}
 
-	var res []schema.Booking
+	var res []schema.CabBooking
 	if fromLoc == "" && toLoc == "" {
 		// Filter bookings by time range
-		res, err = queries.FilterTimes(c, startTime, endTime)
+		res, err = db.FilterTimes(c, startTime, endTime)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to filter bookings by time"})
 			return
 		}
 	} else {
 		// Get location IDs
-		fromID, err := queries.GetLocID(c, fromLoc)
+		fromID, err := db.GetLocationID(c, fromLoc)
 		if err != nil || fromID == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid from location"})
 			return
 		}
-		toID, err := queries.GetLocID(c, toLoc)
+		toID, err := db.GetLocationID(c, toLoc)
 		if err != nil || toID == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid to location"})
 			return
 		}
 
 		// Filter bookings by locations and time range
-		res, err = queries.FilterAll(c, fromID, toID, startTime, endTime)
+		res, err = db.FilterAll(c, fromID, toID, startTime, endTime)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to filter bookings by location and time"})
 			return
@@ -290,7 +256,7 @@ func RequestToJoinBooking(c *gin.Context) {
 	}
 
 	// Parse JoinBooking struct from request body
-	var joinBooking schema.JoinBooking
+	var joinBooking schema.CabBooking
 	if err := c.ShouldBindJSON(&joinBooking); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid join booking data"})
 		return
@@ -304,7 +270,7 @@ func RequestToJoinBooking(c *gin.Context) {
 	}
 
 	// Fetch user email
-	email, err := helpers.GetUserEmail(c, userID)
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		log.Printf("Error fetching user email: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user email"})
@@ -312,7 +278,7 @@ func RequestToJoinBooking(c *gin.Context) {
 	}
 
 	// Check if the booking exists and is not owned by the requester
-	ownerEmail, err := queries.GetOwnerEmail(c, bookingID)
+	ownerEmail, err := db.GetOwnerEmail(c, bookingID)
 	if err != nil || ownerEmail == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ride ID"})
 		return
@@ -322,16 +288,15 @@ func RequestToJoinBooking(c *gin.Context) {
 		return
 	}
 
-	helpers.VerifyExists(email)
-
 	// Check if the cab is full
-	if queries.IsCabFull(c, bookingID) {
+	isCabFull, err := db.IsCabFull(c, bookingID)
+	if isCabFull {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Ride is full"})
 		return
 	}
 
 	// Check if a request already exists
-	requestStatus, err := queries.GetRequestStatus(c, bookingID, email)
+	requestStatus, err := db.GetRequestStatus(c, bookingID, email)
 	if err == nil {
 		var detail string
 		switch requestStatus {
@@ -351,7 +316,7 @@ func RequestToJoinBooking(c *gin.Context) {
 	}
 
 	// Create a new request
-	err = queries.CreateRequest(c, bookingID, email, joinBooking.Comments)
+	err = db.CreateRequest(c, bookingID, email, joinBooking.Comments)
 	if err != nil {
 		log.Printf("Error creating request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
@@ -359,13 +324,13 @@ func RequestToJoinBooking(c *gin.Context) {
 	}
 
 	// Send email to owner
-	ownerPhone, _ := queries.GetPhoneNumber(c, ownerEmail)
-	requesterName, _ := queries.GetName(c, email)
+	ownerPhone, _ := db.GetPhoneNumber(c, ownerEmail)
+	requesterName, _ := db.GetName(c, email)
 	err = helpers.SendEmail(
 		ownerEmail,
 		"request",
 		bookingID,
-		map[string]string{
+		map[string]interface{}{
 			"x_requester_name":  requesterName,
 			"x_requester_phone": ownerPhone,
 			"x_requester_email": email,
@@ -386,21 +351,27 @@ func DeleteRequest(c *gin.Context) {
 		return
 	}
 
-	email, err := helpers.GetUserEmail(c.Request)
+	userID, err := helpers.GetUserID(c.Request)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	// Check if there is a pending request
-	requestStatus := queries.GetRequestStatus(c, bookingID, email)
+	requestStatus, err := db.GetRequestStatus(c, bookingID, email)
 	if requestStatus != "pending" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No pending request found"})
 		return
 	}
 
 	// Try to delete the request
-	err = queries.DeleteRequest(c, bookingID, email)
+	err = db.DeleteRequest(c, bookingID, email)
 	if err != nil {
 		log.Printf("Error deleting request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete request"})
@@ -417,20 +388,19 @@ func AcceptRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking ID"})
 		return
 	}
-
-	var response schema.RequestResponse
-	if err := c.ShouldBindJSON(&response); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
-
-	email, err := helpers.GetUserEmail(c.Request)
+	userID, err := helpers.GetUserID(c.Request)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	ownerEmail := queries.GetOwnerEmail(c, bookingID)
+	email, err := db.GetUserEmail(c, userID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	ownerEmail, err := db.GetOwnerEmail(c, bookingID)
 	if ownerEmail == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Booking does not exist"})
 		return
@@ -439,19 +409,20 @@ func AcceptRequest(c *gin.Context) {
 		return
 	}
 
-	if queries.IsCabFull(c, bookingID) {
+	isCabFull, err := db.IsCabFull(c, bookingID)
+	if isCabFull {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cab is already full"})
 		return
 	}
 
-	status := queries.GetRequestStatus(c, bookingID, response.RequesterEmail)
+	status, err := db.GetRequestStatus(c, bookingID, email)
 	if status != "pending" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No pending request found"})
 		return
 	}
 
 	// Accept request and add traveller
-	comments, err := queries.UpdateRequest(c, bookingID, response.RequesterEmail, "accepted")
+	comments, err := db.UpdateRequest(c, bookingID, email, "accepted")
 	if err != nil {
 		log.Printf("Error updating request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to accept request"})
@@ -462,7 +433,7 @@ func AcceptRequest(c *gin.Context) {
 		return
 	}
 
-	err = queries.AddTraveller(c, bookingID, response.RequesterEmail, comments)
+	err = db.AddTraveller(c, email, bookingID, comments)
 	if err != nil {
 		log.Printf("Error adding traveller: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add traveller"})
@@ -470,24 +441,24 @@ func AcceptRequest(c *gin.Context) {
 	}
 
 	// Send acceptance email
-	err = helpers.SendEmail(response.RequesterEmail, "accept", bookingID)
+	err = helpers.SendEmail(email, "accept", bookingID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Error sending email: %v", err)
 	}
 
 	// Notify other travellers
-	name := queries.GetName(c, response.RequesterEmail)
-	phone := queries.GetPhoneNumber(c, response.RequesterEmail)
+	name, err := db.GetName(c, email)
+	phone, err := db.GetPhoneNumber(c, email)
 
-	travellers := queries.GetTravellers(c, bookingID)
+	travellers, err := db.GetTravellers(c, bookingID)
 	for _, traveller := range travellers {
 		travellerEmail := traveller.Email
-		if travellerEmail == response.RequesterEmail {
+		if travellerEmail == email {
 			continue
 		}
 
-		err = helpers.SendEmail(travellerEmail, "accept_notif", bookingID, map[string]string{
-			"x_accepted_email": response.RequesterEmail,
+		err = helpers.SendEmail(travellerEmail, "accept_notif", bookingID, map[string]interface{}{
+			"x_accepted_email": email,
 			"x_accepted_name":  name,
 			"x_accepted_phone": phone,
 		})
@@ -507,19 +478,15 @@ func RejectRequest(c *gin.Context) {
 		return
 	}
 
-	var response schema.RequestResponse
-	if err := c.ShouldBindJSON(&response); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
+	userID, err := helpers.GetUserID(c.Request)
 
-	email, err := helpers.GetUserEmail(c.Request)
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	ownerEmail := queries.GetOwnerEmail(c, bookingID)
+	ownerEmail, err := db.GetOwnerEmail(c, bookingID)
 	if ownerEmail == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Ride does not exist"})
 		return
@@ -529,7 +496,7 @@ func RejectRequest(c *gin.Context) {
 	}
 
 	// Reject the request
-	err = queries.UpdateRequest(c, bookingID, response.RequesterEmail, "rejected")
+	_, err = db.UpdateRequest(c, bookingID, email, "rejected")
 	if err != nil {
 		log.Printf("Error rejecting request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reject request"})
@@ -537,7 +504,7 @@ func RejectRequest(c *gin.Context) {
 	}
 
 	// Send rejection email
-	err = helpers.SendEmail(response.RequesterEmail, "reject", bookingID)
+	err = helpers.SendEmail(email, "reject", bookingID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Error sending rejection email: %v", err)
 	}
@@ -553,13 +520,14 @@ func DeleteExistingBooking(c *gin.Context) {
 		return
 	}
 
-	email, err := helpers.GetUserEmail(c.Request)
+	userID, err := helpers.GetUserID(c.Request)
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	ownerEmail := queries.GetOwnerEmail(c, bookingID)
+	ownerEmail, err := db.GetOwnerEmail(c, bookingID)
 	if ownerEmail == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Booking does not exist"})
 		return
@@ -569,15 +537,15 @@ func DeleteExistingBooking(c *gin.Context) {
 	}
 
 	// Notify travellers and delete the booking
-	travellers := queries.GetTravellers(c, bookingID)
+	travellers, err := db.GetTravellers(c, bookingID)
 	for _, traveller := range travellers {
-		err = helpers.SendEmail(traveller.Email, "delete_notif", bookingID)
+		err = helpers.SendEmail(traveller.Email, "delete_notif", bookingID, map[string]interface{}{})
 		if err != nil {
 			log.Printf("Error sending notification email to traveller: %v", err)
 		}
 	}
 
-	err = queries.DeleteBooking(c, bookingID)
+	err = db.DeleteBooking(c, bookingID)
 	if err != nil {
 		log.Printf("Error deleting booking: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete booking"})
@@ -595,13 +563,14 @@ func ExitBooking(c *gin.Context) {
 		return
 	}
 
-	email, err := helpers.GetUserEmail(c.Request)
+	userID, err := helpers.GetUserID(c.Request)
+	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-
-	ownerEmail := queries.GetOwnerEmail(c, bookingID)
+	
+	ownerEmail, err := db.GetOwnerEmail(c, bookingID)
 	if ownerEmail == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Ride does not exist"})
 		return
@@ -611,7 +580,7 @@ func ExitBooking(c *gin.Context) {
 	}
 
 	// Remove traveller from booking
-	err = queries.DeleteParticularTraveller(c, bookingID, email, ownerEmail)
+	err = db.DeleteParticularTraveller(c, bookingID, email, ownerEmail)
 	if err != nil {
 		log.Printf("Error exiting booking: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exit booking"})
@@ -619,16 +588,16 @@ func ExitBooking(c *gin.Context) {
 	}
 
 	// Send confirmation email to exiting user
-	err = helpers.SendEmail(email, "exit", bookingID)
+	err = helpers.SendEmail(email, "exit", bookingID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Error sending exit confirmation email: %v", err)
 	}
 
 	// Notify remaining travellers
-	name := queries.GetName(c, email)
-	travellers := queries.GetTravellers(c, bookingID)
+	name, err := db.GetName(c, email)
+	travellers, err := db.GetTravellers(c, bookingID)
 	for _, traveller := range travellers {
-		err = helpers.SendEmail(traveller.Email, "exit_notif", bookingID, map[string]string{
+		err = helpers.SendEmail(traveller.Email, "exit_notif", bookingID, map[string]interface{}{
 			"x_exited_email": email,
 			"x_exited_name":  name,
 		})

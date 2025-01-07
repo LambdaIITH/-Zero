@@ -9,6 +9,37 @@ import (
 	"github.com/LambdaIITH/Dashboard/backend/config"
 )
 
+// GetUserEmail retrieves the email of a user based on the ID.
+func GetUserEmail(c context.Context, id int) (string, error) {
+	query := `
+        SELECT email
+        FROM users
+        WHERE id = $1;
+    `
+	var userEmail string
+	err := config.DB.QueryRow(c, query, id).Scan(&userEmail)
+	if err != nil {
+		return "", err
+	}
+	return userEmail, nil
+}
+
+// GetPhoneNumber retrieves the phone number of a user based on the email.
+func GetPhoneNumber(c context.Context, email string) (string, error) {
+	query := `
+        SELECT phone_number 
+        FROM users 
+        WHERE email = $1;
+    `
+	var phoneNumber string
+	err := config.DB.QueryRow(c, query, email).Scan(&phoneNumber)
+	if err != nil {
+		return "", err
+	}
+	return phoneNumber, nil
+}
+
+
 func IsUserExists(ctx context.Context, email string) (bool, int, error) {
 	var userID int
 	query := `SELECT id FROM users WHERE email = $1`
