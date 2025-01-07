@@ -137,6 +137,18 @@ def post_edit_timetable(request: Request, timetable: Timetable):
             status_code=500, detail=f"Internal Server Error : {e}")
 
 
+@router.get("/all_courses")
+async def get_all_courses():
+    try:
+        file = open(dir + "/all_courses.json")
+        menu = json.load(file)
+        file.close()
+        return menu
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=500, detail="City Bus Schedule file does not exist. Please make one."
+        )
+
 @router.get('/share/{code}')
 def get_shared_timetable(code: str):
     try:
