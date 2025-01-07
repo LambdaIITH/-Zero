@@ -643,6 +643,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                   },
                                 ),
                               ),
+                              SizedBox(
+                                width:
+                                    MediaQuery.of(context).size.width / 2 - 25,
+                                child: HomeScreenCardSmall(
+                                  isComingSoon: false,
+                                  title: 'Announcements',
+                                  child: 'assets/icons/cab-sharing-icon.svg',
+                                  onTap: () {
+                                    // widget.isGuest
+                                    //     ? showError()
+                                    //     : context.push('/announcements');
+                                    context.push('/announcements');
+                                  },
+                                ),
+                              ),
                             ],
                           ),
 

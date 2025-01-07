@@ -5,15 +5,15 @@ go 1.22
 toolchain go1.23.1
 
 require (
+	github.com/aws/aws-sdk-go v1.55.5
 	github.com/gin-gonic/gin v1.10.0
+	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/joho/godotenv v1.5.1
 	google.golang.org/api v0.199.0
 )
 
 require (
-	github.com/aws/aws-sdk-go v1.55.5 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
 )

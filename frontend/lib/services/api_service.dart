@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dashbaord/constants/enums/lost_and_found.dart';
+import 'package:dashbaord/models/announcement_model.dart';
 import 'package:dashbaord/models/booking_model.dart';
 import 'package:dashbaord/models/lecture_search_model.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
@@ -1053,6 +1054,25 @@ class ApiServices {
       debugPrint("Failed to fetch bus schedule: $e");
       return null;
     }
+  }
+
+  Future<List<AnnouncementModel>?> getAnnouncements(
+      num limit, num offset) async {
+    try {
+      debugPrint("Making request to: ${dio.options.baseUrl}/announcements");
+
+      final response = await dio
+          .get('${dio.options.baseUrl}/announcements', queryParameters: {
+        'limit': limit,
+        'offset': offset,
+      });
+
+      final data = response.data as List;
+      return data.map((item) => AnnouncementModel.fromJson(item)).toList();
+    } catch (e) {
+      debugPrint("Failed to fetch announcements: $e");
+    }
+    return null;
   }
 
   Future<Map<String, dynamic>?> getRecentTransaction(
