@@ -99,6 +99,7 @@ class _HomeScreenScheduleState extends State<HomeScreenSchedule> {
     bool isEventsForToday = eventsObject[1];
 
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () => Navigator.push(
         context,
         CustomPageRoute(

@@ -129,6 +129,7 @@ class _HomeScreenBusTimingsState extends State<HomeScreenBusTimings> {
 
   Widget noBusses(String msg, BuildContext context) {
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
         if (widget.busSchedule == null) {
           return;
@@ -194,6 +195,7 @@ class _HomeScreenBusTimingsState extends State<HomeScreenBusTimings> {
     }
 
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () =>
           context.push('/bus', extra: {'busSchedule': widget.busSchedule!}),
 

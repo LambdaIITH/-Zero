@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
@@ -9,15 +10,20 @@ import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:dashbaord/widgets/homeScreenCardSmall.dart';
+import 'package:dashbaord/widgets/home_card_no_options.dart';
 import 'package:dashbaord/widgets/home_screen_appbar.dart';
 import 'package:dashbaord/widgets/home_screen_bus_timings.dart';
 import 'package:dashbaord/widgets/home_screen_calendar.dart';
 import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
+import 'package:dashbaord/widgets/notif_perm.dart';
 import 'package:dashbaord/widgets/timetable/manage_courses_sheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:home_widget/home_widget.dart';
@@ -40,6 +46,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   void showError({String? msg}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -60,6 +67,60 @@ class _HomeScreenState extends State<HomeScreen> {
   int mainGateStatus = -1;
   Timetable? timetable;
 
+  void sendTokenToServer(String token, String deviceType) async {
+    final response =
+        await ApiServices().updateFCMToken(context, token, deviceType);
+    if (response) {
+      debugPrint("FCM Token updated successfully");
+      await SharedService().storeToken(token);
+    } else {
+      debugPrint("Failed to update FCM Token");
+    }
+  }
+
+  Future<void> setUpFirebaseMessaging() async {
+    String? oldToken = await SharedService().getStoredToken();
+    if (kIsWeb) {
+      final fcmToken = await FirebaseMessaging.instance
+          .getToken(vapidKey: dotenv.env["VAPID_KEY"] ?? "VAPID_KEY_NOT_FOUND");
+      if (fcmToken != null && fcmToken != oldToken) {
+        sendTokenToServer(fcmToken, "web");
+      }
+      return;
+    }
+
+    String? newToken = await _firebaseMessaging.getToken();
+
+    if (newToken == null) {
+      debugPrint("No FCM token available");
+      return;
+    }
+    if (newToken == oldToken) {
+      debugPrint("FCM token unchanged, no need to update server");
+    } else {
+      sendTokenToServer(newToken, Platform.isAndroid ? "android" : "ios");
+    }
+
+    _firebaseMessaging.onTokenRefresh.listen((refreshedToken) async {
+      String? storedToken = await SharedService().getStoredToken();
+      if (refreshedToken != storedToken) {
+        sendTokenToServer(
+            refreshedToken, Platform.isAndroid ? "android" : "ios");
+      }
+    });
+  }
+
+  int? week;
+  Future<void> fetchWeekNumber() async {
+    final response = await ApiServices().getWeekNumber(context);
+    if (response != null) {
+      setState(() {
+        week = response['week'];
+        week = week != null ? week! + 1 : week;
+      });
+    }
+  }
+
   void fetchMessMenu() async {
     final response = await ApiServices().getMessMenu(context);
     if (response == null) {
@@ -71,6 +132,8 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       return;
     }
+
+    await fetchWeekNumber();
     setState(() {
       messMenu = response;
       changeState();
@@ -242,6 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchMessMenu();
     fetchBus();
     fetchTimetable();
+    setUpFirebaseMessaging();
     analyticsService.logScreenView(screenName: "HomeScreen");
   }
 
@@ -428,7 +492,6 @@ class _HomeScreenState extends State<HomeScreen> {
             });
             isDialogShown = true;
           }
-
           return isLoading
               ? const CustomLoadingScreen()
               : SafeArea(
@@ -500,35 +563,28 @@ class _HomeScreenState extends State<HomeScreen> {
                               }
                             },
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 15),
                           HomeScreenBusTimings(
                             busSchedule: busSchedule,
                           ),
-                          const SizedBox(height: 20),
-                          HomeScreenMessMenu(messMenu: messMenu),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 18, top: 0),
-                            child: Text(
-                              'Services',
-                              style: GoogleFonts.inter(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.color,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 28,
-                              ),
-                            ),
-                          ),
+                          const SizedBox(height: 15),
+                          HomeScreenMessMenu(messMenu: messMenu, week: week),
+                          const SizedBox(height: 15),
+
                           Wrap(
                             spacing: 10.0, // Horizontal spacing between cards
                             runSpacing: 10.0, // Vertical spacing between rows
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 2 -
-                                    25, // Half of the screen width minus spacing
+                                width: MediaQuery.of(context).size.width > 450
+                                    ? 200
+                                    : MediaQuery.of(context).size.width / 2 -
+                                        25, // Half of the screen width minus spacing
                                 child: HomeScreenCardSmall(
+                                  width: MediaQuery.of(context).size.width > 450
+                                      ? 200
+                                      : MediaQuery.of(context).size.width / 2 -
+                                          25,
                                   isComingSoon: false,
                                   title: 'Cab Sharing',
                                   child: 'assets/icons/cab-sharing-icon.svg',
@@ -546,11 +602,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               SizedBox(
-                                width:
-                                    MediaQuery.of(context).size.width / 2 - 25,
+                                width: MediaQuery.of(context).size.width > 450
+                                    ? 200
+                                    : MediaQuery.of(context).size.width / 2 -
+                                        25,
                                 child: HomeScreenCardSmall(
+                                  width: MediaQuery.of(context).size.width > 450
+                                      ? 200
+                                      : MediaQuery.of(context).size.width / 2 -
+                                          25,
                                   isComingSoon: false,
-                                  isLnF: true,
+                                  reduceImageSize: true,
                                   title: 'Lost & Found',
                                   child: 'assets/icons/magnifying-icon.svg',
                                   onTap: widget.isGuest
@@ -563,12 +625,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               SizedBox(
-                                width:
-                                    MediaQuery.of(context).size.width / 2 - 25,
+                                width: MediaQuery.of(context).size.width > 450
+                                    ? 200
+                                    : MediaQuery.of(context).size.width / 2 -
+                                        25,
                                 child: HomeScreenCardSmall(
-                                  isComingSoon: false,
-                                  title: 'Patencheru Bus',
-                                  child: 'assets/icons/cab-sharing-icon.svg',
+                                  width: MediaQuery.of(context).size.width > 450
+                                      ? 200
+                                      : MediaQuery.of(context).size.width / 2 -
+                                          25,
+                                  isComingSoon: true,
+                                  reduceImageSize: true,
+                                  title: 'Patancheru Bus',
+                                  child: 'assets/icons/bus-svg.svg',
                                   onTap: () {
                                     widget.isGuest
                                         ? showError()
@@ -594,8 +663,37 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
 
-                          const SizedBox(height: 48),
-                          
+                          const SizedBox(height: 20),
+                          // HomeCardNoOptions(
+                          //   isComingSoon: true,
+                          //   title: 'Cab Sharing',
+                          //   child: 'assets/icons/cab-sharing-icon.svg',
+                          //   onTap: () {
+                          //     widget.isGuest
+                          //         ? showError()
+                          //         : context.push('/cabsharing', extra: {
+                          //             'user': userModel ??
+                          //                 UserModel(
+                          //                     email: "user@iith.ac.in",
+                          //                     name: "User"),
+                          //             'image': image,
+                          //           });
+                          //   },
+                          // ),
+                          // const SizedBox(height: 20),
+                          // HomeCardNoOptions(
+                          //   isComingSoon: false,
+                          //   isLnF: true,
+                          //   title: 'Lost & Found',
+                          //   child: 'assets/icons/magnifying-icon.svg',
+                          //   onTap: widget.isGuest
+                          //       ? showError
+                          //       : () => context.push('/lnf', extra: {
+                          //             'currentUserEmail':
+                          //                 userModel?.email ?? 'user@iith.ac.in'
+                          //           }),
+                          // ),
+                          // const SizedBox(height: 20),
                         ],
                       ),
                     ),

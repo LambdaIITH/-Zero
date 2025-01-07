@@ -30,7 +30,6 @@ class _LectureTimePickerBottomSheetState
   String selectedSlot = "A";
 
   void _addSlots() {
-    print(widget.timetable?.toJson());
     List<Lecture> newLectures = [];
 
     if (isTimePickerSelected) {

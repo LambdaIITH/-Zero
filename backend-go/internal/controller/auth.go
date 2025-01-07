@@ -32,7 +32,7 @@ func LoginHandler(c *gin.Context) {
 
 	if status {
 		helpers.SetCookie(c.Writer, "session", token, 15) // Set cookie with 15 days expiry
-		c.JSON(http.StatusOK, gin.H{"message": msg})
+		c.JSON(http.StatusOK, gin.H{"email": msg["email"], "id": msg["id"]})
 	} else {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": msg})
 	}

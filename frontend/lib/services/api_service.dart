@@ -144,16 +144,12 @@ class ApiServices {
 
   Future<bool> updateWeekNumber(BuildContext context, int value) async {
     try {
-      final response = await dio.post('/mess_menu/', data: {
-        "number": value,
-        "password": "someSecret"
-      });
-
-      print(response);
+      final response = await dio.post('/mess_menu/',
+          data: {"number": value, "password": "someSecret"});
 
       return response.statusCode == 200;
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
       return false;
     }
   }
@@ -229,6 +225,18 @@ class ApiServices {
       return null;
     }
     return null;
+  }
+
+  Future<bool> updateFCMToken(
+      BuildContext context, String token, String deviceType) async {
+    try {
+      final response = await dio.patch("/user/fcm/update",
+          data: {"token": token, "device_type": deviceType});
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint(e.toString());
+      return false;
+    }
   }
 
   // ====================CALENDAR STARTS===================================
@@ -966,15 +974,10 @@ class ApiServices {
   }
 
   Future<Map<String, dynamic>> submitTransactionID(String transactionId) async {
-    final dio = Dio();
-
-    // Define the request URL
-    // const url = 'http://10.0.2.2:8000/transport/qr';
-    final url = '${dio.options.baseUrl}/transport/qr';
     try {
       // Sending the POST request
       final response = await dio.post(
-        url,
+        '/transport/qr',
         data: {
           'transactionId': transactionId,
         },
@@ -983,27 +986,26 @@ class ApiServices {
       // Handling the response
       if (response.statusCode == 200) {
         final data = response.data;
-        print("Transaction ID: ${data['transactionId']}");
-        print("Payment Time: ${data['paymentTime']}");
-        print("Travel Date: ${data['travelDate']}");
-        print("But Timing: ${data['busTiming']}");
-        print("Is Used: ${data['isUsed']}");
+        debugPrint("Transaction ID: ${data['transactionId']}");
+        debugPrint("Payment Time: ${data['paymentTime']}");
+        debugPrint("Travel Date: ${data['travelDate']}");
+        debugPrint("But Timing: ${data['busTiming']}");
+        debugPrint("Is Used: ${data['isUsed']}");
 
         final transaction = TransactionQRModel.fromJson(data);
         return {
           'status': response.statusCode,
           'data': transaction,
         };
-
       } else {
-        print('Error: ${response.statusCode}');
+        debugPrint('Error: ${response.statusCode}');
         return {
           'error': 'Failed to send request ${response.statusMessage}',
           'status': response.statusCode
         };
       }
     } on DioException catch (e) {
-      print('Request failed: $e');
+      debugPrint('Request failed: $e');
       return {
         'error': e.response?.data['detail'],
         'status': e.response?.statusCode
@@ -1015,7 +1017,7 @@ class ApiServices {
     try {
       debugPrint("Making request to: ${dio.options.baseUrl}/transport/cityBus");
       // final response = await dio.get('http://10.0.2.2:8000/transport/cityBus');
-      final response = await dio.get('${dio.options.baseUrl}/transport/cityBus');
+      final response = await dio.get('/transport/cityBus');
 
       final data = response.data;
       return CityBusSchedule.fromJson(data);
@@ -1038,6 +1040,29 @@ class ApiServices {
       return data.map((item) => AnnouncementModel.fromJson(item)).toList();
     } catch (e) {
       debugPrint("Failed to fetch announcements: $e");
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> getRecentTransaction(
+      BuildContext context) async {
+    try {
+      final url = '/transport/qr/recent';
+      debugPrint("Making request to: $url");
+
+      final response = await dio.get(
+        url,
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return data;
+      } else {
+        debugPrint("Unexpected response format: $data");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch recent transaction: $e");
       return null;
     }
   }

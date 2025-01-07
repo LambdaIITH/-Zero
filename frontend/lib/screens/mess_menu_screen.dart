@@ -12,10 +12,8 @@ import 'package:intl/intl.dart';
 
 class MessMenuScreen extends StatefulWidget {
   final MessMenuModel? messMenu;
-  const MessMenuScreen({
-    super.key,
-    required this.messMenu,
-  });
+  final int? week;
+  const MessMenuScreen({super.key, required this.messMenu, this.week});
 
   @override
   State<MessMenuScreen> createState() => _MessMenuScreenState();
@@ -37,7 +35,7 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
   }
 
   int status = 0;
-  int totalOperation = 2;
+  int totalOperation = 1;
 
   void changeState() {
     setState(() {
@@ -47,7 +45,6 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
       }
     });
   }
-
 
   void fetchMessMenu() async {
     final response = await ApiServices().getMessMenu(context);
@@ -66,6 +63,7 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
 
       return;
     }
+    await fetchWeekNumber();
     setState(() {
       messMenu = response;
       // isLoading = false;
@@ -74,6 +72,16 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
   }
 
   int? week;
+  Future<void> fetchWeekNumber() async {
+    final response = await ApiServices().getWeekNumber(context);
+    if (response != null) {
+      setState(() {
+        week = response['week'];
+        week = week != null ? week! + 1 : week;
+      });
+    }
+    // changeState();
+  }
 
   // Future<void> fetchUser() async {
   //   final response = await ApiServices().getUserDetails(context);
@@ -86,17 +94,6 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
   //   }
   // }
 
-  Future<void> fetchWeekNumber() async {
-    final response = await ApiServices().getWeekNumber(context);
-    if (response != null) {
-      setState(() {
-        week = response['week'];
-        week = week != null ? week! + 1 : week;
-      });
-    }
-    changeState();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -104,10 +101,10 @@ class _MessMenuScreenState extends State<MessMenuScreen> {
       fetchMessMenu();
     } else {
       messMenu = widget.messMenu;
+      week = widget.week;
       // isLoading = false;
       changeState();
     }
-    fetchWeekNumber();
   }
 
   @override
@@ -200,7 +197,6 @@ class _MessMenuPageState extends State<MessMenuPage> {
     whichDay = getCurrentDay();
     super.initState();
     analyticsService.logScreenView(screenName: "Mess Menu Screen");
-    print(widget.week);
     week = widget.week;
   }
 
@@ -304,7 +300,7 @@ class _MessMenuPageState extends State<MessMenuPage> {
                         week = value;
                       });
                       showError(msg: "Week number updated successfully");
-                    }else{
+                    } else {
                       showError(msg: "Failed to update Week number");
                     }
                   },

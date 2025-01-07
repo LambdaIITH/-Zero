@@ -71,7 +71,7 @@ async def cookie_verification_middleware(request: Request, call_next):
 
 @app.middleware("http")
 async def apply_middleware(request: Request, call_next):
-    excluded_routes = ["/transport/qr","/auth/login", "/auth/logout", "/docs", "/openapi.json", "/transport/", "/mess_menu/"]  # Add routes to exclude guard here
+    excluded_routes = ["/auth/login", "/auth/logout", "/docs", "/openapi.json", "/transport/", "/transport/cityBus", "/mess_menu/"]  # Add routes to exclude guard here
 
     if request.url.path not in excluded_routes:
         return await cookie_verification_middleware(request, call_next)
@@ -103,6 +103,8 @@ def get_session_info(response: Response):
 
 @app.get("/main-gate/status")
 async def get_main_gate_status(user_id: int = Depends(get_user_id)):
+    return JSONResponse(content="Non-Authoritative Information", status_code=203)
+
     user_details = get_user(user_id=user_id)
     if not user_details:
         raise HTTPException(status_code=404, detail="User not found")

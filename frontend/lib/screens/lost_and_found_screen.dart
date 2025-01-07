@@ -1,5 +1,7 @@
 import 'package:dashbaord/models/user_model.dart';
+import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
+import 'package:dashbaord/widgets/notif_perm.dart';
 import 'package:flutter/material.dart';
 import 'package:dashbaord/models/lost_and_found_model.dart';
 import 'package:dashbaord/services/analytics_service.dart';
@@ -7,6 +9,8 @@ import 'package:dashbaord/utils/bold_text.dart';
 import 'package:dashbaord/widgets/lost_found_item.dart';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LostAndFoundScreen extends StatefulWidget {
   const LostAndFoundScreen({super.key, required this.currentUserEmail});
@@ -20,6 +24,46 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
   String _search = '';
   late final TextEditingController _searchController;
   final analyticsService = FirebaseAnalyticsService();
+
+  void requestNotifPerms(BuildContext bc) async {
+    PermissionStatus status = await Permission.notification.status;
+    if (status.isGranted) {
+      return;
+    }
+
+    DateTime now = DateTime.now();
+    String? lastDate = await SharedService().getLastPermsRequestDate();
+
+    bool shouldAsk = false;
+
+    if (lastDate != null) {
+      DateTime lastDateParsed = DateFormat('dd-MM-yyyy').parse(lastDate.trim());
+      Duration difference = now.difference(lastDateParsed);
+      if (difference.inDays >= 1) {
+        //TODO: change if it is annoying
+        shouldAsk = true;
+      }
+    } else {
+      shouldAsk = true;
+    }
+
+    if (shouldAsk) {
+      _showNotificationPermissionSheet(context);
+      SharedService().saveLastPermsRequestDate(
+          date: DateFormat("dd-MM-yyyy").format(now).trim());
+    }
+  }
+
+  void _showNotificationPermissionSheet(BuildContext context) {
+    showModalBottomSheet(
+      isDismissible: false,
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return const NotificationPermissionRequestBottomSheet();
+      },
+    );
+  }
 
   double getAspectRatio(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -88,6 +132,11 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
     analyticsService.logScreenView(screenName: "Lost And Found Screen");
     _searchController = TextEditingController();
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      requestNotifPerms(context);
+    });
+
     if (widget.currentUserEmail != null) {
       user = UserModel(email: widget.currentUserEmail!, name: 'User');
       isLoading = false;
