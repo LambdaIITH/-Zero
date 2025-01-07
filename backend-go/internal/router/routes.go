@@ -74,4 +74,8 @@ func SetupRoutes(router *gin.Engine) {
 		timetableGroup.DELETE("/share/{code}", controller.DeleteSharedTimetable)
 	}
 
+	// GET : /announcements?limit=4&offset=4
+	router.GET("/announcements", controller.GetAnnouncements)
+	router.Static("/announcements/images", "announcementImages/")
+	router.POST("/announcements", controller.PostAnnouncement)
 }
