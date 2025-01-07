@@ -1,6 +1,8 @@
+import 'package:dashbaord/constants/enums/iith_slots.dart';
 import 'package:dashbaord/models/lecture_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/utils/normal_text.dart';
+import 'package:dashbaord/widgets/timetable/course_search_sheet.dart';
 import 'package:dashbaord/widgets/timetable/lecture_time_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +10,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AddLectureBottomSheet extends StatefulWidget {
   final Timetable? timetable;
-  final Function(String, String, List<Lecture>)? onLectureAdded;
+  final Function(String, String, List<Lecture>, String?, String?)?
+      onLectureAdded;
 
   const AddLectureBottomSheet(
       {super.key, required this.timetable, required this.onLectureAdded});
@@ -19,6 +22,7 @@ class AddLectureBottomSheet extends StatefulWidget {
 
 class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
   List<Lecture> slots = [];
+  String? selectedSlot;
 
   final daysOfWeek = [
     "Monday",
@@ -38,8 +42,9 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
       builder: (BuildContext context) {
         return LectureTimePickerBottomSheet(
           timetable: widget.timetable,
-          onSlotSelected: (newSlots) {
+          onSlotSelected: (newSlots, slot) {
             setState(() {
+              selectedSlot = slot;
               slots.addAll(newSlots);
               if (slots.isEmpty) {
                 noSlotsSelected = true;
@@ -55,6 +60,7 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
 
   final TextEditingController courseTitleController = TextEditingController();
   final TextEditingController courseCodeController = TextEditingController();
+  final TextEditingController classRoomController = TextEditingController();
   TextInputType currentKeyboardType = TextInputType.text;
   final FocusNode _courseCodeFocusNode = FocusNode();
   final FocusNode _courseTitleFocusNode = FocusNode();
@@ -62,6 +68,24 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
   bool noSlotsSelected = false;
 
   String courseCode = '';
+
+  void _coursePicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return CourseSearchBottomSheet(onCourseSelect: (course) {
+          courseTitleController.text = course.title;
+          courseCodeController.text = course.courseCode;
+          classRoomController.text = course.classroom ?? '';
+          setState(() {
+            if (course.slot != null) {
+              slots.addAll(getSlotFromString(course.slot!)!.getLectures());
+            }
+          });
+        });
+      },
+    );
+  }
 
   void _checkFields() {
     if (isNotFilled == true) {
@@ -102,8 +126,8 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
       child: Material(
         elevation: 12,
         color: Theme.of(context).canvasColor,
-        borderRadius: BorderRadius.circular(25),
-        shadowColor: Colors.white.withOpacity(0.3),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(25), topRight: Radius.circular(25)),
         child: SingleChildScrollView(
             child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -193,6 +217,57 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
                         cursorColor: Colors.blueAccent, // Cursor color
                         placeholderStyle: GoogleFonts.inter(
                           color: Colors.grey[400],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: CupertinoTextField(
+                      onChanged: (text) {},
+                      controller: classRoomController,
+                      placeholder: 'Classroom',
+                      textCapitalization: TextCapitalization.characters,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12.0, horizontal: 16.0),
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                      cursorColor: Colors.blueAccent,
+                      placeholderStyle: GoogleFonts.inter(
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    flex: 6,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          backgroundColor: Colors.blueAccent.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        icon:
+                            const Icon(Icons.search, color: Colors.blueAccent),
+                        onPressed: () {
+                          _coursePicker();
+                        },
+                        label: const Text(
+                          "Search Course",
+                          style:
+                              TextStyle(fontSize: 14, color: Colors.blueAccent),
                         ),
                       ),
                     ),
@@ -344,17 +419,21 @@ class _AddLectureBottomSheetState extends State<AddLectureBottomSheet> {
 
                     if (widget.onLectureAdded != null) {
                       widget.onLectureAdded!(
-                        courseCodeController.text,
-                        courseTitleController.text,
-                        slots.map((slot) {
-                          return Lecture(
-                            day: slot.day,
-                            startTime: slot.startTime,
-                            endTime: slot.endTime,
-                            courseCode: courseCodeController.text,
-                          );
-                        }).toList(),
-                      );
+                          courseCodeController.text,
+                          courseTitleController.text,
+                          slots.map((slot) {
+                            return Lecture(
+                              day: slot.day,
+                              startTime: slot.startTime,
+                              endTime: slot.endTime,
+                              courseCode: courseCodeController.text,
+                              classRoom: classRoomController.text != ''
+                                  ? classRoomController.text
+                                  : null,
+                            );
+                          }).toList(),
+                          classRoomController.text,
+                          selectedSlot);
                     }
                     Navigator.of(context).pop();
                   },

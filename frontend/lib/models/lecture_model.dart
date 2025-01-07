@@ -3,12 +3,14 @@ class Lecture {
   final String endTime;
   final String day;
   final String courseCode;
+  String? classRoom;
 
   Lecture({
     required this.startTime,
     required this.endTime,
     required this.day,
     required this.courseCode,
+    this.classRoom,
   });
 
   Map<String, dynamic> toJson() {

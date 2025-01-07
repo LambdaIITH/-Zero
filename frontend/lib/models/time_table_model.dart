@@ -33,14 +33,33 @@ class Timetable {
         .map<String, Map<String, String>>(
       (key, value) {
         if (value is Map<String, dynamic> && value.containsKey('title')) {
-          return MapEntry(key, {'title': value['title'].toString()});
+          return MapEntry(key, {
+            'title': value['title'].toString(),
+            if (value.containsKey('classroom') && value['classroom'] != null)
+              'classroom': value['classroom'].toString(),
+            if (value.containsKey('slot') && value['slot'] != null)
+              'slot': value['slot'].toString(),
+          });
         }
-        return MapEntry(key, {'title': ''}); // or handle as needed
+        return MapEntry(key, {
+          'title': '',
+          if (value.containsKey('classroom') && value['classroom'] != null)
+            'classroom': value['classroom'].toString(),
+          if (value.containsKey('slot') && value['slot'] != null)
+            'slot': value['slot'].toString(),
+        }); // or handle as needed
       },
     );
 
     List<Lecture> slotList = (json['slots'] as List).map((slotJson) {
-      return Lecture.fromJson(slotJson);
+      Lecture local = Lecture.fromJson(slotJson);
+
+      var courseInfo = courseMap[slotJson['course_code']];
+      if (courseInfo != null && courseInfo.containsKey('classroom')) {
+        local.classRoom = courseInfo['classroom'];
+      }
+
+      return local;
     }).toList();
 
     return Timetable(
@@ -51,18 +70,26 @@ class Timetable {
 
   Map<String, dynamic> toJson() {
     return {
-      'courses':
-          courses.map((key, value) => MapEntry(key, {'title': value['title']})),
+      'courses': courses.map((key, value) => MapEntry(key, {
+            'title': value['title'],
+            if (value['classroom'] != null) 'classroom': value['classroom'],
+            if (value['slot'] != null) 'slot': value['slot'],
+          })),
       'slots': slots.map((lecture) => lecture.toJson()).toList(),
     };
   }
 
   Timetable addCourse(
-          String courseCode, String courseName, List<Lecture> lectures) =>
+          String courseCode, String courseName, List<Lecture> lectures,
+          {String? classRoom, String? slot}) =>
       Timetable(
         courses: {
           ...courses,
-          courseCode: {'title': courseName}
+          courseCode: {
+            'title': courseName,
+            if (classRoom?.isNotEmpty ?? false) 'classroom': classRoom!,
+            if (classRoom?.isNotEmpty ?? false) 'slot': slot!,
+          }
         },
         slots: [...slots, ...lectures],
       );

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class LectureTimePickerBottomSheet extends StatefulWidget {
-  final Function(List<Lecture>) onSlotSelected;
+  final Function(List<Lecture>, String?) onSlotSelected;
   final Timetable? timetable;
 
   const LectureTimePickerBottomSheet(
@@ -43,7 +43,6 @@ class _LectureTimePickerBottomSheetState
     } else {
       newLectures = getSlotFromString(selectedSlot)!.getLectures();
     }
-
 
     List<Lecture> existingLectures = widget.timetable?.slots ?? [];
     bool hasAnyCollision = false;
@@ -94,13 +93,12 @@ class _LectureTimePickerBottomSheetState
                 SizedBox(width: 10), // Add space between buttons
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Colors.red,
+                    backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                   ),
                   child: Text('Add Anyway'),
                   onPressed: () {
-                    widget.onSlotSelected(newLectures);
+                    widget.onSlotSelected(newLectures, null);
                     Navigator.of(context).pop();
                   },
                 ),
@@ -110,7 +108,8 @@ class _LectureTimePickerBottomSheetState
         );
       });
     } else {
-      widget.onSlotSelected(newLectures);
+      widget.onSlotSelected(
+          newLectures, isTimePickerSelected == false ? selectedSlot : null);
       Navigator.of(context).pop();
     }
   }

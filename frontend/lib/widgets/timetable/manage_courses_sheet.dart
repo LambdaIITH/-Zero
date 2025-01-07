@@ -23,8 +23,8 @@ class ManageCoursesBottomSheet extends StatefulWidget {
 class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
   late Timetable timetable;
 
-  void _showManageLecturesBottomSheet(
-      BuildContext context, String courseCode, String courseName) {
+  void _showManageLecturesBottomSheet(BuildContext context, String courseCode,
+      courseName, String? classRoom, slot) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -32,8 +32,11 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
             timetable: widget.timetable,
             courseCode: courseCode,
             courseName: courseName,
+            classRoom: classRoom,
+            slot: slot,
             courseSlots: timetable.getSlotsForCourse(courseCode),
-            onLectureEdited: (courseCode, courseName, lecturelist) {
+            onLectureEdited:
+                (courseCode, courseName, lecturelist, classRoom, slot) {
               // Remove all slots associated with the given courseCode
               timetable.slots
                   .removeWhere((slot) => slot.courseCode == courseCode);
@@ -42,7 +45,11 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
               timetable.slots.addAll(lecturelist);
 
               // Update the course name in the courses map
-              timetable.courses[courseCode] = {'title': courseName};
+              timetable.courses[courseCode] = {
+                'title': courseName,
+                if (classRoom?.isNotEmpty ?? false) 'class': classRoom!,
+                if (classRoom?.isNotEmpty ?? false) 'slot': slot!,
+              };
 
               setState(() {});
             });
@@ -134,6 +141,9 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                             timetable.courses.keys.elementAt(index);
                         final courseName =
                             timetable.courses[courseCode]?['title'];
+                        final classRoom =
+                            timetable.courses[courseCode]?['classRoom'];
+                        final slot = timetable.courses[courseCode]?['slot'];
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(
@@ -188,8 +198,12 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                                   IconButton(
                                     icon: Icon(Icons.edit),
                                     onPressed: () {
-                                      _showManageLecturesBottomSheet(context,
-                                          courseCode, courseName ?? '');
+                                      _showManageLecturesBottomSheet(
+                                          context,
+                                          courseCode,
+                                          courseName ?? '',
+                                          classRoom,
+                                          slot);
                                     },
                                   ),
                                   IconButton(

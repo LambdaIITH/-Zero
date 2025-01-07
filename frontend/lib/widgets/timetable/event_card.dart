@@ -7,6 +7,7 @@ class EventCard extends StatelessWidget {
   final String time;
   final String description;
   final String type;
+  final String? location;
 
   const EventCard({
     super.key,
@@ -14,6 +15,7 @@ class EventCard extends StatelessWidget {
     required this.time,
     required this.description,
     required this.type,
+    this.location,
   });
 
   @override
@@ -47,7 +49,9 @@ class EventCard extends StatelessWidget {
                   ),
                 ),
                 Icon(
-                  type == "lecture" ? CupertinoIcons.calendar: CupertinoIcons.book,
+                  type == "lecture"
+                      ? CupertinoIcons.calendar
+                      : CupertinoIcons.book,
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.yellowAccent
                       : Colors.yellow[600],
@@ -56,7 +60,9 @@ class EventCard extends StatelessWidget {
             ),
             const SizedBox(height: 3.0),
             Text(
-              time,
+              location != null && location != 'null'
+                  ? '$time | $location'
+                  : time,
               style: TextStyle(
                 color: Theme.of(context).textTheme.titleSmall?.color,
                 fontSize: 16,

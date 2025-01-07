@@ -10,7 +10,8 @@ import 'package:intl/intl.dart';
 
 class HomeScreenSchedule extends StatefulWidget {
   final Timetable? timetable;
-  final Function(String, String, List<Lecture>)? onLectureAdded;
+  final Function(String, String, List<Lecture>, String?, String?)?
+      onLectureAdded;
   final Function(Timetable)? onEditTimetable;
 
   const HomeScreenSchedule(
@@ -234,7 +235,9 @@ Container lectureItem(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               NormalText(
-                text: lecture.courseCode,
+                text: lecture.classRoom != null && lecture.classRoom != 'null'
+                    ? '${lecture.courseCode}  | ${lecture.classRoom}'
+                    : lecture.courseCode,
                 size: 12,
                 color: Theme.of(context).textTheme.bodyLarge?.color,
               ),

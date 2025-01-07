@@ -21,7 +21,7 @@ import 'package:share_plus/share_plus.dart';
 
 class CalendarScreen extends StatefulWidget {
   final Timetable? timetable;
-  final Function(String, String, List<Lecture>)? onLectureAdded;
+  final Function(String, String, List<Lecture>, String?, String?)? onLectureAdded;
   final Function(Timetable)? onEditTimetable;
 
   const CalendarScreen({
@@ -282,12 +282,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
       builder: (context) {
         return AddLectureBottomSheet(
           timetable: timetable,
-          onLectureAdded: (courseCode, courseName, lectures) {
+          onLectureAdded: (courseCode, courseName, lectures, classRoom, slot) {
             setState(() {
               timetable =
                   timetable!.addCourse(courseCode, courseName, lectures);
             });
-            widget.onLectureAdded!(courseCode, courseName, lectures);
+            widget.onLectureAdded!(courseCode, courseName, lectures, classRoom, slot);
           },
         );
         // return const AddEventBottomSheet();

@@ -10,12 +10,10 @@ import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
 import 'package:dashbaord/widgets/homeScreenCardSmall.dart';
-import 'package:dashbaord/widgets/home_card_no_options.dart';
 import 'package:dashbaord/widgets/home_screen_appbar.dart';
 import 'package:dashbaord/widgets/home_screen_bus_timings.dart';
 import 'package:dashbaord/widgets/home_screen_calendar.dart';
 import 'package:dashbaord/widgets/home_screen_mess_menu.dart';
-import 'package:dashbaord/widgets/notif_perm.dart';
 import 'package:dashbaord/widgets/timetable/manage_courses_sheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -25,7 +23,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:text_scroll/text_scroll.dart';
@@ -541,13 +538,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 await SharedService().saveTimetable(timetable!);
                               }
                             },
-                            onLectureAdded:
-                                (courseCode, courseName, lectures) async {
+                            onLectureAdded: (courseCode, courseName, lectures,
+                                String? classRoom, String? slot) async {
                               if (timetable != null) {
                                 setState(
                                   () {
                                     timetable = timetable!.addCourse(
-                                        courseCode, courseName, lectures);
+                                        courseCode, courseName, lectures,
+                                        classRoom: classRoom, slot: slot);
                                   },
                                 );
                                 final res = await ApiServices()

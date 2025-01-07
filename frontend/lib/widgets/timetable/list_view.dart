@@ -59,6 +59,7 @@ class _ListViewScreenState extends State<ListViewScreen> {
           "title": lecture.courseCode,
           "date": nextOccurrence,
           "time": "${lecture.startTime} - ${lecture.endTime}",
+          "classroom": "${lecture.classRoom}",
           "description": widget.timetable!.courses[lecture.courseCode]!["title"],
           "type": "class"
         });
@@ -184,6 +185,7 @@ class _ListViewScreenState extends State<ListViewScreen> {
                       time: event['time'] as String,
                       description: event['description'] as String,
                       type: event['type'] as String,
+                      location: event['classroom'],
                     );
                   }),
                 ],

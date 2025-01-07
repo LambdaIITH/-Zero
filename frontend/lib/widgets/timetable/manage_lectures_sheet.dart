@@ -8,16 +8,21 @@ import 'package:google_fonts/google_fonts.dart';
 class ManageLecturesBottomSheet extends StatefulWidget {
   final String courseCode;
   final String courseName;
+  final String? slot;
+  final String? classRoom;
   final List<Lecture> courseSlots;
   final Timetable? timetable;
 
-  final Function(String, String, List<Lecture>)? onLectureEdited;
+  final Function(String, String, List<Lecture>, String?, String?)?
+      onLectureEdited;
 
   const ManageLecturesBottomSheet(
       {super.key,
       required this.courseCode,
       required this.courseName,
       required this.courseSlots,
+      this.classRoom,
+      this.slot,
       required this.onLectureEdited,
       required this.timetable});
 
@@ -29,6 +34,7 @@ class ManageLecturesBottomSheet extends StatefulWidget {
 class ManageLecturesBottomSheetState extends State<ManageLecturesBottomSheet> {
   List<Lecture> slots = [];
   String courseName = '';
+  String? selectedSlot;
 
   @override
   void initState() {
@@ -43,8 +49,9 @@ class ManageLecturesBottomSheetState extends State<ManageLecturesBottomSheet> {
       builder: (BuildContext context) {
         return LectureTimePickerBottomSheet(
           timetable: widget.timetable,
-          onSlotSelected: (newSlots) {
+          onSlotSelected: (newSlots, slot) {
             setState(() {
+              selectedSlot = slot;
               slots.addAll(newSlots);
             });
           },
@@ -79,7 +86,7 @@ class ManageLecturesBottomSheetState extends State<ManageLecturesBottomSheet> {
                 ),
               ),
               Text(
-                widget.courseCode,
+                '${widget.courseCode}${widget.classRoom != null ? ' | ${widget.classRoom}' : ''}${widget.slot != null ? ' | ${widget.slot} slot' : ''}',
                 style: TextStyle(
                   color: Theme.of(context).textTheme.bodyMedium?.color,
                   fontSize: 18,
@@ -90,13 +97,17 @@ class ManageLecturesBottomSheetState extends State<ManageLecturesBottomSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    courseName,
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
+                  Expanded(
+                    child: Text(
+                      courseName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -210,7 +221,7 @@ class ManageLecturesBottomSheetState extends State<ManageLecturesBottomSheet> {
                     ),
                     onPressed: () {
                       widget.onLectureEdited!(
-                          widget.courseCode, courseName, slots);
+                          widget.courseCode, courseName, slots, null, null);
                       Navigator.of(context).pop();
                     },
                     child: const Icon(Icons.check, color: Colors.white),

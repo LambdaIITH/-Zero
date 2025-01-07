@@ -2,21 +2,20 @@
 
 import 'dart:convert';
 
-import 'package:dashbaord/models/lecture_model.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dashbaord/constants/enums/lost_and_found.dart';
+import 'package:dashbaord/models/booking_model.dart';
+import 'package:dashbaord/models/lecture_search_model.dart';
+import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
-import 'package:dashbaord/screens/login_screen.dart';
+import 'package:dashbaord/models/user_model.dart';
+import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dio/dio.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:dashbaord/constants/enums/lost_and_found.dart';
-import 'package:dashbaord/models/booking_model.dart';
-import 'package:dashbaord/models/mess_menu_model.dart';
-import 'package:dashbaord/models/user_model.dart';
-import 'package:cookie_jar/cookie_jar.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
@@ -314,6 +313,36 @@ class ApiServices {
       return [null, 0, "Failed to fetch shared timetable"];
     }
   }
+
+  Future<List<CourseModel>?> getAllCourses(BuildContext context) async {
+    try {
+      final response = await dio.get('/schedule/all_courses');
+
+      if (response.statusCode == 200) {
+        if (response.data is List) {
+          return List<CourseModel>.from(
+            response.data.map((course) => CourseModel.fromJson(course)),
+          );
+        } else {
+          debugPrint("Response data is not a list");
+          return null;
+        }
+      } else {
+        throw Exception(
+            'Failed to load all courses. Status code: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      debugPrint("API EXCEPTION $e");
+      if (e.response?.statusCode == 401) {
+        await logout(context);
+      }
+      return null;
+    } catch (e) {
+      debugPrint("API ERROR $e");
+      return null;
+    }
+  }
+
   // ====================CALENDAR ENDS===================================
 
   // ====================CAB SHARING STARTS===================================
