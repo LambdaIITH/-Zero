@@ -57,6 +57,13 @@ func SetupRoutes(router *gin.Engine) {
 		sellGroup.GET("/search", controller.SearchSellItemHandler)
 	}
 
+	userGroup := router.Group("/user")
+	{
+		userGroup.GET("/", controller.User)
+		userGroup.PATCH("/update", controller.UpdateUser)
+		userGroup.PATCH("/update/fcm", controller.UpdateUserFCMToken)
+	}
+
 	router.POST("found/add_item", controller.AddFoundItemHandler)
 	router.GET("/found/all", controller.GetAllFoundItemsHandler)
 	router.GET("/found/get_item/:id", controller.GetFoundItemByIdHandler)
