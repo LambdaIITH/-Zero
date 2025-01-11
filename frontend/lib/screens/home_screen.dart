@@ -642,14 +642,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? 200
                                       : MediaQuery.of(context).size.width / 2 -
                                           25,
-                                  isComingSoon: true,
+                                  isComingSoon: false,
                                   reduceImageSize: true,
                                   title: 'Patancheru Bus',
                                   child: 'assets/icons/bus-svg.svg',
                                   onTap: () {
-                                    widget.isGuest
-                                        ? showError()
-                                        : context.push('/city_bus');
+                                    // widget.isGuest
+                                    //     ? showError()
+                                        context.push('/city_bus');
                                   },
                                 ),
                               ),
