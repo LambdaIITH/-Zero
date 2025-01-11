@@ -251,7 +251,7 @@ class _LectureTimePickerBottomSheetState
                   child: SizedBox(
                     height: 100,
                     child: CupertinoDatePicker(
-                      minuteInterval: 30,
+                      // minuteInterval: 30,
                       itemExtent: 50,
                       mode: CupertinoDatePickerMode.time,
                       initialDateTime: initialDate,

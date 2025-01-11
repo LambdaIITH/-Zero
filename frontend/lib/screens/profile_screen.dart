@@ -1,11 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dashbaord/services/shared_service.dart';
-import 'package:dashbaord/utils/loading_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:dashbaord/main.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/models/user_model.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
+import 'package:dashbaord/services/event_notification_service.dart';
+import 'package:dashbaord/services/shared_service.dart';
+import 'package:dashbaord/utils/loading_widget.dart';
+import 'package:dashbaord/widgets/profile/notification_settings_sheet.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -351,6 +355,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   onUpdate: (newPhoneNumber) {
                                     updatePhoneNumber(newPhoneNumber);
                                   }));
+                        },
+                      ),
+                      ProfileButton(
+                        buttonName: 'Notifications',
+                        iconName: Icons.notifications,
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(16)),
+                            ),
+                            builder: (context) =>
+                                NotificationSettingsBottomSheet(
+                              onNotificationsToggle: (value) {
+                                EventNotificationService
+                                    .clearPendingNotifications(
+                                        flutterLocalNotificationsPlugin);
+                              },
+                              onReminderOffsetChange: (value) async {
+                                Timetable? localTimetable =
+                                    await SharedService().getTimetable();
+                                if (localTimetable != null) {
+                                  EventNotificationService
+                                      .clearPendingNotifications(
+                                          flutterLocalNotificationsPlugin);
+                                  EventNotificationService
+                                      .scheduleWeeklyNotifications(
+                                          timetable: localTimetable);
+                                }
+                              },
+                            ),
+                          );
                         },
                       ),
                       ProfileButton(
