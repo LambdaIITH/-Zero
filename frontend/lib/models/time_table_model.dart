@@ -1,4 +1,5 @@
 import 'package:dashbaord/models/lecture_model.dart';
+import 'package:dashbaord/models/weekly_event_model.dart';
 import 'package:intl/intl.dart';
 
 class Timetable {
@@ -47,7 +48,7 @@ class Timetable {
             'classroom': value['classroom'].toString(),
           if (value.containsKey('slot') && value['slot'] != null)
             'slot': value['slot'].toString(),
-        }); // or handle as needed
+        });
       },
     );
 
@@ -88,9 +89,68 @@ class Timetable {
           courseCode: {
             'title': courseName,
             if (classRoom?.isNotEmpty ?? false) 'classroom': classRoom!,
-            if (classRoom?.isNotEmpty ?? false) 'slot': slot!,
+            if (slot?.isNotEmpty ?? false) 'slot': slot!,
           }
         },
         slots: [...slots, ...lectures],
       );
+
+  List<WeeklyEvent> convertTimetableToWeeklyEvents(int reminderOffsetMinutes) {
+    List<WeeklyEvent> weeklyEvents = [];
+    int idCounter = 1;
+
+    for (Lecture lecture in slots) {
+      int? dayOfWeek = _dayStringToWeekday(lecture.day);
+      print("TITLE: ${lecture.courseCode} DAY: ${lecture.day}");
+      if (dayOfWeek == null) {
+        continue;
+      }
+
+      DateFormat timeFormat = DateFormat("hh:mm a");
+      DateTime parsedTime = timeFormat.parse(lecture.startTime);
+      DateTime reminderTime =
+          parsedTime.subtract(Duration(minutes: reminderOffsetMinutes));
+      int hour = reminderTime.hour;
+      int minute = reminderTime.minute;
+      String courseTitle =
+          courses[lecture.courseCode]?['title'] ?? lecture.courseCode;
+      String? classRoom = courses[lecture.courseCode]?['classroom'];
+      String title = classRoom != null
+          ? "Upcoming: $courseTitle at $classRoom"
+          : "Upcoming: $courseTitle";
+
+      weeklyEvents.add(
+        WeeklyEvent(
+          id: idCounter++,
+          title: title,
+          description: 'Lecture starts in $reminderOffsetMinutes minutes!',
+          dayOfWeek: dayOfWeek,
+          hour: hour,
+          minute: minute,
+        ),
+      );
+    }
+    return weeklyEvents;
+  }
+
+  int? _dayStringToWeekday(String day) {
+    switch (day.toLowerCase()) {
+      case 'monday':
+        return DateTime.monday;
+      case 'tuesday':
+        return DateTime.tuesday;
+      case 'wednesday':
+        return DateTime.wednesday;
+      case 'thursday':
+        return DateTime.thursday;
+      case 'friday':
+        return DateTime.friday;
+      case 'saturday':
+        return DateTime.saturday;
+      case 'sunday':
+        return DateTime.sunday;
+      default:
+        return null;
+    }
+  }
 }

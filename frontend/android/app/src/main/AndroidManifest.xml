@@ -10,7 +10,11 @@
         android:name="android.permission.INTERNET" />
     <uses-permission 
         android:name="android.permission.POST_NOTIFICATIONS" />
-
+    <uses-permission android:name="android.permission.SET_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
@@ -99,6 +103,6 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="dashboard-channel"/>
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
-        
+        <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" android:exported="false" />
     </application>
 </manifest>

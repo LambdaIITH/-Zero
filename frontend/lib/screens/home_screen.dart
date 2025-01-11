@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dashbaord/main.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/models/user_model.dart';
 import 'package:dashbaord/services/analytics_service.dart';
 import 'package:dashbaord/services/api_service.dart';
+import 'package:dashbaord/services/event_notification_service.dart';
 import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:dashbaord/utils/loading_widget.dart';
@@ -536,6 +538,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               } else {
                                 showError(msg: "Timetable saved successfully!");
                                 await SharedService().saveTimetable(timetable!);
+                                clearAllNotifications();
+                                EventNotificationService
+                                    .scheduleWeeklyNotifications(
+                                        timetable: timetable!);
                               }
                             },
                             onLectureAdded: (courseCode, courseName, lectures,
@@ -557,6 +563,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       msg: "Timetable saved successfully!");
                                   await SharedService()
                                       .saveTimetable(timetable!);
+                                  clearAllNotifications();
+                                  EventNotificationService
+                                      .scheduleWeeklyNotifications(
+                                          timetable: timetable!);
                                 }
                               }
                             },
@@ -647,6 +657,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width:
                                     MediaQuery.of(context).size.width / 2 - 25,
                                 child: HomeScreenCardSmall(
+                                  width: MediaQuery.of(context).size.width > 450
+                                      ? 200
+                                      : MediaQuery.of(context).size.width / 2 -
+                                          25,
                                   isComingSoon: false,
                                   title: 'Announcements',
                                   child: 'assets/icons/cab-sharing-icon.svg',
@@ -660,7 +674,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 20),
                           // HomeCardNoOptions(
                           //   isComingSoon: true,
