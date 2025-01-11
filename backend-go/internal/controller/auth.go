@@ -20,7 +20,6 @@ type UserResponse struct {
 	Email string `json:"email"`
 }
 
-
 func LoginHandler(c *gin.Context) {
 	var loginRequest schema.LoginRequest
 	if err := c.BindJSON(&loginRequest); err != nil {
@@ -84,7 +83,6 @@ func HandleLogin(ctx context.Context, idToken string) (bool, string, map[string]
 		"email": data["email"].(string),
 	}
 }
-
 
 func LogoutHandler(c *gin.Context) {
 	helpers.SetCookie(c.Writer, "session", "lambda-iith", 0)

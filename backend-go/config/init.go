@@ -1,6 +1,6 @@
 package config
 
-func Init(){
+func Init() {
 	LoadEnv()
 	ConnectPSQL()
-}	
+}
