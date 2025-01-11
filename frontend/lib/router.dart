@@ -9,6 +9,7 @@ import 'package:dashbaord/screens/cab_add_screen.dart';
 import 'package:dashbaord/screens/cab_add_success.dart';
 import 'package:dashbaord/screens/cab_sharing_screen.dart';
 import 'package:dashbaord/screens/home_screen.dart';
+import 'package:dashbaord/screens/igh_room_booking.dart';
 import 'package:dashbaord/screens/login_screen.dart';
 import 'package:dashbaord/screens/lost_and_found_add_item_screen.dart';
 import 'package:dashbaord/screens/lost_and_found_item_screen.dart';
@@ -125,6 +126,29 @@ class AppRouter {
           return CustomTransitionPage(
             key: state.pageKey,
             child: CityBusScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
+          );
+        },
+      ),
+      GoRoute(
+        path: '/igh_booking',
+        pageBuilder: (context, state) {
+           final data = state.extra as Map<String, dynamic>? ?? {};
+          final user = data['user'] as UserModel?;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: RoomBookingForm(
+              user: user,
+            ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               return SlideTransition(
