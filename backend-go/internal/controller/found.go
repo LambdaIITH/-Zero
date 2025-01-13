@@ -26,7 +26,7 @@ func AddFoundItemHandler(c *gin.Context) {
 	}
 
 	// Get and Verify the user ID
-	userId, err := helpers.GetUserID(c.Request)
+	userId, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -154,7 +154,7 @@ func GetFoundItemByIdHandler(c *gin.Context) {
 
 func DeleteFoundItemHandler(c *gin.Context) {
 	// Get the user ID
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -207,7 +207,7 @@ func DeleteFoundItemHandler(c *gin.Context) {
 
 func EditFoundItemHandler(c *gin.Context) {
 	// Get the user ID
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

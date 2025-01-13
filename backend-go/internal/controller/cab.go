@@ -13,9 +13,9 @@ import (
 	schema "github.com/LambdaIITH/Dashboard/backend/internal/schema"
 )
 
-func checkAuth(c *gin.Context) {
+func CheckAuth(c *gin.Context) {
 
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -42,7 +42,6 @@ func checkAuth(c *gin.Context) {
 
 func CreateBooking(c *gin.Context) {
 	var booking schema.CabBooking
-
 	// Bind the request body to the Booking struct
 	if err := c.ShouldBindJSON(&booking); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking data"})
@@ -50,7 +49,7 @@ func CreateBooking(c *gin.Context) {
 	}
 
 	// Get user ID from the context
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -64,15 +63,7 @@ func CreateBooking(c *gin.Context) {
 		return
 	}
 
-	// Get location IDs
-	fromID, err := db.GetLocationID(c, booking.FromLocation)
-	toID, err := db.GetLocationID(c, booking.ToLocation)
-	if fromID == 0 || toID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid location"})
-		return
-	}
-
-	bookingID, err := db.CreateBooking(c, booking.StartTime, booking.EndTime, booking.Capacity, &fromID, &toID, email, booking.Comments)
+	bookingID, err := db.CreateBooking(c, booking.StartTime, booking.EndTime, booking.Capacity, &booking.FromLoc, &booking.ToLoc, email, booking.Comments)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking"})
 		return
@@ -111,7 +102,7 @@ func UpdateBooking(c *gin.Context) {
 	}
 
 	// Get user ID from the context
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -124,7 +115,6 @@ func UpdateBooking(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user email"})
 		return
 	}
-
 
 	ownerEmail, err := db.GetOwnerEmail(c, bookingID)
 	if err != nil {
@@ -151,7 +141,7 @@ func UpdateBooking(c *gin.Context) {
 
 func UserBookings(c *gin.Context) {
 	// Get user ID from the context
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -188,63 +178,110 @@ func UserBookings(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func SearchBookings(c *gin.Context) {
-	// Extract query parameters
-	fromLoc := c.Query("from_loc")
-	toLoc := c.Query("to_loc")
-	startTimeStr := c.Query("start_time")
-	endTimeStr := c.Query("end_time")
-
-	// Default values for start_time and end_time
-	const layout = time.RFC3339
-	startTime, err := time.Parse(layout, startTimeStr)
+func UserRequests(c *gin.Context) {
+	// Get user ID from the context
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
-		startTime = time.Date(1970, 1, 1, 0, 0, 0, 0, time.FixedZone("IST", 5*3600+30*60))
-	}
-	endTime, err := time.Parse(layout, endTimeStr)
-	if err != nil {
-		endTime = time.Date(2100, 1, 1, 0, 0, 0, 0, time.FixedZone("IST", 5*3600+30*60))
-	}
-
-	// XOR condition: either fromLoc or toLoc is null, but not both
-	if (fromLoc == "" && toLoc != "") || (fromLoc != "" && toLoc == "") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot search with only one location"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	var res []schema.CabBooking
-	if fromLoc == "" && toLoc == "" {
-		// Filter bookings by time range
-		res, err = db.FilterTimes(c, startTime, endTime)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to filter bookings by time"})
-			return
-		}
-	} else {
-		// Get location IDs
-		fromID, err := db.GetLocationID(c, fromLoc)
-		if err != nil || fromID == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid from location"})
-			return
-		}
-		toID, err := db.GetLocationID(c, toLoc)
-		if err != nil || toID == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid to location"})
-			return
-		}
+	// Fetch user email
+	email, err := db.GetUserEmail(c, userID)
+	if err != nil {
+		log.Printf("Error fetching user email: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user email"})
+		return
+	}
 
-		// Filter bookings by locations and time range
-		res, err = db.FilterAll(c, fromID, toID, startTime, endTime)
+	// Fetch pending requests
+	pendingRequests, err := db.GetUserPendingRequests(c, email)
+	if err != nil {
+		log.Printf("Error fetching pending requests: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch pending requests"})
+		return
+	}
+
+	// Construct response
+	response := gin.H{
+		"pending_requests": pendingRequests,
+	}
+	c.JSON(http.StatusOK, response)
+}
+
+func SearchBookings(c *gin.Context) {
+	// Extract query parameters
+	fromLocStr := c.Query("from_loc")
+	toLocStr := c.Query("to_loc")
+
+	// Validate and parse locations
+	var fromLoc, toLoc int
+	var err error
+	if fromLocStr != "" {
+		fromLoc, err = strconv.Atoi(fromLocStr)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to filter bookings by location and time"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid from_loc value"})
+			return
+		}
+	}
+	if toLocStr != "" {
+		toLoc, err = strconv.Atoi(toLocStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid to_loc value"})
 			return
 		}
 	}
 
-	// Convert bookings to response format
-	bookings := res
+	// Validate that both or neither locations are provided
+	if (fromLocStr != "" && toLocStr == "") || (fromLocStr == "" && toLocStr != "") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Both from_loc and to_loc must be provided or omitted"})
+		return
+	}
 
-	c.JSON(http.StatusOK, bookings)
+	// Parse start_time and end_time with validation
+	startTimeStr := c.Query("start_time")
+	endTimeStr := c.Query("end_time")
+	const layout = time.RFC3339
+
+	var startTime, endTime time.Time
+	if startTimeStr != "" {
+		startTime, err = time.Parse(layout, startTimeStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_time. Expected format: RFC3339"})
+			return
+		}
+	} else {
+		startTime = time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	if endTimeStr != "" {
+		endTime, err = time.Parse(layout, endTimeStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end_time. Expected format: RFC3339"})
+			return
+		}
+	} else {
+		endTime = time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	// Normalize times to UTC
+	startTime = startTime.UTC()
+	endTime = endTime.UTC()
+
+	// Query database based on parameters
+	var res []schema.CabBooking
+	if fromLoc == 0 && toLoc == 0 {
+		res, err = db.FilterTimes(c, startTime, endTime)
+	} else {
+		res, err = db.FilterAll(c, fromLoc, toLoc, startTime, endTime)
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve bookings"})
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
 }
 
 func RequestToJoinBooking(c *gin.Context) {
@@ -263,7 +300,7 @@ func RequestToJoinBooking(c *gin.Context) {
 	}
 
 	// Get user ID from context
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -351,7 +388,7 @@ func DeleteRequest(c *gin.Context) {
 		return
 	}
 
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -388,7 +425,13 @@ func AcceptRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking ID"})
 		return
 	}
-	userID, err := helpers.GetUserID(c.Request)
+	// Parse the RequestResponse object from the request body
+	var request schema.RequestResponse
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -415,14 +458,14 @@ func AcceptRequest(c *gin.Context) {
 		return
 	}
 
-	status, err := db.GetRequestStatus(c, bookingID, email)
+	status, err := db.GetRequestStatus(c, bookingID, request.RequesterEmail)
 	if status != "pending" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No pending request found"})
 		return
 	}
 
 	// Accept request and add traveller
-	comments, err := db.UpdateRequest(c, bookingID, email, "accepted")
+	comments, err := db.UpdateRequest(c, bookingID, request.RequesterEmail, "accepted")
 	if err != nil {
 		log.Printf("Error updating request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to accept request"})
@@ -433,7 +476,7 @@ func AcceptRequest(c *gin.Context) {
 		return
 	}
 
-	err = db.AddTraveller(c, email, bookingID, comments)
+	err = db.AddTraveller(c, request.RequesterEmail, bookingID, comments)
 	if err != nil {
 		log.Printf("Error adding traveller: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add traveller"})
@@ -441,19 +484,30 @@ func AcceptRequest(c *gin.Context) {
 	}
 
 	// Send acceptance email
-	err = helpers.SendEmail(email, "accept", bookingID, map[string]interface{}{})
+	err = helpers.SendEmail(request.RequesterEmail, "accept", bookingID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Error sending email: %v", err)
 	}
 
 	// Notify other travellers
-	name, err := db.GetName(c, email)
-	phone, err := db.GetPhoneNumber(c, email)
+	name, err := db.GetName(c, request.RequesterEmail)
+	if err != nil {
+		log.Printf("Error fetching traveller user email: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user email"})
+		return
+	}
+
+	phone, err := db.GetPhoneNumber(c, request.RequesterEmail)
+	if err != nil {
+		log.Printf("Error fetching traveller phone number: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch phone number"})
+		return
+	}
 
 	travellers, err := db.GetTravellers(c, bookingID)
 	for _, traveller := range travellers {
 		travellerEmail := traveller.Email
-		if travellerEmail == email {
+		if travellerEmail == request.RequesterEmail {
 			continue
 		}
 
@@ -477,8 +531,18 @@ func RejectRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking ID"})
 		return
 	}
+	// Parse the RequestResponse object from the request body
+	var request schema.RequestResponse
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
 
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
 	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
@@ -495,8 +559,14 @@ func RejectRequest(c *gin.Context) {
 		return
 	}
 
+	status, err := db.GetRequestStatus(c, bookingID, request.RequesterEmail)
+	if status != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No pending request found"})
+		return
+	}
+
 	// Reject the request
-	_, err = db.UpdateRequest(c, bookingID, email, "rejected")
+	_, err = db.UpdateRequest(c, bookingID, request.RequesterEmail, "rejected")
 	if err != nil {
 		log.Printf("Error rejecting request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reject request"})
@@ -504,7 +574,7 @@ func RejectRequest(c *gin.Context) {
 	}
 
 	// Send rejection email
-	err = helpers.SendEmail(email, "reject", bookingID, map[string]interface{}{})
+	err = helpers.SendEmail(request.RequesterEmail, "reject", bookingID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Error sending rejection email: %v", err)
 	}
@@ -520,7 +590,7 @@ func DeleteExistingBooking(c *gin.Context) {
 		return
 	}
 
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -538,6 +608,11 @@ func DeleteExistingBooking(c *gin.Context) {
 
 	// Notify travellers and delete the booking
 	travellers, err := db.GetTravellers(c, bookingID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch travellers"})
+		return
+	}
+
 	for _, traveller := range travellers {
 		err = helpers.SendEmail(traveller.Email, "delete_notif", bookingID, map[string]interface{}{})
 		if err != nil {
@@ -563,13 +638,13 @@ func ExitBooking(c *gin.Context) {
 		return
 	}
 
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	email, err := db.GetUserEmail(c, userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	
+
 	ownerEmail, err := db.GetOwnerEmail(c, bookingID)
 	if ownerEmail == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Ride does not exist"})
@@ -596,6 +671,10 @@ func ExitBooking(c *gin.Context) {
 	// Notify remaining travellers
 	name, err := db.GetName(c, email)
 	travellers, err := db.GetTravellers(c, bookingID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch travellers"})
+		return
+	}
 	for _, traveller := range travellers {
 		err = helpers.SendEmail(traveller.Email, "exit_notif", bookingID, map[string]interface{}{
 			"x_exited_email": email,

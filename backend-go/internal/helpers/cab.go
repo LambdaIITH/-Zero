@@ -91,16 +91,13 @@ func SendEmail(receiver, mailType string, bookingID int, additionalData map[stri
 	date := bookingDetails.StartTime.Format("02 Jan 2006")
 
 	bookingInfo := map[string]interface{}{
-		"booking_id":  bookingID,
+		"id":  bookingID,
 		"start_time":  startTime,
 		"end_time":    endTime,
 		"date":        date,
 		"capacity":    bookingDetails.Capacity,
 		"from_loc":    bookingDetails.FromLoc,
 		"to_loc":      bookingDetails.ToLoc,
-		"owner_email": bookingDetails.OwnerEmail,
-		"owner_name":  bookingDetails.Name,
-		"owner_phone": bookingDetails.PhoneNumber,
 	}
 
 	for key, val := range additionalData {

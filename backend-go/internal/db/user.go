@@ -31,6 +31,7 @@ func GetPhoneNumber(c context.Context, email string) (string, error) {
         FROM users 
         WHERE email = $1;
     `
+
 	var phoneNumber string
 	err := config.DB.QueryRow(c, query, email).Scan(&phoneNumber)
 	if err != nil {
@@ -38,7 +39,6 @@ func GetPhoneNumber(c context.Context, email string) (string, error) {
 	}
 	return phoneNumber, nil
 }
-
 
 func IsUserExists(ctx context.Context, email string) (bool, int, error) {
 	var userID int

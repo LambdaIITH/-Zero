@@ -69,13 +69,29 @@ func SetupRoutes(router *gin.Engine) {
 	{
 		timetableGroup.GET("/courses", controller.GetTimetable)
 		timetableGroup.POST("/courses", controller.PostEditTimetable)
-		timetableGroup.GET("/share/{code}", controller.GetSharedTimetable)
+		timetableGroup.GET("/share/:code", controller.GetSharedTimetable)
 		timetableGroup.POST("/share", controller.PostSharedTimetable)
-		timetableGroup.DELETE("/share/{code}", controller.DeleteSharedTimetable)
+		timetableGroup.DELETE("/share/:code", controller.DeleteSharedTimetable)
 	}
 
 	// GET : /announcements?limit=4&offset=4
 	router.GET("/announcements", controller.GetAnnouncements)
 	router.Static("/announcements/images", "announcementImages/")
 	router.POST("/announcements", controller.PostAnnouncement)
+
+	cabshareGroup := router.Group("/cabshare")
+	{
+		cabshareGroup.GET("/me", controller.CheckAuth)
+		cabshareGroup.POST("/bookings", controller.CreateBooking)
+		cabshareGroup.PATCH("/bookings/:booking_id", controller.UpdateBooking)
+		cabshareGroup.GET("/me/bookings", controller.UserBookings)
+		cabshareGroup.GET("/me/requests", controller.UserRequests)
+		cabshareGroup.GET("/bookings", controller.SearchBookings)
+		cabshareGroup.POST("/bookings/:booking_id/request", controller.RequestToJoinBooking)
+		cabshareGroup.DELETE("/bookings/:booking_id/request", controller.DeleteRequest)
+		cabshareGroup.POST("/bookings/:booking_id/accept", controller.AcceptRequest)
+		cabshareGroup.POST("/bookings/:booking_id/reject", controller.RejectRequest)
+		cabshareGroup.DELETE("/bookings/:booking_id", controller.DeleteExistingBooking)
+		cabshareGroup.DELETE("/bookings/:booking_id/self", controller.ExitBooking)
+	}
 }
