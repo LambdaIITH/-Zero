@@ -1,5 +1,8 @@
 import 'package:dashbaord/main.dart';
+import 'package:dashbaord/models/time_table_model.dart';
+import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/services/event_notification_service.dart';
+import 'package:dashbaord/services/shared_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,11 +25,30 @@ class _NotificationSettingsBottomSheetState
     extends State<NotificationSettingsBottomSheet> {
   bool _notificationsEnabled = true;
   int _reminderOffsetMinutes = 10;
+  Timetable? timetable;
+
+  Future<void> fetchTimetable() async {
+    Timetable? localTimetable = await SharedService().getTimetable();
+
+    if (localTimetable == null) {
+      setState(() {
+        timetable = null;
+      });
+      return;
+    } else {
+      localTimetable.cleanUp();
+      setState(() {
+        timetable = localTimetable;
+      });
+      return;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    fetchTimetable();
   }
 
   Future<void> _loadSettings() async {
@@ -41,6 +63,8 @@ class _NotificationSettingsBottomSheetState
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notificationsEnabled', _notificationsEnabled);
     await prefs.setInt('reminderOffsetMinutes', _reminderOffsetMinutes);
+    clearAllNotifications();
+    EventNotificationService.scheduleWeeklyNotifications(timetable: timetable!);
   }
 
   @override
