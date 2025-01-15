@@ -82,7 +82,8 @@ def get_last_transaction(user_id: int) -> Optional[Dict[str, Any]]:
                 transaction["travelDate"] = transaction.pop("travel_date").strftime("%d/%m/%y")
                 transaction["busTiming"] = transaction.pop("bus_timing").strftime("%H:%M")
                 transaction["amount"] = str(transaction["amount"])
-                
+                transaction["isUsed"] = str(transaction["isused"])
+
                 return transaction
             return None
     except Exception as e:
