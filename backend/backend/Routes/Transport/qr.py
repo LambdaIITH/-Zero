@@ -133,7 +133,7 @@ async def scan_qr_code(request: TransactionRequest):
 
     return ScanQRModel(isScanned=result)
 
-@router.get("/qr/recent", response_model= ScanQRModel)
+@router.get("/qr/recent", response_model= TransactionResponse)
 async def get_recent_transaction(request: Request):
     user_id = get_user_id(request)
     
@@ -142,4 +142,4 @@ async def get_recent_transaction(request: Request):
     if transaction_data is None:
         raise HTTPException(status_code=404, detail="No recent transaction found.")
 
-    return ScanQRModel(**transaction_data)
+    return TransactionResponse(**transaction_data)
