@@ -29,6 +29,9 @@ class TransactionResponse(BaseModel):
     travelDate: str  # dd/mm/yy
     busTiming: str  # hh:mm
     isUsed: bool
+    start: str
+    destination: str
+    amount: str
 
 class ScanQRModel(BaseModel):
     isScanned: bool
