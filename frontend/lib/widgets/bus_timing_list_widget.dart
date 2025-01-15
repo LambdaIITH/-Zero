@@ -25,37 +25,42 @@ class BusTimingList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 6.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: Text(
-                  from,
-                  style: GoogleFonts.inter(
-                    color: Theme.of(context).textTheme.displayLarge?.color,
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8.0),
+            child: Wrap(
+              runAlignment: WrapAlignment.center,
+              alignment: WrapAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    from,
+                    style: GoogleFonts.inter(
+                      color: Theme.of(context).textTheme.displayLarge?.color,
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
                 ),
-              ),
-              const Icon(Icons.arrow_forward_rounded, size: 16),
-              Flexible(
-                child: Text(
-                  destination,
-                  style: GoogleFonts.inter(
-                    color: Theme.of(context).textTheme.displayLarge?.color,
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
+                const Icon(Icons.arrow_forward_rounded, size: 16),
+                Flexible(
+                  child: Text(
+                    destination,
+                    style: GoogleFonts.inter(
+                      color: Theme.of(context).textTheme.displayLarge?.color,
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 6.0),
           Expanded(

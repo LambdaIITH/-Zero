@@ -1002,13 +1002,16 @@ class ApiServices {
     }
   }
 
-  Future<Map<String, dynamic>> submitTransactionID(String transactionId) async {
+  Future<Map<String, dynamic>> submitTransactionID(String transactionId, amount, from, to) async {
     try {
       // Sending the POST request
       final response = await dio.post(
         '/transport/qr',
         data: {
           'transactionId': transactionId,
+          'amount': amount,
+          'start': from,
+          'destination': to
         },
       );
 

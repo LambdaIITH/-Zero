@@ -1,12 +1,8 @@
+import 'package:dashbaord/services/api_service.dart';
 import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:flutter/material.dart';
-import 'package:dashbaord/services/api_service.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-
-import '../models/transport_qr_model.dart';
 import '../widgets/bus_timing_list_widget.dart';
 
 class CityBusScreen extends StatefulWidget {
@@ -30,8 +26,11 @@ class _CityBusScreenState extends State<CityBusScreen>
 
   late TabController _tabController;
 
-  String startingPoint = "Starting";
-  String destination = "Destination";
+  String startingPoint = "IITH";
+  String destination = "Patancheru";
+
+  List<String> startingPointOptions = ["IITH"];
+  List<String> destinationOptions = ["Patancheru", "Miyapur"];
 
   CityBusSchedule? busSchedule;
 
@@ -107,8 +106,11 @@ class _CityBusScreenState extends State<CityBusScreen>
   }
 
   Future<void> submitTransactionID() async {
-    final result =
-        await apiServices.submitTransactionID(transactionIdController.text);
+    final result = await apiServices.submitTransactionID(
+        transactionIdController.text,
+        transactionAmountController.text,
+        startingPoint,
+        destination);
 
     final email = (await SharedService().getUserDetails())['email'];
     final name = (await SharedService().getUserDetails())['name'];
@@ -179,49 +181,96 @@ class _CityBusScreenState extends State<CityBusScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    startingPoint,
+                  DropdownButton<String>(
+                    value: startingPoint,
+                    icon: startingPointOptions.length != 1? Icon(Icons.arrow_downward): SizedBox(),
+                    elevation: 16,
                     style: TextStyle(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.color
-                            ?.withOpacity(0.8),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25),
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.color
+                          ?.withOpacity(0.8),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 25,
+                    ),
+                    underline: Container(
+                      height: 2,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          startingPoint = newValue;
+                        });
+                      }
+                    },
+                    items: startingPointOptions
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
                   ),
-                  Text(
-                    destination,
+                  DropdownButton<String>(
+                    value: destination,
+                    icon: destinationOptions.length != 1 ? Icon(Icons.arrow_downward): SizedBox(),
+                    elevation: 16,
                     style: TextStyle(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.color
-                            ?.withOpacity(0.8),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25),
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.color
+                          ?.withOpacity(0.8),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 25,
+                    ),
+                    underline: Container(
+                      height: 2,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          destination = newValue;
+                        });
+                      }
+                    },
+                    items: destinationOptions
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
                   ),
                 ],
               ),
               IconButton(
-                  onPressed: () {
-                    setState(() {
-                      final temp = startingPoint;
-                      startingPoint = destination;
-                      destination = temp;
-                    });
-                  },
-                  icon: Icon(
-                    Icons.swap_vert_rounded,
-                    size: 40,
-                  )),
+                onPressed: () {
+                  setState(() {
+                    final temp = startingPoint;
+                    startingPoint = destination;
+                    destination = temp;
+
+                    final tempOptions = startingPointOptions;
+                    startingPointOptions = destinationOptions;
+                    destinationOptions = tempOptions;
+                  });
+                },
+                icon: Icon(
+                  Icons.swap_vert_rounded,
+                  size: 40,
+                ),
+              ),
             ],
           ),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 20.0, right: 20),
           child: Text(
-            'Transaction ID for next bus will be noted from 4pm',
+            'Tap on location to change it. Use swap button to switch start and destination',
             style: TextStyle(
                 color: Theme.of(context)
                     .textTheme
@@ -408,16 +457,16 @@ class _CityBusScreenState extends State<CityBusScreen>
             children: [
               Expanded(
                 child: BusTimingList(
-                  from: startingPoint,
-                  destination: destination,
+                  from: 'IITH',
+                  destination: 'Patancheru',
                   timings: toIITH,
                 ),
               ),
               const SizedBox(width: 4.0),
               Expanded(
                 child: BusTimingList(
-                  from: destination,
-                  destination: startingPoint,
+                  from: 'Patancheru',
+                  destination: 'IITH',
                   timings: fromIITH,
                 ),
               ),

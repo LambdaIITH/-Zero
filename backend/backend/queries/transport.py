@@ -7,8 +7,8 @@ def log_transaction_to_db(transaction_data: Dict[str, Any], user_id: int) -> boo
     Function to log transaction data into PostgreSQL.
     """
     query = """
-    INSERT INTO transactions (transaction_id, payment_time, user_id, travel_date, bus_timing, isUsed)
-    VALUES (%s, %s, %s, %s, %s, %s);
+    INSERT INTO transactions (transaction_id, payment_time, user_id, travel_date, bus_timing, isUsed, start, destination, amount)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
     """
     values = (
         transaction_data["transaction_id"],
@@ -16,7 +16,10 @@ def log_transaction_to_db(transaction_data: Dict[str, Any], user_id: int) -> boo
         user_id,
         transaction_data["travel_date"],
         transaction_data["bus_timing"],
-        transaction_data["isUsed"]
+        transaction_data["isUsed"],
+        transaction_data["start"],
+        transaction_data["destination"],
+        transaction_data["amount"] 
     )
 
     try:
