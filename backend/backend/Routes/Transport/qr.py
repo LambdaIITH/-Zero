@@ -134,7 +134,7 @@ async def scan_qr_code(request: TransactionRequest):
     return ScanQRModel(isScanned=result)
 
 @router.get("/qr/recent", response_model= ScanQRModel)
-async def get_recent_transaction(request: TransactionRequest):
+async def get_recent_transaction(request: Request):
     user_id = get_user_id(request)
     
     transaction_data = get_last_transaction(user_id=user_id)
