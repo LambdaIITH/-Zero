@@ -62,7 +62,7 @@ def get_last_transaction(user_id: int) -> Optional[Dict[str, Any]]:
     Function to retrieve the most recent transaction data within the last 2 hours for a user from PostgreSQL.
     """
     query = """
-    SELECT transaction_id, payment_time, travel_date, bus_timing, isUsed
+    SELECT transaction_id, payment_time, travel_date, bus_timing, isUsed, start, destination, amount
     FROM transactions
     WHERE user_id = %s AND payment_time >= NOW() - INTERVAL '2 hours'
     ORDER BY payment_time DESC
@@ -77,6 +77,11 @@ def get_last_transaction(user_id: int) -> Optional[Dict[str, Any]]:
             if result:
                 columns = [desc[0] for desc in cur.description]
                 transaction = dict(zip(columns, result))
+                transaction["transactionId"] = transaction.pop("transaction_id")
+                transaction["paymentTime"] = transaction.pop("payment_time").strftime("%H:%M")
+                transaction["travelDate"] = transaction.pop("travel_date").strftime("%d/%m/%y")
+                transaction["busTiming"] = transaction.pop("bus_timing").strftime("%H:%M")
+
                 return transaction
             return None
     except Exception as e:
