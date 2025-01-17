@@ -3,6 +3,7 @@ import 'package:dashbaord/services/shared_service.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../widgets/bus_timing_list_widget.dart';
 
 class CityBusScreen extends StatefulWidget {
@@ -19,11 +20,11 @@ class _CityBusScreenState extends State<CityBusScreen>
       TextEditingController();
   late final Map<String, int> toIITH;
   late final Map<String, int> fromIITH;
+  bool _isLoading = false;
 
   final ApiServices apiServices = ApiServices();
 
   Map<String, dynamic>? transactionDetails;
-
   late TabController _tabController;
 
   String startingPoint = "IITH";
@@ -79,6 +80,7 @@ class _CityBusScreenState extends State<CityBusScreen>
       final result = await ApiServices().getRecentTransaction(context);
       if (result != null) {
         final user = await SharedService().getUserDetails();
+        debugPrint(result['transactionId']);
         setState(() {
           transactionDetails = {
             'transactionId': result['transactionId'],
@@ -86,6 +88,8 @@ class _CityBusScreenState extends State<CityBusScreen>
             'paymentTime': result['paymentTime'],
             'busTiming': result['busTiming'],
             'amount': result['amount'],
+            'from': result['start'],
+            'to': result['destination'],
             'name': user['name'],
             'email': user['email'],
           };
@@ -104,6 +108,7 @@ class _CityBusScreenState extends State<CityBusScreen>
   }
 
   Future<void> submitTransactionID() async {
+    FocusScope.of(context).unfocus();
     final result = await apiServices.submitTransactionID(
         transactionIdController.text,
         transactionAmountController.text,
@@ -124,6 +129,9 @@ class _CityBusScreenState extends State<CityBusScreen>
         'travelDate': DateTime.now().toIso8601String().split('T').first,
         'paymentTime': PaymentTime,
         'busTiming': PaymentTime,
+        'amount': transactionAmountController.text,
+        'from': startingPoint,
+        'to': destination,
         'name': name,
         'email': email,
         'isUsed': isUsed,
@@ -156,7 +164,7 @@ class _CityBusScreenState extends State<CityBusScreen>
               tabs: const [
                 Tab(text: 'Payment Form'),
                 Tab(text: 'Bus Schedule'),
-                Tab(text: 'Show QR'),
+                Tab(text: 'Confirmation'),
               ],
             )),
         body: TabBarView(
@@ -349,33 +357,48 @@ class _CityBusScreenState extends State<CityBusScreen>
               customBorder: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),
               ),
-              onTap: () {
+              onTap: () async {
                 String? isValid =
                     _validateTransactionId(transactionIdController.text);
 
                 if (isValid == null) {
-                  submitTransactionID();
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  await submitTransactionID();
+                  setState(() {
+                    _isLoading = false;
+                  });
                 } else {
                   setState(() {
                     _transactionIdError = isValid;
                   });
                 }
               },
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? Colors.black.withOpacity(0.3)
-                          : Colors.white.withOpacity(0.3)),
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(30.0, 8, 30, 8),
-                  child: Text('Submit',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 16)),
-                ),
-              ),
+              child: _isLoading
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 30),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.black.withOpacity(0.3)
+                                    : Colors.white.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(30.0, 8, 30, 8),
+                        child: Text('Submit',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500, fontSize: 16)),
+                      ),
+                    ),
             ),
           ),
         ),
@@ -383,201 +406,198 @@ class _CityBusScreenState extends State<CityBusScreen>
     );
   }
 
- Column showQRTab() {
-  final screenWidth = MediaQuery.of(context).size.width;
+  Column showQRTab() {
+    final screenWidth = MediaQuery.of(context).size.width;
 
-  return Column(
-    children: [
-      if (transactionDetails != null)
-        Column(
-          children: [
-            SizedBox(height: 20),
-            Text(
-              'Transaction Details',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.color
-                    ?.withOpacity(0.8),
-                fontSize: 26,
+    return Column(
+      children: [
+        if (transactionDetails != null)
+          Column(
+            children: [
+              SizedBox(height: 20),
+              Text(
+                'Transaction Details',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.8),
+                  fontSize: 26,
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            // Name
-            Container(
-              width: screenWidth * 0.9,
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.color
-                    ?.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Name:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.color
-                          ?.withOpacity(0.7),
+              SizedBox(height: 20),
+              // Name
+              Container(
+                width: screenWidth * 0.9,
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Name:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.7),
+                      ),
                     ),
-                  ),
-                  Text(
-                    '${transactionDetails?['name']}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.color,
+                    Text(
+                      '${transactionDetails?['name']}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 15),
-            // Email
-            Container(
-              width: screenWidth * 0.9,
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.color
-                    ?.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Email:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.color
-                          ?.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    '${transactionDetails?['email']}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.color,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 15),
-            // Travel Date
-            Container(
-              width: screenWidth * 0.9,
-              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.blue.withOpacity(0.1),
-                    Colors.blueAccent.withOpacity(0.2),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(12),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Travel Date & Time',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Colors.blueAccent,
+              SizedBox(height: 15),
+              // Email
+              Container(
+                width: screenWidth * 0.9,
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Email:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.7),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    '${transactionDetails?['travelDate']}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.color,
+                    Text(
+                      '${transactionDetails?['email']}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                     ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 15),
+              // Travel Date, From, To
+              Container(
+                width: screenWidth * 0.9,
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blue.withOpacity(0.1),
+                      Colors.blueAccent.withOpacity(0.2),
+                    ],
                   ),
-                  Text(
-                    '${transactionDetails?['busTiming']}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 20,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Travel Date & Time',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.blueAccent,
+                      ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 10),
+                    Text(
+                      // '${transactionDetails?['travelDate']}',
+                      '${DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.parse(transactionDetails?['paymentTime'] ?? ''))}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'From: ${transactionDetails?['from']}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    Text(
+                      'To: ${transactionDetails?['to']}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 15),
-            // Amount Paid
-            Text(
-              'Amount Paid: ₹${transactionDetails?['amount']}',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.color
-                    ?.withOpacity(0.8),
-                fontSize: 20,
+              SizedBox(height: 15),
+              // Amount Paid
+              Text(
+                'Amount Paid: ₹${transactionDetails?['amount']}',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.8),
+                  fontSize: 20,
+                ),
               ),
-            ),
-            SizedBox(height: 10),
-            // Transaction ID
-            Text(
-              'Transaction ID: ${transactionDetails?['transactionId']}',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.color
-                    ?.withOpacity(0.8),
-                fontSize: 20,
+              SizedBox(height: 10),
+              // Transaction ID
+              Text(
+                'Transaction ID: ${transactionDetails?['transactionId']}',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.8),
+                  fontSize: 20,
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-          ],
-        )
-      else
-        SizedBox(
-          child: Text("No Recent Transaction"),
-        ),
-    ],
-  );
-}
-
+              SizedBox(height: 20),
+            ],
+          )
+        else
+          SizedBox(
+            child: Text("No Recent Transaction"),
+          ),
+      ],
+    );
+  }
 
   Column schedule() {
     return Column(
