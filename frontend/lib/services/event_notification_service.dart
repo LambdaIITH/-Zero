@@ -75,7 +75,7 @@ class EventNotificationService {
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.wallClockTime,
-          matchDateTimeComponents: DateTimeComponents.time,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,  
         );
       }
     }
