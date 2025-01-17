@@ -142,8 +142,8 @@ class _CityBusScreenState extends State<CityBusScreen>
   }
 
   String? _validateTransactionId(String value) {
-    if (!RegExp(r'^\d{12}$').hasMatch(value)) {
-      return 'UPI transaction ID must be 12 digits';
+    if (!RegExp(r'^[a-zA-Z0-9]{12,35}$').hasMatch(value)) {
+      return 'Transaction ID must be 12 to 35 alphanumeric characters';
     }
     return null;
   }
@@ -323,7 +323,9 @@ class _CityBusScreenState extends State<CityBusScreen>
                 if (_transactionIdError != null)
                   {
                     setState(() {
-                      _transactionIdError = null;
+                      String? isValid =
+                          _validateTransactionId(transactionIdController.text);
+                      _transactionIdError = isValid;
                     })
                   }
               },
