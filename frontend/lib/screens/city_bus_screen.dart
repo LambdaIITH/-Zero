@@ -327,8 +327,7 @@ class _CityBusScreenState extends State<CityBusScreen>
                     })
                   }
               },
-              keyboardType: TextInputType.numberWithOptions(
-                  decimal: false, signed: false),
+              keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 hintText: 'Transaction ID',
                 filled: true,
