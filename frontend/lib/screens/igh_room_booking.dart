@@ -77,7 +77,6 @@ class _RoomBookingFormState extends State<RoomBookingForm> {
       changeState();
     });
   }
-
   getUserData() async {
     final user = await SharedService().getUserDetails();
     if (user['name'] == null || user['email'] == null) {
