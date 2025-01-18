@@ -21,8 +21,8 @@ class _CityBusScreenState extends State<CityBusScreen>
   final TextEditingController transactionIdController = TextEditingController();
   final TextEditingController transactionAmountController =
       TextEditingController();
-  late final Map<String, int> toIITH;
-  late final Map<String, int> fromIITH;
+  Map<String, int>? toIITH;
+  Map<String, int>? fromIITH;
 
   final ApiServices apiServices = ApiServices();
 
@@ -146,11 +146,16 @@ class _CityBusScreenState extends State<CityBusScreen>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-            title: Text('City Bus',
-                style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold)),
+            title: Text(
+              'Bus Shuttle',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color ??
+                      Colors.black,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            centerTitle: true,
             bottom: TabBar(
               controller: _tabController,
               tabs: const [
@@ -410,7 +415,7 @@ class _CityBusScreenState extends State<CityBusScreen>
                 child: BusTimingList(
                   from: startingPoint,
                   destination: destination,
-                  timings: toIITH,
+                  timings: toIITH ?? {},
                 ),
               ),
               const SizedBox(width: 4.0),
@@ -418,7 +423,7 @@ class _CityBusScreenState extends State<CityBusScreen>
                 child: BusTimingList(
                   from: destination,
                   destination: startingPoint,
-                  timings: fromIITH,
+                  timings: fromIITH ?? {},
                 ),
               ),
             ],
