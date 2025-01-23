@@ -5,7 +5,7 @@ type FoundItem struct {
 	ItemName        string   `db:"item_name"`
 	ItemDescription string   `db:"item_description"`
 	UserID          int      `db:"user_id"`
-	Images          []string `db:"images"` 
+	Images          []string `db:"images"`
 	CreatedAt       string   `db:"created_at"`
 }
 
@@ -14,7 +14,7 @@ type FoundItemWithUser struct {
 	ItemName        string `db:"item_name"`
 	ItemDescription string `db:"item_description"`
 	UserID          int    `db:"user_id"`
-	UserName        string `db:"username"` 
+	UserName        string `db:"username"`
 	CreatedAt       string `db:"created_at"`
 }
 

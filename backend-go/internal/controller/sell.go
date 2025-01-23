@@ -85,7 +85,7 @@ func AddSellItemHandler(c *gin.Context) {
 
 }
 
-func GetAllSellItemsHandler(c *gin.Context){
+func GetAllSellItemsHandler(c *gin.Context) {
 
 	// Step 1: Fetch all the sell items
 	items, err := sell.GetAllSellItems(context.Background())
@@ -128,7 +128,6 @@ func GetAllSellItemsHandler(c *gin.Context){
 	// Step 5: Return the response
 	c.JSON(http.StatusOK, response)
 }
-
 
 /*
 GetItemByIdHandler fetches a particular sell item by its ID and returns it as a JSON response.
@@ -204,8 +203,8 @@ func DeleteSellItemHandler(c *gin.Context) {
 
 	// Step 4: Delete images associated with the item
 	// Get the image URLs associated with the item
-	imageURLs, err := sell.DeleteAllImageURIsFromSell(context.Background(),id)
-	
+	imageURLs, err := sell.DeleteAllImageURIsFromSell(context.Background(), id)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch images"})
 		return

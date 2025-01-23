@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dashbaord/models/time_table_model.dart';
+import 'package:dashbaord/models/notification_settings_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dashbaord/models/mess_menu_model.dart';
 import 'package:dashbaord/utils/bus_schedule.dart';
@@ -13,6 +14,7 @@ class SharedService {
   static const String _keyBusSchedule = 'bus_schedule';
   static const String _keyCityBusSchedule = 'city_bus_schedule';
   static const String _keyLastPermsReq = 'last_perms_request_date';
+  static const String _keyNotificationSettings = 'notification_settings';
 
   Future<void> saveUserDetails({
     required String name,
@@ -95,6 +97,12 @@ class SharedService {
     await prefs.setString(_keyCityBusSchedule, cityBusScheduleJson);
   }
 
+  Future<void> saveNotificationSettings(NotificationSettings settings) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String settingsJson = json.encode(settings.toJson());
+    await prefs.setString(_keyNotificationSettings, settingsJson);
+  }
+
   Future<BusSchedule?> getBusSchedule() async {
     final prefs = await SharedPreferences.getInstance();
     final busScheduleJson = prefs.getString(_keyBusSchedule);
@@ -141,5 +149,20 @@ class SharedService {
   Future<void> clearAllData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+  }
+
+  Future<NotificationSettings> getNotificationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? settingsJson = prefs.getString(_keyNotificationSettings);
+
+    if (settingsJson != null) {
+      final Map<String, dynamic> settingsMap = json.decode(settingsJson);
+      return NotificationSettings.fromJson(settingsMap);
+    } else {
+      return NotificationSettings(
+        notificationsEnabled: true,
+        reminderOffsetMinutes: 10,
+      );
+    }
   }
 }
