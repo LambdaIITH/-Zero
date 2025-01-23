@@ -657,9 +657,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   title: 'Bus Shuttle',
                                   child: 'assets/icons/bus-svg.svg',
                                   onTap: () {
-                                    widget.isGuest
-                                        ? showError()
-                                        : context.push('/city_bus');
+                                    // widget.isGuest
+                                    //     ? showError()
+                                        context.push('/city_bus');
                                   },
                                 ),
                               ),

@@ -142,7 +142,7 @@ class AppRouter {
       GoRoute(
         path: '/igh_booking',
         pageBuilder: (context, state) {
-           final data = state.extra as Map<String, dynamic>? ?? {};
+          final data = state.extra as Map<String, dynamic>? ?? {};
           final user = data['user'] as UserModel?;
           return CustomTransitionPage(
             key: state.pageKey,

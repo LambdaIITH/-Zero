@@ -18,10 +18,13 @@ class _CityBusScreenState extends State<CityBusScreen>
   final TextEditingController transactionIdController = TextEditingController();
   final TextEditingController transactionAmountController =
       TextEditingController();
-  late final Map<String, int> toIITH;
-  late final Map<String, int> fromIITH;
+
+  Map<String, int>? toIITH;
+  Map<String, int>? fromIITH;
+
   bool _isLoading = false;
 
+  
   final ApiServices apiServices = ApiServices();
 
   Map<String, dynamic>? transactionDetails;
@@ -154,11 +157,16 @@ class _CityBusScreenState extends State<CityBusScreen>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-            title: Text('City Bus',
-                style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold)),
+            title: Text(
+              'Bus Shuttle',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color ??
+                      Colors.black,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            centerTitle: true,
             bottom: TabBar(
               controller: _tabController,
               tabs: const [
@@ -609,17 +617,17 @@ class _CityBusScreenState extends State<CityBusScreen>
             children: [
               Expanded(
                 child: BusTimingList(
-                  from: 'IITH',
-                  destination: 'Patancheru',
-                  timings: toIITH,
+                  from: startingPoint,
+                  destination: destination,
+                  timings: toIITH ?? {},
                 ),
               ),
               const SizedBox(width: 4.0),
               Expanded(
                 child: BusTimingList(
-                  from: 'Patancheru',
-                  destination: 'IITH',
-                  timings: fromIITH,
+                  from: destination,
+                  destination: startingPoint,
+                  timings: fromIITH ?? {},
                 ),
               ),
             ],
