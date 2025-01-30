@@ -7,8 +7,8 @@ type CabBooking struct {
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time"`
 	Capacity  int       `json:"capacity"`
-	FromLoc   int       `json:"from_loc"`
-	ToLoc     int       `json:"to_loc"`
+	FromLoc   string    `json:"from_loc"`
+	ToLoc     string    `json:"to_loc"`
 	Comments  string    `json:"comments"`
 }
 

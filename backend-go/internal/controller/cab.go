@@ -1,16 +1,16 @@
 package controller
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
-
 	db "github.com/LambdaIITH/Dashboard/backend/internal/db"
 	helpers "github.com/LambdaIITH/Dashboard/backend/internal/helpers"
 	schema "github.com/LambdaIITH/Dashboard/backend/internal/schema"
+	"github.com/gin-gonic/gin"
 )
 
 func CheckAuth(c *gin.Context) {
@@ -41,10 +41,44 @@ func CheckAuth(c *gin.Context) {
 }
 
 func CreateBooking(c *gin.Context) {
-	var booking schema.CabBooking
-	// Bind the request body to the Booking struct
-	if err := c.ShouldBindJSON(&booking); err != nil {
+	var raw map[string]interface{}
+
+	// Bind JSON to a raw map first
+	if err := c.ShouldBindJSON(&raw); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking data"})
+		return
+	}
+
+	// Convert time fields to UTC manually
+	if startTimeStr, ok := raw["start_time"].(string); ok {
+		parsedTime, err := time.Parse("2006-01-02T15:04:05", startTimeStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_time format"})
+			return
+		}
+		raw["start_time"] = parsedTime.UTC()
+	}
+
+	if endTimeStr, ok := raw["end_time"].(string); ok {
+		parsedTime, err := time.Parse("2006-01-02T15:04:05", endTimeStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end_time format"})
+			return
+		}
+		raw["end_time"] = parsedTime.UTC()
+	}
+
+	// Convert the updated map to JSON again
+	jsonData, err := json.Marshal(raw)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	// Bind to the final struct after UTC conversion
+	var booking schema.CabBooking
+	if err := json.Unmarshal(jsonData, &booking); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error parsing booking data"})
 		return
 	}
 
@@ -63,7 +97,18 @@ func CreateBooking(c *gin.Context) {
 		return
 	}
 
-	bookingID, err := db.CreateBooking(c, booking.StartTime, booking.EndTime, booking.Capacity, &booking.FromLoc, &booking.ToLoc, email, booking.Comments)
+	fromLocID, err := db.GetLocationID(c, booking.FromLoc)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch from_loc location"})
+		return
+	}
+	toLocID, err := db.GetLocationID(c, booking.ToLoc)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to to_loc location"})
+		return
+	}
+
+	bookingID, err := db.CreateBooking(c, booking.StartTime, booking.EndTime, booking.Capacity, &fromLocID, &toLocID, email, booking.Comments)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking"})
 		return
@@ -83,7 +128,7 @@ func CreateBooking(c *gin.Context) {
 	}
 
 	// Respond with booking ID
-	c.JSON(http.StatusCreated, gin.H{"booking_id": bookingID})
+	c.JSON(http.StatusCreated, gin.H{"message": "Booking created successfully"})
 }
 
 func UpdateBooking(c *gin.Context) {
@@ -94,10 +139,44 @@ func UpdateBooking(c *gin.Context) {
 		return
 	}
 
-	// Parse the BookingUpdate object from the request body
+	var raw map[string]interface{}
+
+	// Bind JSON to a raw map first
+	if err := c.ShouldBindJSON(&raw); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking data"})
+		return
+	}
+
+	// Convert time fields to UTC manually
+	if startTimeStr, ok := raw["start_time"].(string); ok {
+		parsedTime, err := time.Parse("2006-01-02T15:04:05", startTimeStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_time format"})
+			return
+		}
+		raw["start_time"] = parsedTime.UTC()
+	}
+
+	if endTimeStr, ok := raw["end_time"].(string); ok {
+		parsedTime, err := time.Parse("2006-01-02T15:04:05", endTimeStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end_time format"})
+			return
+		}
+		raw["end_time"] = parsedTime.UTC()
+	}
+
+	// Convert the updated map to JSON again
+	jsonData, err := json.Marshal(raw)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	// Bind to the final struct after UTC conversion
 	var patch schema.CabBooking
-	if err := c.ShouldBindJSON(&patch); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking update data"})
+	if err := json.Unmarshal(jsonData, &patch); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error parsing booking data"})
 		return
 	}
 
@@ -211,21 +290,21 @@ func UserRequests(c *gin.Context) {
 
 func SearchBookings(c *gin.Context) {
 	// Extract query parameters
-	fromLocStr := c.Query("from_loc")
-	toLocStr := c.Query("to_loc")
+	fromLoc := c.Query("from_loc")
+	toLoc := c.Query("to_loc")
 
 	// Validate and parse locations
-	var fromLoc, toLoc int
+	var fromLocID, toLocID int
 	var err error
-	if fromLocStr != "" {
-		fromLoc, err = strconv.Atoi(fromLocStr)
+	if fromLoc != "" {
+		fromLocID, err = db.GetLocationID(c, fromLoc)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid from_loc value"})
 			return
 		}
 	}
-	if toLocStr != "" {
-		toLoc, err = strconv.Atoi(toLocStr)
+	if toLoc != "" {
+		toLocID, err = db.GetLocationID(c, toLoc)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid to_loc value"})
 			return
@@ -233,7 +312,7 @@ func SearchBookings(c *gin.Context) {
 	}
 
 	// Validate that both or neither locations are provided
-	if (fromLocStr != "" && toLocStr == "") || (fromLocStr == "" && toLocStr != "") {
+	if (fromLoc != "" && toLoc == "") || (fromLoc == "" && toLoc != "") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Both from_loc and to_loc must be provided or omitted"})
 		return
 	}
@@ -241,23 +320,29 @@ func SearchBookings(c *gin.Context) {
 	// Parse start_time and end_time with validation
 	startTimeStr := c.Query("start_time")
 	endTimeStr := c.Query("end_time")
-	const layout = time.RFC3339
+
+	const layoutNoTZ = "2006-01-02T15:04:05"
 
 	var startTime, endTime time.Time
+
+	// Parse start_time
 	if startTimeStr != "" {
-		startTime, err = time.Parse(layout, startTimeStr)
+		// Parsing without timezone and assuming UTC
+		startTime, err = time.Parse(layoutNoTZ, startTimeStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_time. Expected format: RFC3339"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_time. Expected format: RFC3339 or 'YYYY-MM-DDTHH:MM:SS'"})
 			return
 		}
 	} else {
 		startTime = time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
 	}
 
+	// Parse end_time
 	if endTimeStr != "" {
-		endTime, err = time.Parse(layout, endTimeStr)
+		// Parsing without timezone and assuming UTC
+		endTime, err = time.Parse(layoutNoTZ, endTimeStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end_time. Expected format: RFC3339"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end_time. Expected format: RFC3339 or 'YYYY-MM-DDTHH:MM:SS'"})
 			return
 		}
 	} else {
@@ -270,10 +355,10 @@ func SearchBookings(c *gin.Context) {
 
 	// Query database based on parameters
 	var res []schema.CabBooking
-	if fromLoc == 0 && toLoc == 0 {
+	if fromLocID == 0 && toLocID == 0 {
 		res, err = db.FilterTimes(c, startTime, endTime)
 	} else {
-		res, err = db.FilterAll(c, fromLoc, toLoc, startTime, endTime)
+		res, err = db.FilterAll(c, fromLocID, toLocID, startTime, endTime)
 	}
 
 	if err != nil {

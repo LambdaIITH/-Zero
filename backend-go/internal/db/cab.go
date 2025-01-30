@@ -90,7 +90,7 @@ func DeleteParticularTraveller(c context.Context, cabID int, email, ownerEmail s
 // GetUserPastBookings retrieves all past bookings for a user.
 func GetUserPastBookings(c context.Context, email string) ([]schema.CabBooking, error) {
 	query := `
-        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.id, tl.id, c.comments
+        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.place, tl.place, c.comments
         FROM cab_booking c
         INNER JOIN traveller t ON c.id = t.cab_id
         INNER JOIN locations fl ON fl.id = c.from_loc
@@ -121,7 +121,7 @@ func GetUserPastBookings(c context.Context, email string) ([]schema.CabBooking, 
 // GetUserFutureBookings retrieves all future bookings for a user.
 func GetUserFutureBookings(c context.Context, email string) ([]schema.CabBooking, error) {
 	query := `
-        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.id, tl.id, c.comments
+        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.place, tl.place, c.comments
         FROM cab_booking c
         INNER JOIN traveller t ON c.id = t.cab_id
         INNER JOIN locations fl ON fl.id = c.from_loc
@@ -152,7 +152,7 @@ func GetUserFutureBookings(c context.Context, email string) ([]schema.CabBooking
 // FilterTimes retrieves bookings that overlap with the specified time range.
 func FilterTimes(c context.Context, startTime, endTime time.Time) ([]schema.CabBooking, error) {
 	query := `
-        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.id, tl.id, c.comments
+        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.place, tl.place, c.comments
         FROM cab_booking c
         INNER JOIN locations fl ON fl.id = c.from_loc
         INNER JOIN locations tl ON tl.id = c.to_loc
@@ -185,7 +185,7 @@ func FilterTimes(c context.Context, startTime, endTime time.Time) ([]schema.CabB
 // FilterAll retrieves bookings based on location and time overlap.
 func FilterAll(c context.Context, fromLoc, toLoc int, startTime, endTime time.Time) ([]schema.CabBooking, error) {
 	query := `
-        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.id, tl.id, c.comments
+        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.place, tl.place, c.comments
         FROM cab_booking c
         INNER JOIN locations fl ON fl.id = c.from_loc
         INNER JOIN locations tl ON tl.id = c.to_loc
@@ -275,7 +275,7 @@ func IsCabFull(c context.Context, cabID int) (bool, error) {
 // Getschema.CabBooking retrieves the details of a specific cab booking by its ID.
 func GetCabBooking(c context.Context, cabID int) (schema.CabBooking, error) {
 	query := `
-        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.id, tl.id, c.comments
+        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.place, tl.place, c.comments
         FROM cab_booking c
         INNER JOIN locations fl ON fl.id = c.from_loc
         INNER JOIN locations tl ON tl.id = c.to_loc
@@ -330,7 +330,7 @@ func DeleteRequest(c context.Context, bookingID int, email string) error {
 // GetUserPendingRequests retrieves the user's pending requests for future bookings.
 func GetUserPendingRequests(c context.Context, email string) ([]schema.CabBooking, error) {
 	query := `
-        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.id, tl.id, c.comments
+        SELECT c.id, c.start_time, c.end_time, c.capacity, fl.place, tl.place, c.comments
         FROM cab_booking c
         INNER JOIN locations fl ON fl.id = c.from_loc
         INNER JOIN locations tl ON tl.id = c.to_loc
