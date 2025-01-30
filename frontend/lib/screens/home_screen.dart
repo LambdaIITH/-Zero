@@ -663,6 +663,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                   },
                                 ),
                               ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width > 450
+                                    ? 200
+                                    : MediaQuery.of(context).size.width / 2 -
+                                    25,
+                                child: HomeScreenCardSmall(
+                                  width: MediaQuery.of(context).size.width > 450
+                                      ? 200
+                                      : MediaQuery.of(context).size.width / 2 -
+                                      25,
+                                  isComingSoon: false,
+                                  reduceImageSize: true,
+                                  title: 'Face',
+                                  child: 'assets/icons/bus-svg.svg',
+                                  onTap: () {
+                                    // widget.isGuest
+                                    //     ? showError()
+                                    context.push('/face_upload');
+                                  },
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 20),
