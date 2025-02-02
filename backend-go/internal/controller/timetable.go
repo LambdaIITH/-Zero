@@ -2,7 +2,9 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -60,6 +62,31 @@ func validateCourseSchedule(data schema.Timetable) (bool, string) {
 	}
 
 	return true, ""
+}
+
+func GetAllCourses(c *gin.Context) {
+	dir, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get working directory"})
+		return
+	}
+
+	filePath := dir + "/all_courses.json"
+	file, err := os.Open(filePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
+		return
+	}
+	defer file.Close()
+
+	var courses []schema.Course
+	if err := json.NewDecoder(file).Decode(&courses); err != nil {
+		fmt.Println("Error decoding JSON:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode JSON"})
+		return
+	}
+
+	c.JSON(http.StatusOK, courses)
 }
 
 func GetTimetable(c *gin.Context) {
