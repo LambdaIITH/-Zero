@@ -16,7 +16,7 @@ import (
 func GetTimetable(ctx context.Context, userID int) (string, error) {
 	query := "SELECT timetable FROM user_timetable WHERE id = $1"
 
-    var result string
+	var result string
 	err := config.DB.QueryRow(ctx, query, userID).Scan(&result)
 	if err != nil {
 		return "", err
@@ -28,12 +28,12 @@ func GetTimetable(ctx context.Context, userID int) (string, error) {
 func PostTimetable(ctx context.Context, userID int, timetable schema.Timetable) (map[string]interface{}, error) {
 	timetableJSON, err := json.Marshal(timetable)
 	if err != nil {
-		return nil ,err
+		return nil, err
 	}
 
 	query := "UPDATE user_timetable SET timetable = $1 WHERE id = $2"
 
-    var result map[string]interface{}
+	var result map[string]interface{}
 	_, err = config.DB.Exec(ctx, query, string(timetableJSON), userID)
 	if err != nil {
 		return nil, err
@@ -43,14 +43,19 @@ func PostTimetable(ctx context.Context, userID int, timetable schema.Timetable) 
 
 // GetSharedTimetable retrieves the timetable with the given code.
 func GetSharedTimetable(ctx context.Context, code string) (string, error) {
-	query := "SELECT timetable FROM shared_timetable WHERE code = $1"
-
+	query := "SELECT timetable, expiry FROM shared_timetable WHERE code = $1"
+ 
 	var result string
 	var expiry time.Time
-	err := config.DB.QueryRow(ctx, query, code).Scan(&result , &expiry)
+	err := config.DB.QueryRow(ctx, query, code).Scan(&result, &expiry)
+
 	if err != nil {
+		if result == "" {
+			return "", errors.New("no timetable found for the given code")
+		}
 		return "", err
 	}
+
 	if expiry.Before(time.Now()) {
 		// Delete expired timetable
 		deleteQuery := "DELETE FROM shared_timetable WHERE code = $1"

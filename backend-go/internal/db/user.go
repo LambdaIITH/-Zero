@@ -7,6 +7,8 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/LambdaIITH/Dashboard/backend/config"
+
+	schema "github.com/LambdaIITH/Dashboard/backend/internal/schema"
 )
 
 // GetUserEmail retrieves the email of a user based on the ID.
@@ -87,4 +89,61 @@ func AuthorizeEditDeleteItem(ctx context.Context, itemID int, userID int) (bool,
 	}
 
 	return true, nil
+}
+
+func GetUser(c context.Context, id int) schema.UserStruct {
+	query := "SELECT * FROM users WHERE id = ?"
+	rows, err := config.DB.Query(c, query, id)
+	if err != nil {
+		return schema.UserStruct{}
+	}
+
+	if rows.Next() {
+		var user schema.UserStruct
+		err = rows.Scan(&user.ID, &user.Email, &user.Name, &user.Cr, &user.PhoneNumber)
+		if err != nil {
+			return schema.UserStruct{}
+		}
+	} else {
+		return schema.UserStruct{}
+	}
+	return schema.UserStruct{}
+}
+
+func UpdatePhone(c context.Context, id int, phone string) schema.UserStruct {
+	query := "UPDATE users SET phoneNumber = ? WHERE id = ? RETURNING id, email, name , cr, phone_number"
+
+	rows, err := config.DB.Query(c, query, phone, id)
+	if err != nil {
+		return schema.UserStruct{}
+	}
+
+	if rows.Next() {
+		var user schema.UserStruct
+		err = rows.Scan(&user.ID, &user.Email, &user.Name, &user.Cr, &user.PhoneNumber)
+		if err != nil {
+
+			return schema.UserStruct{}
+		}
+
+	} else {
+		return schema.UserStruct{}
+	}
+	return schema.UserStruct{}
+}
+
+func UpsertFCMToken(c context.Context, id int, token string, deviceType string) bool {
+	query := "INSERT INTO fcm_tokens (user_id, token, device_type) VALUES ($1, $2, $3) ON CONFLICT (user_id, token) DO UPDATE SET device_type = EXCLUDED.device_type, token = EXCLUDED.token,RETURNING 1; "
+
+	rows, err := config.DB.Query(c, query, id, token, deviceType)
+
+	if err != nil {
+		return false
+	}
+
+	if rows.Next() {
+		return true
+	} else {
+		return false
+	}
 }

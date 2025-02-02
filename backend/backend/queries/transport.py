@@ -7,8 +7,8 @@ def log_transaction_to_db(transaction_data: Dict[str, Any], user_id: int) -> boo
     Function to log transaction data into PostgreSQL.
     """
     query = """
-    INSERT INTO transactions (transaction_id, payment_time, user_id, travel_date, bus_timing, isUsed)
-    VALUES (%s, %s, %s, %s, %s, %s);
+    INSERT INTO transactions (transaction_id, payment_time, user_id, travel_date, bus_timing, isUsed, start, destination, amount)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
     """
     values = (
         transaction_data["transaction_id"],
@@ -16,7 +16,10 @@ def log_transaction_to_db(transaction_data: Dict[str, Any], user_id: int) -> boo
         user_id,
         transaction_data["travel_date"],
         transaction_data["bus_timing"],
-        transaction_data["isUsed"]
+        transaction_data["isUsed"],
+        transaction_data["start"],
+        transaction_data["destination"],
+        transaction_data["amount"] 
     )
 
     try:
@@ -59,7 +62,7 @@ def get_last_transaction(user_id: int) -> Optional[Dict[str, Any]]:
     Function to retrieve the most recent transaction data within the last 2 hours for a user from PostgreSQL.
     """
     query = """
-    SELECT transaction_id, payment_time, travel_date, bus_timing, isUsed
+    SELECT transaction_id, payment_time, travel_date, bus_timing, isUsed, start, destination, amount
     FROM transactions
     WHERE user_id = %s AND payment_time >= NOW() - INTERVAL '2 hours'
     ORDER BY payment_time DESC
@@ -74,6 +77,13 @@ def get_last_transaction(user_id: int) -> Optional[Dict[str, Any]]:
             if result:
                 columns = [desc[0] for desc in cur.description]
                 transaction = dict(zip(columns, result))
+                transaction["transactionId"] = transaction.pop("transaction_id")
+                transaction["paymentTime"] = transaction.pop("payment_time").strftime("%H:%M")
+                transaction["travelDate"] = transaction.pop("travel_date").strftime("%d/%m/%y")
+                transaction["busTiming"] = transaction.pop("bus_timing").strftime("%H:%M")
+                transaction["amount"] = str(transaction["amount"])
+                transaction["isUsed"] = str(transaction["isused"])
+
                 return transaction
             return None
     except Exception as e:

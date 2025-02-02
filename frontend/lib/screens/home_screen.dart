@@ -25,6 +25,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:text_scroll/text_scroll.dart';
@@ -578,7 +579,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 15),
                           HomeScreenMessMenu(messMenu: messMenu, week: week),
                           const SizedBox(height: 15),
-
+                          Text(
+                            'Services',
+                            style: GoogleFonts.inter(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 28,
+                            ),
+                          ),
+                          const SizedBox(height: 15),
                           Wrap(
                             spacing: 10.0, // Horizontal spacing between cards
                             runSpacing: 10.0, // Vertical spacing between rows
@@ -642,33 +652,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? 200
                                       : MediaQuery.of(context).size.width / 2 -
                                           25,
-                                  isComingSoon: true,
+                                  isComingSoon: false,
                                   reduceImageSize: true,
-                                  title: 'Patancheru Bus',
+                                  title: 'Bus Shuttle',
                                   child: 'assets/icons/bus-svg.svg',
                                   onTap: () {
-                                    widget.isGuest
-                                        ? showError()
-                                        : context.push('/city_bus');
+                                    // widget.isGuest
+                                    //     ? showError()
+                                        context.push('/city_bus');
                                   },
                                 ),
                               ),
                               SizedBox(
-                                width:
-                                    MediaQuery.of(context).size.width / 2 - 25,
+                                width: MediaQuery.of(context).size.width > 450
+                                    ? 200
+                                    : MediaQuery.of(context).size.width / 2 -
+                                    25,
                                 child: HomeScreenCardSmall(
                                   width: MediaQuery.of(context).size.width > 450
                                       ? 200
                                       : MediaQuery.of(context).size.width / 2 -
-                                          25,
+                                      25,
                                   isComingSoon: false,
-                                  title: 'Announcements',
-                                  child: 'assets/icons/cab-sharing-icon.svg',
+                                  reduceImageSize: true,
+                                  title: 'Face',
+                                  child: 'assets/icons/bus-svg.svg',
                                   onTap: () {
                                     // widget.isGuest
                                     //     ? showError()
-                                    //     : context.push('/announcements');
-                                    context.push('/announcements');
+                                    context.push('/face_upload');
                                   },
                                 ),
                               ),

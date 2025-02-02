@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/LambdaIITH/Dashboard/backend/internal/controller"
+	"github.com/LambdaIITH/Dashboard/backend/internal/middlewares"
 )
 
 func home(c *gin.Context) {
@@ -57,6 +58,13 @@ func SetupRoutes(router *gin.Engine) {
 		sellGroup.GET("/search", controller.SearchSellItemHandler)
 	}
 
+	userGroup := router.Group("/user")
+	{
+		userGroup.GET("/", controller.User)
+		userGroup.PATCH("/update", controller.UpdateUser)
+		userGroup.PATCH("/update/fcm", controller.UpdateUserFCMToken)
+	}
+
 	router.POST("found/add_item", controller.AddFoundItemHandler)
 	router.GET("/found/all", controller.GetAllFoundItemsHandler)
 	router.GET("/found/get_item/:id", controller.GetFoundItemByIdHandler)
@@ -65,13 +73,14 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/found/search", controller.SearchFoundItemHandler)
 
 	//Group routes for timetable/calendar
-	timetableGroup := router.Group("/timetable")
+	timetableGroup := router.Group("/schedule")
 	{
-		timetableGroup.GET("/courses", controller.GetTimetable)
-		timetableGroup.POST("/courses", controller.PostEditTimetable)
-		timetableGroup.GET("/share/:code", controller.GetSharedTimetable)
-		timetableGroup.POST("/share", controller.PostSharedTimetable)
-		timetableGroup.DELETE("/share/:code", controller.DeleteSharedTimetable)
+		timetableGroup.GET("/all_courses", middlewares.AuthMiddleware(), controller.GetAllCourses)
+		timetableGroup.GET("/courses", middlewares.AuthMiddleware(), controller.GetTimetable)
+		timetableGroup.POST("/courses", middlewares.AuthMiddleware(), controller.PostEditTimetable)
+		timetableGroup.GET("/share/:code", middlewares.AuthMiddleware(), controller.GetSharedTimetable)
+		timetableGroup.POST("/share", middlewares.AuthMiddleware(), controller.PostSharedTimetable)
+		timetableGroup.DELETE("/share/:code", middlewares.AuthMiddleware(), controller.DeleteSharedTimetable)
 	}
 
 	// GET : /announcements?limit=4&offset=4

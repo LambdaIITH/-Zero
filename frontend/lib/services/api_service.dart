@@ -35,6 +35,8 @@ class ApiServices {
   String backendUrl = dotenv.env["BACKEND_URL"] ?? "https://api.iith.dev/";
   // String backendUrl = "https://api.iith.dev/";
 
+  // String backendUrl = "http://10.0.2.2:8000";
+
   Dio dio = Dio();
 
   Future<void> configureDio() async {
@@ -1002,13 +1004,16 @@ class ApiServices {
     }
   }
 
-  Future<Map<String, dynamic>> submitTransactionID(String transactionId) async {
+  Future<Map<String, dynamic>> submitTransactionID(String transactionId, amount, from, to) async {
     try {
       // Sending the POST request
       final response = await dio.post(
         '/transport/qr',
         data: {
           'transactionId': transactionId,
+          'amount': amount,
+          'start': from,
+          'destination': to
         },
       );
 
@@ -1097,4 +1102,48 @@ class ApiServices {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>> uploadPhoto(capturedImage) async {
+    if (capturedImage != null) {
+      try {
+
+        /// Form data for the POST request
+        ///
+        FormData formData = FormData.fromMap({
+          'form_data': jsonEncode({
+            "face_name": "Sample Face Name 2",
+            "face_description": "This is a sample face description"
+          }),
+          'images': await MultipartFile.fromFile(capturedImage!.path, filename: 'face.jpg')
+        });
+
+        final response = await dio.post(
+          '/face/add_face',
+          data: formData,
+          options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        );
+
+        if (response.statusCode == 200) {
+          debugPrint("Upload Successful: \${response.data}");
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload Successful')));
+          return {'status': response.statusCode, 'data': response.data};
+        } else {
+          debugPrint('Error: \${response.statusCode}');
+          return {
+            'error': 'Failed to send request \${response.statusMessage}',
+            'status': response.statusCode
+          };
+        }
+      } on DioException catch (e) {
+        debugPrint('Request failed: \$e');
+        return {
+          'error': e.response?.data['detail'],
+          'status': e.response?.statusCode
+        };
+      }
+    }
+    return {'error': 'No image to upload'};
+  }
+
+
 }

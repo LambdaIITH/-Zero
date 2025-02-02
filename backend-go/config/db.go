@@ -3,8 +3,8 @@ package config
 import (
 	"context"
 	"fmt"
-	"os"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"os"
 )
 
 var DB *pgxpool.Pool

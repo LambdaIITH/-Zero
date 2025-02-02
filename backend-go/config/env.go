@@ -2,8 +2,8 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"github.com/joho/godotenv"
+	"log"
 )
 
 func LoadEnv() {
