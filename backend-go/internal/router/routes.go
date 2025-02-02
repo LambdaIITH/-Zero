@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/LambdaIITH/Dashboard/backend/internal/controller"
+	"github.com/LambdaIITH/Dashboard/backend/internal/middlewares"
 )
 
 func home(c *gin.Context) {
@@ -74,11 +75,11 @@ func SetupRoutes(router *gin.Engine) {
 	//Group routes for timetable/calendar
 	timetableGroup := router.Group("/schedule")
 	{
-		timetableGroup.GET("/courses", controller.GetTimetable)
-		timetableGroup.POST("/courses", controller.PostEditTimetable)
-		timetableGroup.GET("/share/{code}", controller.GetSharedTimetable)
-		timetableGroup.POST("/share", controller.PostSharedTimetable)
-		timetableGroup.DELETE("/share/{code}", controller.DeleteSharedTimetable)
+		timetableGroup.GET("/courses", middlewares.AuthMiddleware(), controller.GetTimetable)
+		timetableGroup.POST("/courses", middlewares.AuthMiddleware(), controller.PostEditTimetable)
+		timetableGroup.GET("/share/:code", middlewares.AuthMiddleware(), controller.GetSharedTimetable)
+		timetableGroup.POST("/share", middlewares.AuthMiddleware(), controller.PostSharedTimetable)
+		timetableGroup.DELETE("/share/:code", middlewares.AuthMiddleware(), controller.DeleteSharedTimetable)
 	}
 
 	// GET : /announcements?limit=4&offset=4

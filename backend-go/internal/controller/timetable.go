@@ -115,6 +115,7 @@ func PostEditTimetable(c *gin.Context) {
 
 func GetSharedTimetable(c *gin.Context) {
 	code := c.Param("code")
+
 	if code == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Code is required"})
 		return
@@ -126,7 +127,7 @@ func GetSharedTimetable(c *gin.Context) {
 		if err.Error() == "timetable has expired" {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Timetable has expired"})
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}

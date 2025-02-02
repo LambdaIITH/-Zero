@@ -43,14 +43,19 @@ func PostTimetable(ctx context.Context, userID int, timetable schema.Timetable) 
 
 // GetSharedTimetable retrieves the timetable with the given code.
 func GetSharedTimetable(ctx context.Context, code string) (string, error) {
-	query := "SELECT timetable FROM shared_timetable WHERE code = $1"
-
+	query := "SELECT timetable, expiry FROM shared_timetable WHERE code = $1"
+ 
 	var result string
 	var expiry time.Time
 	err := config.DB.QueryRow(ctx, query, code).Scan(&result, &expiry)
+
 	if err != nil {
+		if result == "" {
+			return "", errors.New("no timetable found for the given code")
+		}
 		return "", err
 	}
+
 	if expiry.Before(time.Now()) {
 		// Delete expired timetable
 		deleteQuery := "DELETE FROM shared_timetable WHERE code = $1"
