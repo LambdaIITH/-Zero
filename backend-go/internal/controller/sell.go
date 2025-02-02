@@ -37,7 +37,7 @@ func AddSellItemHandler(c *gin.Context) {
 	}
 
 	// Step 2: Get the user ID
-	userId, err := helpers.GetUserID(c.Request)
+	userId, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -181,7 +181,7 @@ func GetSellItemByIdHandler(c *gin.Context) {
 
 func DeleteSellItemHandler(c *gin.Context) {
 	// Step 1: Get the user ID
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -242,7 +242,7 @@ It edits the images in S3 and updates the image URLs in the database.
 */
 func EditSellItemHandler(c *gin.Context) {
 	// Step 1: Get the user ID
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
