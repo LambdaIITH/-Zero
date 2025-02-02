@@ -45,6 +45,7 @@ func SetupRoutes(router *gin.Engine) {
 		transportGroup.GET("/cityBus", controller.GetCityBusSchedule)
 		transportGroup.POST("/qr", controller.ProcessTransaction)
 		transportGroup.POST("/qr/scan", controller.ScanQRCode)
+		transportGroup.GET("/qr/recent", controller.GetRecentTransaction)
 	}
 
 	sellGroup := router.Group("/sell")
@@ -61,7 +62,7 @@ func SetupRoutes(router *gin.Engine) {
 	{
 		userGroup.GET("/", controller.User)
 		userGroup.PATCH("/update", controller.UpdateUser)
-		userGroup.PATCH("/update/fcm", controller.UpdateUserFCMToken)
+		userGroup.PATCH("/fcm/update", controller.UpdateUserFCMToken)
 	}
 
 	router.POST("found/add_item", controller.AddFoundItemHandler)
