@@ -122,7 +122,7 @@ func CreateBooking(c *gin.Context) {
 	}
 
 	// Send email notification
-	err = helpers.SendEmail(email, "create", int(booking.ID), map[string]interface{}{"booking_id": bookingID})
+	err = helpers.SendEmail(email, "create", bookingID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Error sending email notification: %v", err)
 	}
@@ -249,10 +249,22 @@ func UserBookings(c *gin.Context) {
 		return
 	}
 
+	pastBookingsProcessed, err := helpers.GetBookings(c, pastBookings)
+	if err != nil {
+		log.Printf("Error fetching past bookings: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch past bookings"})
+		return
+	}
+	futureBookingsProcessed, err := helpers.GetBookings(c, futureBookings)
+	if err != nil {
+		log.Printf("Error fetching future bookings: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch future bookings"})
+		return
+	}
 	// Construct response
 	response := gin.H{
-		"past_bookings":   pastBookings,
-		"future_bookings": futureBookings,
+		"past_bookings":   pastBookingsProcessed,
+		"future_bookings": futureBookingsProcessed,
 	}
 	c.JSON(http.StatusOK, response)
 }
@@ -354,7 +366,7 @@ func SearchBookings(c *gin.Context) {
 	endTime = endTime.UTC()
 
 	// Query database based on parameters
-	var res []schema.CabBooking
+	var res []map[string]interface{}
 	if fromLocID == 0 && toLocID == 0 {
 		res, err = db.FilterTimes(c, startTime, endTime)
 	} else {
@@ -366,7 +378,15 @@ func SearchBookings(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	var bookings []map[string]interface{}
+	bookings, err = helpers.GetBookings(c, res)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve bookings"})
+		return
+	}
+
+	c.JSON(http.StatusOK, bookings)
 }
 
 func RequestToJoinBooking(c *gin.Context) {
@@ -446,7 +466,7 @@ func RequestToJoinBooking(c *gin.Context) {
 	}
 
 	// Send email to owner
-	ownerPhone, _ := db.GetPhoneNumber(c, ownerEmail)
+	phone, _ := db.GetPhoneNumber(c, email)
 	requesterName, _ := db.GetName(c, email)
 	err = helpers.SendEmail(
 		ownerEmail,
@@ -454,7 +474,7 @@ func RequestToJoinBooking(c *gin.Context) {
 		bookingID,
 		map[string]interface{}{
 			"x_requester_name":  requesterName,
-			"x_requester_phone": ownerPhone,
+			"x_requester_phone": phone,
 			"x_requester_email": email,
 		},
 	)
@@ -556,10 +576,6 @@ func AcceptRequest(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to accept request"})
 		return
 	}
-	if comments == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No pending request to accept"})
-		return
-	}
 
 	err = db.AddTraveller(c, request.RequesterEmail, bookingID, comments)
 	if err != nil {
@@ -597,7 +613,7 @@ func AcceptRequest(c *gin.Context) {
 		}
 
 		err = helpers.SendEmail(travellerEmail, "accept_notif", bookingID, map[string]interface{}{
-			"x_accepted_email": email,
+			"x_accepted_email": request.RequesterEmail,
 			"x_accepted_name":  name,
 			"x_accepted_phone": phone,
 		})
@@ -755,6 +771,10 @@ func ExitBooking(c *gin.Context) {
 
 	// Notify remaining travellers
 	name, err := db.GetName(c, email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user name"})
+		return
+	}
 	travellers, err := db.GetTravellers(c, bookingID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch travellers"})

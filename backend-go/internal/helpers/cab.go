@@ -4,82 +4,16 @@ import (
 	"context"
 	"fmt"
 	"net/smtp"
+	"os"
 	"strings"
 	"text/template"
-
-	"github.com/jordan-wright/email"
+	"time"
 
 	"github.com/LambdaIITH/Dashboard/backend/internal/db"
+	"github.com/jordan-wright/email"
 )
 
-// // getBookings retrieves booking details, including travellers and requests.
-// func GetBookings(ownerEmail string) ([]map[string]interface{}, error) {
-// 	bookings := []map[string]interface{}{}
-// 	result, err := db.GetBookingsFromDB()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	for _, tup := range result {
-// 		travellers, err := queries.GetTravellers(tup[0])
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		travellersList := []map[string]interface{}{}
-// 		for _, traveller := range travellers {
-// 			travellerMap := map[string]interface{}{
-// 				"email":        traveller.Email,
-// 				"comments":     traveller.Comments,
-// 				"name":         traveller.Name,
-// 				"phone_number": traveller.PhoneNumber,
-// 			}
-// 			if ownerEmail == traveller.Email {
-// 				travellersList = append([]map[string]interface{}{travellerMap}, travellersList...)
-// 			} else {
-// 				travellersList = append(travellersList, travellerMap)
-// 			}
-// 		}
-
-// 		// Convert from UTC to IST
-// 		startTime := tup[1].In(time.FixedZone("Asia/Kolkata", 5*60*60+30*60))
-// 		endTime := tup[2].In(time.FixedZone("Asia/Kolkata", 5*60*60+30*60))
-
-// 		booking := map[string]interface{}{
-// 			"id":          tup[0],
-// 			"start_time":  startTime.Format("2006-01-02 15:04:05"),
-// 			"end_time":    endTime.Format("2006-01-02 15:04:05"),
-// 			"capacity":    tup[3],
-// 			"from":        tup[4],
-// 			"to":          tup[5],
-// 			"owner_email": ownerEmail,
-// 			"travellers":  travellersList,
-// 		}
-
-// 		if ownerEmail == tup[6] {
-// 			requests, err := queries.ShowRequests(tup[0])
-// 			if err != nil {
-// 				return nil, err
-// 			}
-
-// 			requestsList := []map[string]interface{}{}
-// 			for _, req := range requests {
-// 				requestsList = append(requestsList, map[string]interface{}{
-// 					"email":        req.Email,
-// 					"comments":     req.Comments,
-// 					"name":         req.Name,
-// 					"phone_number": req.PhoneNumber,
-// 				})
-// 			}
-// 			booking["requests"] = requestsList
-// 		}
-
-// 		bookings = append(bookings, booking)
-// 	}
-// 	return bookings, nil
-// }
-
-// sendEmail sends an email with booking details, formatted using templates.
+// SendEmail sends an email with booking details, formatted using templates.
 func SendEmail(receiver, mailType string, bookingID int, additionalData map[string]interface{}) error {
 	bookingDetails, err := db.GetCabBooking(context.Background(), bookingID)
 	if err != nil {
@@ -90,44 +24,64 @@ func SendEmail(receiver, mailType string, bookingID int, additionalData map[stri
 	endTime := bookingDetails.EndTime.Format("2006-01-02 15:04")
 	date := bookingDetails.StartTime.Format("02 Jan 2006")
 
+	ownerEmail, err := db.GetOwnerEmail(context.Background(), bookingID)
+	if err != nil {
+		return err
+	}
+	ownerPhone, err := db.GetPhoneNumber(context.Background(), ownerEmail)
+	if err != nil {
+		return err
+	}
+	ownerName, err := db.GetName(context.Background(), ownerEmail)
+	if err != nil {
+		return err
+	}
+
 	bookingInfo := map[string]interface{}{
-		"id":  bookingID,
+		"id":          bookingID,
 		"start_time":  startTime,
 		"end_time":    endTime,
 		"date":        date,
 		"capacity":    bookingDetails.Capacity,
 		"from_loc":    bookingDetails.FromLoc,
 		"to_loc":      bookingDetails.ToLoc,
+		"owner_email": ownerEmail,
+		"owner_phone": ownerPhone,
+		"owner_name":  ownerName,
 	}
 
 	for key, val := range additionalData {
 		bookingInfo[key] = val
 	}
 
-	subject, err := ParseTemplate(fmt.Sprintf("github.com/LambdaIITH/Dashboard/backend-go/internal/templates/%s/subject.txt", mailType), bookingInfo)
+	subject, err := ParseTemplate(fmt.Sprintf("internal/templates/%s/subject.txt", mailType), bookingInfo)
 	if err != nil {
 		return err
 	}
 
-	body, err := ParseTemplate(fmt.Sprintf("github.com/LambdaIITH/Dashboard/backend-go/internal/templates/%s/body.html", mailType), bookingInfo)
+	body, err := ParseTemplate(fmt.Sprintf("internal/templates/%s/body.html", mailType), bookingInfo)
 	if err != nil {
 		return err
 	}
+
+	// Load email and password from environment variables
+	emailAddress := os.Getenv("EMAIL")
+	emailPassword := os.Getenv("EMAIL_PASSWORD")
 
 	e := email.NewEmail()
-	e.From = "your-email@example.com"
+	e.From = emailAddress
 	e.To = []string{receiver}
 	e.Subject = subject
 	e.HTML = []byte(body)
 
-	err = e.Send("smtp.gmail.com:587", smtp.PlainAuth("", "your-email@example.com", "password", "smtp.gmail.com"))
+	err = e.Send("smtp.gmail.com:587", smtp.PlainAuth("", emailAddress, emailPassword, "smtp.gmail.com"))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// parseTemplate parses a template file with the provided data and returns the formatted string.
+// ParseTemplate parses a template file with the provided data and returns the formatted string.
 func ParseTemplate(filePath string, data map[string]interface{}) (string, error) {
 	tmpl, err := template.ParseFiles(filePath)
 	if err != nil {
@@ -140,4 +94,52 @@ func ParseTemplate(filePath string, data map[string]interface{}) (string, error)
 		return "", err
 	}
 	return builder.String(), nil
+}
+
+func GetBookings(c context.Context, res []map[string]interface{}) ([]map[string]interface{}, error) {
+	var bookings []map[string]interface{}
+
+	for _, booking := range res {
+		travellers, err := db.GetTravellersWithDetails(c, booking["id"].(int))
+		if err != nil {
+			return nil, err
+		}
+		ownerEmail := booking["owner_email"].(string)
+
+		var travellersList []map[string]interface{}
+		for _, traveller := range travellers {
+			if ownerEmail == traveller["email"].(string) {
+				travellersList = append([]map[string]interface{}{traveller}, travellersList...)
+			} else {
+				travellersList = append(travellersList, traveller)
+			}
+		}
+
+		// Convert time from UTC to IST
+		loc, _ := time.LoadLocation("Asia/Kolkata")
+		startTime := booking["start_time"].(time.Time).In(loc).Format("2006-01-02 15:04:05")
+		endTime := booking["end_time"].(time.Time).In(loc).Format("2006-01-02 15:04:05")
+
+		bookingMap := map[string]interface{}{
+			"id":          booking["id"],
+			"start_time":  startTime,
+			"end_time":    endTime,
+			"capacity":    booking["capacity"],
+			"from_":       booking["from_loc"],
+			"to":          booking["to_loc"],
+			"owner_email": ownerEmail,
+			"travellers":  travellersList,
+			"comments":    booking["comments"],
+		}
+
+		requests, err := db.ShowRequests(c, booking["id"].(int))
+		if err != nil {
+			return nil, err
+		}
+		bookingMap["requests"] = requests
+
+		bookings = append(bookings, bookingMap)
+	}
+
+	return bookings, nil
 }
