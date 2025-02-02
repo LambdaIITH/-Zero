@@ -75,6 +75,7 @@ func SetupRoutes(router *gin.Engine) {
 	//Group routes for timetable/calendar
 	timetableGroup := router.Group("/schedule")
 	{
+		timetableGroup.GET("/all_courses", middlewares.AuthMiddleware(), controller.GetAllCourses)
 		timetableGroup.GET("/courses", middlewares.AuthMiddleware(), controller.GetTimetable)
 		timetableGroup.POST("/courses", middlewares.AuthMiddleware(), controller.PostEditTimetable)
 		timetableGroup.GET("/share/:code", middlewares.AuthMiddleware(), controller.GetSharedTimetable)
