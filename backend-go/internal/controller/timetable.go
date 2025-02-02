@@ -153,7 +153,7 @@ func PostSharedTimetable(c *gin.Context) {
 	}
 	var timetable schema.Timetable
 	if err := c.ShouldBindJSON(&timetable); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid JSON format"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON format"})
 		return
 	}
 	code := GenerateRandomCode()
