@@ -1,6 +1,6 @@
 from elasticsearch import Elasticsearch
 import boto3
-from typing import List
+from typing import List, Optional
 import os
 from dotenv import load_dotenv
 from fastapi import UploadFile
@@ -78,13 +78,20 @@ class S3Manager:
         self.bucket_name = os.getenv("BUCKET_NAME")
         self.resource_uri =  os.getenv('RESOURCE_URI')
         print("Connected to S3 Service")
-    def uploadToCloud(self, images: List[UploadFile], item_id: int, item_type: str) -> List[str]:
+    def uploadToCloud(
+        self, images: List[UploadFile], item_id: int, item_type: str, timestamp: Optional[str] = None
+    ) -> List[str]:
         uris = []
         for i, image in enumerate(images):
-            link = f"{item_type}/{item_id}/{i}_{image.filename}"
+            if timestamp:
+                link = f"{item_type}/{item_id}/{i}_{image.filename}-{timestamp}"
+            else:
+                link = f"{item_type}/{item_id}/{i}_{image.filename}"
+            
             uri = self.resource_uri + link
             uris.append(uri)
             self.s3.upload_fileobj(image.file, self.bucket_name, link)
+
         return uris
     
     def deleteFromCloud(self, item_id: int, item_type: str):

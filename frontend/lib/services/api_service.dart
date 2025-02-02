@@ -1110,10 +1110,6 @@ class ApiServices {
         /// Form data for the POST request
         ///
         FormData formData = FormData.fromMap({
-          'form_data': jsonEncode({
-            "face_name": "Sample Face Name 2",
-            "face_description": "This is a sample face description"
-          }),
           'images': await MultipartFile.fromFile(capturedImage!.path, filename: 'face.jpg')
         });
 
