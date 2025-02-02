@@ -12,23 +12,24 @@ import (
 	"github.com/LambdaIITH/Dashboard/backend/internal/schema"
 )
 
-func InsertInLostTable(ctx context.Context, form_data map[string]interface{}, user_ID int) (map[string]interface{}, error) {
+func InsertInLostTable(ctx context.Context, form_data map[string]interface{}, user_ID int) (int, error) {
 	// Query to insert the lost item in the database
 	query := `
         INSERT INTO lost (item_name, item_description, user_id) 
         VALUES ($1, $2, $3) 
-        RETURNING *
+        RETURNING id
     `
 
-	// Execute the query
-	var result map[string]interface{}
-	_, err := config.DB.Exec(ctx, query, form_data["item_name"], form_data["item_description"], user_ID)
-
+	// Execute the query and retrieve the inserted ID
+	var lostId int
+	err := config.DB.QueryRow(ctx, query, form_data["item_name"], form_data["item_description"], user_ID).Scan(&lostId)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return result, nil
+
+	return lostId, nil
 }
+
 
 func InsertLostImages(ctx context.Context, image_paths []string, post_id int) error {
 	// Query to insert the lost item images in the database

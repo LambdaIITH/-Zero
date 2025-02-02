@@ -46,20 +46,16 @@ func AddItemHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-
 	// Step 3: Insert the form data into the lost table
-	var result map[string]interface{}
+	currItem := schema.LostItem{}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	result, err = lost.InsertInLostTable(ctx, formDataDict, userId)
+	currItem.ID, err = lost.InsertInLostTable(ctx, formDataDict, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert data"})
 		return
 	}
-
-	// Step 4: Get the ID of the inserted item
-	currItem := schema.LostItem{}
-	currItem.ID = result["id"].(int)
 
 	// Step 5: Upload the images to S3 and save the image URLs in the database
 	form, err := c.MultipartForm()
@@ -67,6 +63,7 @@ func AddItemHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file data"})
 		return
 	}
+
 	files := form.File["images"]
 	if len(files) > 0 {
 		s3Client := helpers.NewS3Client(os.Getenv("BUCKET_NAME"), os.Getenv("REGION"), os.Getenv("RESOURCE_URI"))
