@@ -70,6 +70,10 @@ func GetTimetable(c *gin.Context) {
 	}
 
 	timetableJSON, err := timetable_queries.GetTimetable(c, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch timetable."})
+		return
+	}
 	var timetable schema.Timetable
 	if err := json.Unmarshal([]byte(timetableJSON), &timetable); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse timetable."})
@@ -98,13 +102,15 @@ func PostEditTimetable(c *gin.Context) {
 		return
 	}
 
-	result, err := timetable_queries.PostTimetable(c, userID, timetable)
+	_, err = timetable_queries.PostTimetable(c, userID, timetable)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update timetable."})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Timetable successfully updated",
+	})
 
-	c.JSON(http.StatusOK, result)
 }
 
 func GetSharedTimetable(c *gin.Context) {

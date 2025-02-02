@@ -5,17 +5,16 @@ import (
 	"errors"
 )
 
-// Timetable represents a user's timetable.
 type Timetable struct {
-	Courses map[string]map[string]string `json:"courses"` // Mapping of course_code to slots
-	Slots   []map[string]string          `json:"slots"`   // List of slots
+	Courses map[string]map[string]string `json:"courses"`
+	Slots   []map[string]string          `json:"slots"`
 }
 
 // NewTimetable creates a new Timetable with default values.
 func NewTimetable() *Timetable {
 	return &Timetable{
-		Courses: make(map[string]map[string]string),
-		Slots:   make([]map[string]string, 0),
+		Courses: make(map[string]map[string]string), // Creates an empty map for courses.
+		Slots:   make([]map[string]string, 0),       // Creates an empty slice for slots (slice of maps).
 	}
 }
 
