@@ -72,7 +72,7 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/found/search", controller.SearchFoundItemHandler)
 
 	//Group routes for timetable/calendar
-	timetableGroup := router.Group("/timetable")
+	timetableGroup := router.Group("/schedule")
 	{
 		timetableGroup.GET("/courses", controller.GetTimetable)
 		timetableGroup.POST("/courses", controller.PostEditTimetable)
