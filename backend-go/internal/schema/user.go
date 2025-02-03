@@ -4,7 +4,7 @@ type UserStruct struct {
 	ID          int    `json:"id"`
 	Email       string `json:"email"`
 	Name        string `json:"name"`
-	Cr          string `json:"cr"`
+	Cr          bool   `json:"cr"`
 	PhoneNumber string `json:"phone_number"`
 }
 
