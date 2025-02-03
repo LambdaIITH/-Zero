@@ -675,12 +675,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       25,
                                   isComingSoon: false,
                                   reduceImageSize: true,
-                                  title: 'Face',
-                                  child: 'assets/icons/bus-svg.svg',
+                                  title: 'IGH Booking',
+                                  child: 'assets/icons/igh-book.svg',
                                   onTap: () {
                                     // widget.isGuest
                                     //     ? showError()
-                                    context.push('/face_upload');
+                                    context.push('/igh_booking');
                                   },
                                 ),
                               ),
