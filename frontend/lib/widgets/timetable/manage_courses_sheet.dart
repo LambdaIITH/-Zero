@@ -260,7 +260,7 @@ class _ManageCoursesBottomSheetState extends State<ManageCoursesBottomSheet> {
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white, // Button color
                   ),
-                  icon: Icon(Icons.check), // Leading icon
+                  icon: Icon(Icons.check, color: Colors.white,), // Leading icon
                   label: Text(
                     widget.isAddCourses ? "Add" : "Save",
                     style: TextStyle(fontSize: 18),

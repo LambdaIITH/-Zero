@@ -136,7 +136,7 @@ class ManageLecturesBottomSheetState extends State<ManageLecturesBottomSheet> {
                     onPressed: () {
                       _showSlotPicker();
                     },
-                    icon: const Icon(Icons.add, size: 18),
+                    icon: Icon(Icons.add, size: 18, color: Colors.white,),
                     label: const Text("Add Slot"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,

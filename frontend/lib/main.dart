@@ -1,4 +1,10 @@
+import 'package:dashbaord/constants/app_theme.dart';
+import 'package:dashbaord/firebase_options.dart';
+import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/router.dart';
+import 'package:dashbaord/services/api_service.dart';
+import 'package:dashbaord/services/event_notification_service.dart';
+import 'package:dashbaord/services/shared_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -7,13 +13,26 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:dashbaord/constants/app_theme.dart';
-import 'package:dashbaord/firebase_options.dart';
-import 'package:dashbaord/services/api_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:workmanager/workmanager.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    clearAllNotifications();
+    Timetable? localTimetable = await SharedService().getTimetable();
+    if (localTimetable != null) {
+      EventNotificationService.scheduleWeeklyNotifications(timetable: localTimetable);
+    }
+
+    return Future.value(true);
+  });
+}
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -28,8 +47,24 @@ void main() async {
   await _initializeNotifications();
   _requestNotificationPermissions();
   clearAllNotifications();
-
+  tz.initializeTimeZones();
+  tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+ Workmanager().initialize(callbackDispatcher);
+  Workmanager().registerPeriodicTask(
+    "weeklyTask",
+    "performTask",
+    frequency: const Duration(days: 7),
+    initialDelay: Duration(days: _calculateInitialDelay()),
+  );
   runApp(const MyApp());
+}
+
+int _calculateInitialDelay() {
+  // delay until next sunday 6AM
+  final now = DateTime.now();
+  final nextSunday = now.add(Duration(days: (7 - now.weekday) % 7));
+  final nextSundayAtSix = DateTime(nextSunday.year, nextSunday.month, nextSunday.day, 6);
+  return nextSundayAtSix.difference(now).inDays;
 }
 
 Future<void> _initializeNotifications() async {
@@ -58,7 +93,25 @@ Future<void> _requestNotificationPermissions() async {
     badge: true,
     sound: true,
   );
-  debugPrint('User granted permission: ${settings.authorizationStatus}');
+
+  debugPrint(
+      'User granted notification permission: ${settings.authorizationStatus}');
+
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    // For Android 12 and later, check and request permission for exact alarms
+    if (await Permission.notification.isGranted) {
+      debugPrint('Notification permission granted.');
+    } else {
+      final permissionStatus = await Permission.notification.request();
+      if (permissionStatus.isGranted) {
+        debugPrint('Exact alarm permission granted.');
+      } else {
+        debugPrint('Exact alarm permission denied.');
+      }
+    }
+  } else {
+    debugPrint('Notification permission denied.');
+  }
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {

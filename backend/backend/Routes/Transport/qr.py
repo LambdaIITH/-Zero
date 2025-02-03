@@ -1,12 +1,14 @@
-from fastapi import APIRouter, HTTPException, Request
 import json
 import os
-from pydantic import BaseModel
 from datetime import datetime
-from utils import conn
+import requests
+from fastapi import APIRouter, HTTPException, Request
+from pydantic import BaseModel
+from queries.transport import (get_last_transaction, log_transaction_to_db,
+                               scan_qr)
 from Routes.Auth.cookie import get_user_id
-
-from queries.transport import log_transaction_to_db, scan_qr, get_last_transaction
+from Routes.User.user import get_user
+from utils import conn
 
 router = APIRouter(prefix="/transport", tags=["transport_schedule"])
 dir = os.path.dirname(os.path.realpath(__file__))
@@ -15,6 +17,9 @@ dir = os.path.dirname(os.path.realpath(__file__))
 # Request body model
 class TransactionRequest(BaseModel):
     transactionId: str
+    amount: str
+    start: str
+    destination: str
 
 
 # Response model
@@ -24,36 +29,63 @@ class TransactionResponse(BaseModel):
     travelDate: str  # dd/mm/yy
     busTiming: str  # hh:mm
     isUsed: bool
+    start: str
+    destination: str
+    amount: str
 
 class ScanQRModel(BaseModel):
     isScanned: bool
 
 @router.post("/qr", response_model=TransactionResponse)
 async def process_transaction(request: Request, transaction: TransactionRequest):
-    # Sample data generation for the response
     user_id = get_user_id(request)
 
     payment_time = datetime.now().strftime("%H:%M %d/%m/%y")
     travel_date = datetime.now().strftime("%d/%m/%y")
-    bus_timing = "14:30"  # Example bus timing; replace with actual data logic if needed
+    bus_timing = "14:30"
 
-    # Prepare the response
     response = TransactionResponse(
         transactionId=transaction.transactionId,
         paymentTime=payment_time,
         travelDate=travel_date,
         busTiming=bus_timing,
-        isUsed=False
+        isUsed=False,
+        start=transaction.start,
+        destination=transaction.destination,
+        amount=transaction.amount
     )
 
-    # Log the transaction in the database
     transaction_data = {
         "transaction_id": response.transactionId,
         "payment_time": datetime.now(),
         "travel_date": datetime.now(),
         "bus_timing": response.busTiming,
-        "isUsed": False
+        "isUsed": False,
+        "start": response.start,
+        "destination": response.destination,
+        "amount": response.amount
     }
+    
+    if user_id:
+        user_details = get_user(user_id=user_id)
+    
+    google_sheets_data = {
+        "transaction_id": response.transactionId,
+        "name": user_details['name'],
+        "email": user_details['email'],
+        "amount": response.amount,
+        "from": response.start,
+        "to": response.destination,
+        "travel_date": travel_date,
+        "bus_timing": response.busTiming,
+    }
+    
+    try:
+        sheets_response = requests.post(os.getenv("GOOGLE_SHEET_APP_SCRIPT_URL"), json=google_sheets_data)
+        sheets_response.raise_for_status()
+    except Exception as e:
+        print(f"Error logging to Google Sheets: {e}")
+    
     result = log_transaction_to_db(transaction_data, user_id)
 
     if not result:
@@ -101,8 +133,8 @@ async def scan_qr_code(request: TransactionRequest):
 
     return ScanQRModel(isScanned=result)
 
-@router.get("/qr/recent", response_model= ScanQRModel)
-async def get_recent_transaction(request: TransactionRequest):
+@router.get("/qr/recent", response_model= TransactionResponse)
+async def get_recent_transaction(request: Request):
     user_id = get_user_id(request)
     
     transaction_data = get_last_transaction(user_id=user_id)
@@ -110,4 +142,4 @@ async def get_recent_transaction(request: TransactionRequest):
     if transaction_data is None:
         raise HTTPException(status_code=404, detail="No recent transaction found.")
 
-    return ScanQRModel(**transaction_data)
+    return TransactionResponse(**transaction_data)

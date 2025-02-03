@@ -11,6 +11,37 @@ import (
 	schema "github.com/LambdaIITH/Dashboard/backend/internal/schema"
 )
 
+// GetUserEmail retrieves the email of a user based on the ID.
+func GetUserEmail(c context.Context, id int) (string, error) {
+	query := `
+        SELECT email
+        FROM users
+        WHERE id = $1;
+    `
+	var userEmail string
+	err := config.DB.QueryRow(c, query, id).Scan(&userEmail)
+	if err != nil {
+		return "", err
+	}
+	return userEmail, nil
+}
+
+// GetPhoneNumber retrieves the phone number of a user based on the email.
+func GetPhoneNumber(c context.Context, email string) (string, error) {
+	query := `
+        SELECT phone_number 
+        FROM users 
+        WHERE email = $1;
+    `
+
+	var phoneNumber string
+	err := config.DB.QueryRow(c, query, email).Scan(&phoneNumber)
+	if err != nil {
+		return "", err
+	}
+	return phoneNumber, nil
+}
+
 func IsUserExists(ctx context.Context, email string) (bool, int, error) {
 	var userID int
 	query := `SELECT id FROM users WHERE email = $1`
@@ -61,7 +92,7 @@ func AuthorizeEditDeleteItem(ctx context.Context, itemID int, userID int) (bool,
 }
 
 func GetUser(c context.Context, id int) schema.UserStruct {
-	query := "SELECT id, email, name, cr,phone_number FROM users WHERE id = $1"
+	query := "SELECT id, email, name, cr, phone_number FROM users WHERE id = $1"
 	rows, err := config.DB.Query(c, query, id)
 	if err != nil {
 		return schema.UserStruct{}
@@ -80,7 +111,7 @@ func GetUser(c context.Context, id int) schema.UserStruct {
 }
 
 func UpdatePhone(c context.Context, id int, phone string) schema.UserStruct {
-	query := "UPDATE users SET phoneNumber = $1 WHERE id = $2 RETURNING id, email, name , cr, phone_number"
+	query := "UPDATE users SET phoneNumber = $1 WHERE id = $2 RETURNING id, email, name ,cr , phone_number"
 
 	rows, err := config.DB.Query(c, query, phone, id)
 	if err != nil {

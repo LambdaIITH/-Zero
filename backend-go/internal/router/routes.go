@@ -74,17 +74,34 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/found/search", controller.SearchFoundItemHandler)
 
 	//Group routes for timetable/calendar
-	timetableGroup := router.Group("/timetable")
+	timetableGroup := router.Group("/schedule")
 	{
-		timetableGroup.GET("/courses", controller.GetTimetable)
-		timetableGroup.POST("/courses", controller.PostEditTimetable)
-		timetableGroup.GET("/share/{code}", controller.GetSharedTimetable)
-		timetableGroup.POST("/share", controller.PostSharedTimetable)
-		timetableGroup.DELETE("/share/{code}", controller.DeleteSharedTimetable)
+		timetableGroup.GET("/all_courses", middlewares.AuthMiddleware(), controller.GetAllCourses)
+		timetableGroup.GET("/courses", middlewares.AuthMiddleware(), controller.GetTimetable)
+		timetableGroup.POST("/courses", middlewares.AuthMiddleware(), controller.PostEditTimetable)
+		timetableGroup.GET("/share/:code", middlewares.AuthMiddleware(), controller.GetSharedTimetable)
+		timetableGroup.POST("/share", middlewares.AuthMiddleware(), controller.PostSharedTimetable)
+		timetableGroup.DELETE("/share/:code", middlewares.AuthMiddleware(), controller.DeleteSharedTimetable)
 	}
 
 	// GET : /announcements?limit=4&offset=4
 	router.GET("/announcements", controller.GetAnnouncements)
 	router.Static("/announcements/images", "announcementImages/")
 	router.POST("/announcements", controller.PostAnnouncement)
+
+	cabshareGroup := router.Group("/cabshare")
+	{
+		cabshareGroup.GET("/me", controller.CheckAuth)
+		cabshareGroup.POST("/bookings", controller.CreateBooking)
+		cabshareGroup.PATCH("/bookings/:booking_id", controller.UpdateBooking)
+		cabshareGroup.GET("/me/bookings", controller.UserBookings)
+		cabshareGroup.GET("/me/requests", controller.UserRequests)
+		cabshareGroup.GET("/bookings", controller.SearchBookings)
+		cabshareGroup.POST("/bookings/:booking_id/request", controller.RequestToJoinBooking)
+		cabshareGroup.DELETE("/bookings/:booking_id/request", controller.DeleteRequest)
+		cabshareGroup.POST("/bookings/:booking_id/accept", controller.AcceptRequest)
+		cabshareGroup.POST("/bookings/:booking_id/reject", controller.RejectRequest)
+		cabshareGroup.DELETE("/bookings/:booking_id", controller.DeleteExistingBooking)
+		cabshareGroup.DELETE("/bookings/:booking_id/self", controller.ExitBooking)
+	}
 }

@@ -65,7 +65,7 @@ class _AddEventBottomSheetState extends State<AddEventBottomSheet> {
   Widget build(BuildContext context) {
     return Material(
       elevation: 12,
-      color: const Color(0xFF121212),
+      color: Theme.of(context).canvasColor,
       borderRadius: BorderRadius.circular(25),
       shadowColor: Colors.white.withOpacity(0.3),
       child: Padding(
@@ -87,8 +87,8 @@ class _AddEventBottomSheetState extends State<AddEventBottomSheet> {
             ),
             Text(
               "Add Event",
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge!.color,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -205,9 +205,9 @@ class _AddEventBottomSheetState extends State<AddEventBottomSheet> {
                   ElevatedButton(
                     onPressed: _submitEvent,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white // Button color
-                    ),
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white // Button color
+                        ),
                     child: const Text("Add Event"),
                   ),
                 ],
