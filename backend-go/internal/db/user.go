@@ -61,7 +61,7 @@ func AuthorizeEditDeleteItem(ctx context.Context, itemID int, userID int) (bool,
 }
 
 func GetUser(c context.Context, id int) schema.UserStruct {
-	query := "SELECT * FROM users WHERE id = ?"
+	query := "SELECT * FROM users WHERE id = $1"
 	rows, err := config.DB.Query(c, query, id)
 	if err != nil {
 		return schema.UserStruct{}
