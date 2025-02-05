@@ -1,10 +1,7 @@
 import 'package:dashbaord/constants/app_theme.dart';
 import 'package:dashbaord/firebase_options.dart';
-import 'package:dashbaord/models/time_table_model.dart';
 import 'package:dashbaord/router.dart';
 import 'package:dashbaord/services/api_service.dart';
-import 'package:dashbaord/services/event_notification_service.dart';
-import 'package:dashbaord/services/shared_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,22 +14,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:workmanager/workmanager.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    clearAllNotifications();
-    Timetable? localTimetable = await SharedService().getTimetable();
-    if (localTimetable != null) {
-      EventNotificationService.scheduleWeeklyNotifications(timetable: localTimetable);
-    }
-
-    return Future.value(true);
-  });
-}
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -49,23 +34,9 @@ void main() async {
   clearAllNotifications();
   tz.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
- Workmanager().initialize(callbackDispatcher);
-  Workmanager().registerPeriodicTask(
-    "weeklyTask",
-    "performTask",
-    frequency: const Duration(days: 7),
-    initialDelay: Duration(days: _calculateInitialDelay()),
-  );
   runApp(const MyApp());
 }
 
-int _calculateInitialDelay() {
-  // delay until next sunday 6AM
-  final now = DateTime.now();
-  final nextSunday = now.add(Duration(days: (7 - now.weekday) % 7));
-  final nextSundayAtSix = DateTime(nextSunday.year, nextSunday.month, nextSunday.day, 6);
-  return nextSundayAtSix.difference(now).inDays;
-}
 
 Future<void> _initializeNotifications() async {
   final AndroidInitializationSettings initializationSettingsAndroid =

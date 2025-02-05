@@ -42,10 +42,11 @@ func SetupRoutes(router *gin.Engine) {
 	// Group routes for transport
 	transportGroup := router.Group("/transport")
 	{
-		transportGroup.GET("/", controller.GetBusSchedule)
-		transportGroup.GET("/cityBus", controller.GetCityBusSchedule)
-		transportGroup.POST("/qr", controller.ProcessTransaction)
-		transportGroup.POST("/qr/scan", controller.ScanQRCode)
+		transportGroup.GET("/", middlewares.AuthMiddleware(), controller.GetBusSchedule)
+		transportGroup.GET("/cityBus", middlewares.AuthMiddleware(), controller.GetCityBusSchedule)
+		transportGroup.POST("/qr", middlewares.AuthMiddleware(), controller.ProcessTransaction)
+		transportGroup.POST("/qr/scan", middlewares.AuthMiddleware(), controller.ScanQRCode)
+		transportGroup.GET("/qr/recent", middlewares.AuthMiddleware(), controller.GetRecentTransaction)
 	}
 
 	sellGroup := router.Group("/sell")
@@ -60,9 +61,9 @@ func SetupRoutes(router *gin.Engine) {
 
 	userGroup := router.Group("/user")
 	{
-		userGroup.GET("/", controller.User)
-		userGroup.PATCH("/update", controller.UpdateUser)
-		userGroup.PATCH("/update/fcm", controller.UpdateUserFCMToken)
+		userGroup.GET("/", middlewares.AuthMiddleware(), controller.User)
+		userGroup.PATCH("/update", middlewares.AuthMiddleware(), controller.UpdateUser)
+		userGroup.PATCH("/fcm/update", middlewares.AuthMiddleware(), controller.UpdateUserFCMToken)
 	}
 
 	router.POST("found/add_item", controller.AddFoundItemHandler)
@@ -87,4 +88,20 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/announcements", controller.GetAnnouncements)
 	router.Static("/announcements/images", "announcementImages/")
 	router.POST("/announcements", controller.PostAnnouncement)
+
+	cabshareGroup := router.Group("/cabshare")
+	{
+		cabshareGroup.GET("/me", controller.CheckAuth)
+		cabshareGroup.POST("/bookings", controller.CreateBooking)
+		cabshareGroup.PATCH("/bookings/:booking_id", controller.UpdateBooking)
+		cabshareGroup.GET("/me/bookings", controller.UserBookings)
+		cabshareGroup.GET("/me/requests", controller.UserRequests)
+		cabshareGroup.GET("/bookings", controller.SearchBookings)
+		cabshareGroup.POST("/bookings/:booking_id/request", controller.RequestToJoinBooking)
+		cabshareGroup.DELETE("/bookings/:booking_id/request", controller.DeleteRequest)
+		cabshareGroup.POST("/bookings/:booking_id/accept", controller.AcceptRequest)
+		cabshareGroup.POST("/bookings/:booking_id/reject", controller.RejectRequest)
+		cabshareGroup.DELETE("/bookings/:booking_id", controller.DeleteExistingBooking)
+		cabshareGroup.DELETE("/bookings/:booking_id/self", controller.ExitBooking)
+	}
 }

@@ -39,22 +39,19 @@ func AddItemHandler(c *gin.Context) {
 	}
 
 	// Step 2: Get the user ID
-	userId, err := helpers.GetUserID(c.Request)
+	userId, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-
 	// Step 3: Insert the form data into the lost table
-	result, err := lost.InsertInLostTable(c, formDataDict, userId)
+	currItem := schema.LostItem{}
+
+	currItem.ID, err = lost.InsertInLostTable(c, formDataDict, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert data"})
 		return
 	}
-
-	// Step 4: Get the ID of the inserted item
-	currItem := schema.LostItem{}
-	currItem.ID = result["id"].(int)
 
 	// Step 5: Upload the images to S3 and save the image URLs in the database
 	form, err := c.MultipartForm()
@@ -62,6 +59,7 @@ func AddItemHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file data"})
 		return
 	}
+
 	files := form.File["images"]
 	if len(files) > 0 {
 		s3Client := helpers.NewS3Client(os.Getenv("BUCKET_NAME"), os.Getenv("REGION"), os.Getenv("RESOURCE_URI"))
@@ -181,7 +179,7 @@ func GetItemByIdHandler(c *gin.Context) {
 
 func DeleteItemHandler(c *gin.Context) {
 	// Step 1: Get the user ID
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -241,7 +239,7 @@ It edits the images in S3 and updates the image URLs in the database.
 */
 func EditItemHandler(c *gin.Context) {
 	// Step 1: Get the user ID
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

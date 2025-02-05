@@ -90,7 +90,7 @@ func GetAllCourses(c *gin.Context) {
 }
 
 func GetTimetable(c *gin.Context) {
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -112,7 +112,7 @@ func GetTimetable(c *gin.Context) {
 
 func PostEditTimetable(c *gin.Context) {
 	var timetable schema.Timetable
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -174,7 +174,7 @@ func GenerateRandomCode() string {
 }
 
 func PostSharedTimetable(c *gin.Context) {
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -205,7 +205,7 @@ func PostSharedTimetable(c *gin.Context) {
 }
 
 func DeleteSharedTimetable(c *gin.Context) {
-	user_id, err := helpers.GetUserID(c.Request)
+	user_id, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 	}
