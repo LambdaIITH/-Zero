@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/LambdaIITH/Dashboard/backend/internal/controller"
+	"github.com/LambdaIITH/Dashboard/backend/internal/middlewares"
 )
 
 func home(c *gin.Context) {
@@ -41,10 +42,11 @@ func SetupRoutes(router *gin.Engine) {
 	// Group routes for transport
 	transportGroup := router.Group("/transport")
 	{
-		transportGroup.GET("/", controller.GetBusSchedule)
-		transportGroup.GET("/cityBus", controller.GetCityBusSchedule)
-		transportGroup.POST("/qr", controller.ProcessTransaction)
-		transportGroup.POST("/qr/scan", controller.ScanQRCode)
+		transportGroup.GET("/", middlewares.AuthMiddleware(), controller.GetBusSchedule)
+		transportGroup.GET("/cityBus", middlewares.AuthMiddleware(), controller.GetCityBusSchedule)
+		transportGroup.POST("/qr", middlewares.AuthMiddleware(), controller.ProcessTransaction)
+		transportGroup.POST("/qr/scan", middlewares.AuthMiddleware(), controller.ScanQRCode)
+		transportGroup.GET("/qr/recent", middlewares.AuthMiddleware(), controller.GetRecentTransaction)
 	}
 
 	sellGroup := router.Group("/sell")
@@ -57,6 +59,13 @@ func SetupRoutes(router *gin.Engine) {
 		sellGroup.GET("/search", controller.SearchSellItemHandler)
 	}
 
+	userGroup := router.Group("/user")
+	{
+		userGroup.GET("/", middlewares.AuthMiddleware(), controller.User)
+		userGroup.PATCH("/update", middlewares.AuthMiddleware(), controller.UpdateUser)
+		userGroup.PATCH("/fcm/update", middlewares.AuthMiddleware(), controller.UpdateUserFCMToken)
+	}
+
 	router.POST("found/add_item", controller.AddFoundItemHandler)
 	router.GET("/found/all", controller.GetAllFoundItemsHandler)
 	router.GET("/found/get_item/:id", controller.GetFoundItemByIdHandler)
@@ -65,17 +74,34 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/found/search", controller.SearchFoundItemHandler)
 
 	//Group routes for timetable/calendar
-	timetableGroup := router.Group("/timetable")
+	timetableGroup := router.Group("/schedule")
 	{
-		timetableGroup.GET("/courses", controller.GetTimetable)
-		timetableGroup.POST("/courses", controller.PostEditTimetable)
-		timetableGroup.GET("/share/{code}", controller.GetSharedTimetable)
-		timetableGroup.POST("/share", controller.PostSharedTimetable)
-		timetableGroup.DELETE("/share/{code}", controller.DeleteSharedTimetable)
+		timetableGroup.GET("/all_courses", middlewares.AuthMiddleware(), controller.GetAllCourses)
+		timetableGroup.GET("/courses", middlewares.AuthMiddleware(), controller.GetTimetable)
+		timetableGroup.POST("/courses", middlewares.AuthMiddleware(), controller.PostEditTimetable)
+		timetableGroup.GET("/share/:code", middlewares.AuthMiddleware(), controller.GetSharedTimetable)
+		timetableGroup.POST("/share", middlewares.AuthMiddleware(), controller.PostSharedTimetable)
+		timetableGroup.DELETE("/share/:code", middlewares.AuthMiddleware(), controller.DeleteSharedTimetable)
 	}
 
 	// GET : /announcements?limit=4&offset=4
 	router.GET("/announcements", controller.GetAnnouncements)
 	router.Static("/announcements/images", "announcementImages/")
 	router.POST("/announcements", controller.PostAnnouncement)
+
+	cabshareGroup := router.Group("/cabshare")
+	{
+		cabshareGroup.GET("/me", controller.CheckAuth)
+		cabshareGroup.POST("/bookings", controller.CreateBooking)
+		cabshareGroup.PATCH("/bookings/:booking_id", controller.UpdateBooking)
+		cabshareGroup.GET("/me/bookings", controller.UserBookings)
+		cabshareGroup.GET("/me/requests", controller.UserRequests)
+		cabshareGroup.GET("/bookings", controller.SearchBookings)
+		cabshareGroup.POST("/bookings/:booking_id/request", controller.RequestToJoinBooking)
+		cabshareGroup.DELETE("/bookings/:booking_id/request", controller.DeleteRequest)
+		cabshareGroup.POST("/bookings/:booking_id/accept", controller.AcceptRequest)
+		cabshareGroup.POST("/bookings/:booking_id/reject", controller.RejectRequest)
+		cabshareGroup.DELETE("/bookings/:booking_id", controller.DeleteExistingBooking)
+		cabshareGroup.DELETE("/bookings/:booking_id/self", controller.ExitBooking)
+	}
 }

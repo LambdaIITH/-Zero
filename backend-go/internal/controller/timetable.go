@@ -2,7 +2,9 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -62,14 +64,43 @@ func validateCourseSchedule(data schema.Timetable) (bool, string) {
 	return true, ""
 }
 
+func GetAllCourses(c *gin.Context) {
+	dir, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get working directory"})
+		return
+	}
+
+	filePath := dir + "/all_courses.json"
+	file, err := os.Open(filePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
+		return
+	}
+	defer file.Close()
+
+	var courses []schema.Course
+	if err := json.NewDecoder(file).Decode(&courses); err != nil {
+		fmt.Println("Error decoding JSON:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode JSON"})
+		return
+	}
+
+	c.JSON(http.StatusOK, courses)
+}
+
 func GetTimetable(c *gin.Context) {
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	timetableJSON, err := timetable_queries.GetTimetable(c, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch timetable."})
+		return
+	}
 	var timetable schema.Timetable
 	if err := json.Unmarshal([]byte(timetableJSON), &timetable); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse timetable."})
@@ -81,7 +112,7 @@ func GetTimetable(c *gin.Context) {
 
 func PostEditTimetable(c *gin.Context) {
 	var timetable schema.Timetable
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -98,17 +129,20 @@ func PostEditTimetable(c *gin.Context) {
 		return
 	}
 
-	result, err := timetable_queries.PostTimetable(c, userID, timetable)
+	_, err = timetable_queries.PostTimetable(c, userID, timetable)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update timetable."})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Timetable successfully updated",
+	})
 
-	c.JSON(http.StatusOK, result)
 }
 
 func GetSharedTimetable(c *gin.Context) {
 	code := c.Param("code")
+
 	if code == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Code is required"})
 		return
@@ -120,7 +154,7 @@ func GetSharedTimetable(c *gin.Context) {
 		if err.Error() == "timetable has expired" {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Timetable has expired"})
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -140,14 +174,14 @@ func GenerateRandomCode() string {
 }
 
 func PostSharedTimetable(c *gin.Context) {
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 	var timetable schema.Timetable
 	if err := c.ShouldBindJSON(&timetable); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid JSON format"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON format"})
 		return
 	}
 	code := GenerateRandomCode()
@@ -171,7 +205,7 @@ func PostSharedTimetable(c *gin.Context) {
 }
 
 func DeleteSharedTimetable(c *gin.Context) {
-	user_id, err := helpers.GetUserID(c.Request)
+	user_id, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 	}

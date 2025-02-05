@@ -1,12 +1,15 @@
 package schema
 
+import (
+	"time"
+)
 type FoundItem struct {
 	ID              int      `db:"id"`
 	ItemName        string   `db:"item_name"`
 	ItemDescription string   `db:"item_description"`
 	UserID          int      `db:"user_id"`
 	Images          []string `db:"images"`
-	CreatedAt       string   `db:"created_at"`
+	CreatedAt       time.Time   `db:"created_at"`
 }
 
 type FoundItemWithUser struct {
@@ -24,7 +27,7 @@ type LostItem struct {
 	ItemDescription string   `db:"item_description"`
 	UserID          int      `db:"user_id"`
 	Images          []string `db:"images"`
-	CreatedAt       string   `db:"created_at"`
+	CreatedAt       time.Time   `db:"created_at"`
 }
 
 type LostItemWithUser struct {

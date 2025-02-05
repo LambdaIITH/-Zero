@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '472121739465',
     projectId: 'dashboard-iith',
     storageBucket: 'dashboard-iith.appspot.com',
-    iosBundleId: 'dev.iith.dashboard.frontend',
+    iosBundleId: 'dev.iith.dashboard',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '472121739465',
     projectId: 'dashboard-iith',
     storageBucket: 'dashboard-iith.appspot.com',
-    iosBundleId: 'dev.iith.dashboard.frontend',
+    iosBundleId: 'dev.iith.dashboard',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
