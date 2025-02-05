@@ -1,6 +1,4 @@
 import 'dart:math';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -28,7 +26,7 @@ class HomeScreenCardSmall extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     Widget forWeb = Container(
-      height: 250,
+      height: 200, // Reduced height
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(8),
@@ -41,70 +39,30 @@ class HomeScreenCardSmall extends StatelessWidget {
           ),
         ],
       ),
-      child: Align(
-        alignment: Alignment.center,
-        child: Wrap(
-          direction: Axis.vertical,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Stack(
-              children: [
-                Container(
-                  margin: EdgeInsets.only(bottom: 12),
-                  child: Column(
-                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Container(),
-                      Spacer(),
-                      isImageShow
-                          ? reduceImageSize
-                              ? SvgPicture.asset(
-                                  child,
-                                  fit: BoxFit.contain,
-                                  width: width,
-                                  // width: min(0.2 * screenWidth, 200),
-                                  // height: min(0.2 * screenWidth, 200),
-                                )
-                              : SvgPicture.asset(
-                                  child,
-                                  fit: BoxFit.contain,
-                                  height: min(0.32 * screenWidth, 200),
-                                )
-                          : Container(),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                        child: Center(
-                          child: Text(
-                            title,
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyLarge?.color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+            if (isImageShow)
+              SvgPicture.asset(
+                child,
+                fit: BoxFit.contain,
+                height: reduceImageSize ? min(0.2 * screenWidth, 100) : min(0.32 * screenWidth, 150),
+              ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Center(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
                 ),
-                if (isComingSoon)
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? const Color.fromARGB(255, 57, 57, 57)
-                                .withOpacity(0.5)
-                            : Colors.white.withOpacity(0.5)),
-                    child: Center(
-                        child: SizedBox(
-                            // height: 120,
-                            width: 200,
-                            child: Image.asset(
-                              "assets/icons/comingsoon.png",
-                            ))),
-                  )
-              ],
+              ),
             ),
-            // Expanded(child: SizedBox()),
           ],
         ),
       ),
@@ -116,7 +74,7 @@ class HomeScreenCardSmall extends StatelessWidget {
       child: MediaQuery.of(context).size.width > 450
           ? forWeb
           : Container(
-              height: 170,
+              height: 120, // Reduced height
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(8),
@@ -129,73 +87,32 @@ class HomeScreenCardSmall extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Align(
-                alignment: Alignment.center,
-                child: Wrap(
-                  direction: Axis.vertical,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Stack(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.only(bottom: 12),
-                          child: Column(
-                            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Container(),
-                              Spacer(),
-                              isImageShow
-                                  ? reduceImageSize
-                                      ? SvgPicture.asset(
-                                          child,
-                                          fit: BoxFit.contain,
-                                          height: min(0.25 * screenWidth, 200),
-                                        )
-                                      : SvgPicture.asset(
-                                          child,
-                                          fit: BoxFit.contain,
-                                          height: min(0.32 * screenWidth, 200),
-                                        )
-                                  : Container(),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 8.0, right: 8.0),
-                                child: Center(
-                                  child: Text(
-                                    title,
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.color,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                    if (isImageShow)
+                      SvgPicture.asset(
+                        child,
+                        fit: BoxFit.contain,
+                        height: reduceImageSize ? min(0.16 * screenWidth, 80) : min(0.25 * screenWidth, 60),
+                      ),
+                    const SizedBox(height: 6),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Text(
+                          title,
+                          // textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
                           ),
                         ),
-                        if (isComingSoon)
-                          Container(
-                            decoration: BoxDecoration(
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? const Color.fromARGB(255, 57, 57, 57)
-                                        .withOpacity(0.5)
-                                    : Colors.white.withOpacity(0.5)),
-                            child: Center(
-                                child: SizedBox(
-                                    // height: double.infinity,
-                                    width: width,
-                                    child: Image.asset(
-                                      "assets/icons/comingsoon.png",
-                                      fit: BoxFit.contain,
-                                    ))),
-                          )
-                      ],
+                      ),
                     ),
-                    // Expanded(child: SizedBox()),
                   ],
                 ),
               ),

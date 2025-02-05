@@ -37,7 +37,9 @@ class ShowMessMenu extends StatelessWidget {
           ],
         ),
         child: RoundedExpansionTile(
-          trailing: const Icon(Icons.arrow_drop_down_circle_outlined),
+          trailing: Icon(
+            Icons.arrow_drop_down_circle_outlined,
+          ),
           rotateTrailing: true,
           duration: const Duration(milliseconds: 400),
           title: Padding(
