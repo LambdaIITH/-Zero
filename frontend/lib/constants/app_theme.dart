@@ -25,8 +25,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
       customContainerColor: customContainerColor ?? this.customContainerColor,
       customTextColor: customTextColor ?? this.customTextColor,
       customShadowColor: customShadowColor ?? this.customShadowColor,
-      customBusScheduleColor:
-          customBusScheduleColor ?? this.customBusScheduleColor,
+      customBusScheduleColor: customBusScheduleColor ?? this.customBusScheduleColor,
     );
   }
 
@@ -34,13 +33,10 @@ class CustomColors extends ThemeExtension<CustomColors> {
   CustomColors lerp(ThemeExtension<CustomColors>? other, double t) {
     if (other is! CustomColors) return this;
     return CustomColors(
-      customContainerColor:
-          Color.lerp(customContainerColor, other.customContainerColor, t)!,
+      customContainerColor: Color.lerp(customContainerColor, other.customContainerColor, t)!,
       customTextColor: Color.lerp(customTextColor, other.customTextColor, t)!,
-      customShadowColor:
-          Color.lerp(customShadowColor, other.customShadowColor, t)!,
-      customBusScheduleColor:
-          Color.lerp(customBusScheduleColor, other.customBusScheduleColor, t)!,
+      customShadowColor: Color.lerp(customShadowColor, other.customShadowColor, t)!,
+      customBusScheduleColor: Color.lerp(customBusScheduleColor, other.customBusScheduleColor, t)!,
     );
   }
 }
@@ -62,15 +58,13 @@ final ThemeData lightTheme = ThemeData(
   textTheme: TextTheme(
     bodyLarge: GoogleFonts.inter(color: Colors.black),
     bodyMedium: GoogleFonts.inter(color: Colors.black45),
-    bodySmall: GoogleFonts.inter(
-        color: const Color.fromARGB(255, 114, 114, 114)), //mess card time
+    bodySmall: GoogleFonts.inter(color: const Color.fromARGB(255, 114, 114, 114)), //mess card time
     displayLarge: GoogleFonts.inter(color: Colors.black),
     displayMedium: GoogleFonts.inter(color: Colors.black),
     displaySmall: GoogleFonts.inter(color: Colors.black),
     headlineMedium: GoogleFonts.inter(color: Colors.black),
     headlineSmall: GoogleFonts.inter(color: Colors.black),
-    titleLarge: GoogleFonts.inter(
-        color: const Color(0xff6A6A6A)), //next bus card text color
+    titleLarge: GoogleFonts.inter(color: const Color(0xff6A6A6A)), //next bus card text color
     titleMedium: GoogleFonts.inter(color: Colors.white), //next bus card color
     titleSmall: GoogleFonts.inter(color: const Color(0xff404040)),
     labelLarge: GoogleFonts.inter(
@@ -105,20 +99,17 @@ final ThemeData darkTheme = ThemeData(
   textTheme: TextTheme(
     bodyLarge: GoogleFonts.inter(color: Colors.white),
     bodyMedium: GoogleFonts.inter(color: Colors.white54),
-    bodySmall:
-        GoogleFonts.inter(color: const Color.fromARGB(255, 201, 201, 201)),
+    bodySmall: GoogleFonts.inter(color: const Color.fromARGB(255, 201, 201, 201)),
     displayLarge: GoogleFonts.inter(color: Colors.white),
     displayMedium: GoogleFonts.inter(color: Colors.white),
     displaySmall: GoogleFonts.inter(color: Colors.white),
     headlineMedium: GoogleFonts.inter(color: Colors.white),
     headlineSmall: GoogleFonts.inter(color: Colors.white),
     titleLarge: GoogleFonts.inter(
-        color: const Color.fromARGB(
-            255, 214, 214, 214)), //next bus card text color
-    titleMedium: GoogleFonts.inter(
-        color: const Color.fromARGB(255, 38, 38, 38)), //next bus card color
-    titleSmall: GoogleFonts.inter(
-        color: const Color.fromARGB(255, 170, 170, 170)), //mess card time
+        color: const Color.fromARGB(255, 214, 214, 214)), //next bus card text color
+    titleMedium:
+        GoogleFonts.inter(color: const Color.fromARGB(255, 38, 38, 38)), //next bus card color
+    titleSmall: GoogleFonts.inter(color: const Color.fromARGB(255, 170, 170, 170)), //mess card time
     labelLarge: GoogleFonts.inter(
       color: const Color.fromARGB(255, 206, 206, 206),
     ), // mess meals

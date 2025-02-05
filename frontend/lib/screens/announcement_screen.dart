@@ -13,7 +13,7 @@ class AnnouncementScreen extends StatefulWidget {
 
 class _AnnouncementScreenState extends State<AnnouncementScreen> {
   final ApiServices apiServices = ApiServices();
-  final List<String> _highlightedFilterOptions = ['All', 'Personalised', 'Personalised', 'Filters'];
+  final List<String> _highlightedFilterOptions = ['All', 'All 2', 'All 3'];
   final ScrollController _scrollController = ScrollController();
 
   int _selectedChipIndex = 0;
@@ -83,14 +83,13 @@ class _AnnouncementScreenState extends State<AnnouncementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.black,
           leading: const BackButton(color: Colors.blue),
-          title: const Text(
+          title: Text(
             'Announcements',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
             ),
           ),
           bottom: PreferredSize(
@@ -147,7 +146,7 @@ class _AnnouncementScreenState extends State<AnnouncementScreen> {
                       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
                       child: FilterChip(
                         selected: _selectedChipIndex == 3,
-                        label: Text(_highlightedFilterOptions[3]),
+                        label: Text('Filters'),
                         onSelected: (bool selected) {
                           setState(() {
                             _selectedChipIndex = selected ? 3 : 0;
@@ -190,7 +189,7 @@ class _AnnouncementScreenState extends State<AnnouncementScreen> {
             );
           } else if (isLoading) {
             return Center(
-                child: LoadingAnimationWidget.beat(
+              child: LoadingAnimationWidget.beat(
                 color: Colors.blue,
                 size: 50,
               ),
