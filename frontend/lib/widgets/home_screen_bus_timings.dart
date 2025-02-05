@@ -276,22 +276,25 @@ class _HomeScreenBusTimingsState extends State<HomeScreenBusTimings> {
         ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           SizedBox(
             // width: 0.3 * screenWidth,
             child: NormalText(
                 color: Theme.of(context).textTheme.bodyLarge?.color,
-                text: from),
+                text: from
+                ),
           ),
-          const Icon(Icons.arrow_forward_rounded),
-          SizedBox(width: 0.02 * screenWidth),
+          // SizedBox(width: 0.03 * screenWidth),
+          Icon(Icons.arrow_forward_rounded,color: context.customColors.customAccentColor,),
+          // SizedBox(width: 0.02 * screenWidth),
           NormalText(
               color: Theme.of(context).textTheme.bodyLarge?.color, text: to),
-          const Spacer(),
+          // const Spacer(),
           NormalText(
             text: waitTime,
             size: 14,
-            color: Theme.of(context).textTheme.titleSmall?.color,
+            color: context.customColors.customAccentColor,
           ),
         ],
       ),

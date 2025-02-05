@@ -26,7 +26,7 @@ class BusTimingList extends StatelessWidget {
         children: [
           const SizedBox(height: 6.0),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Flexible(
                 child: Text(
@@ -41,7 +41,7 @@ class BusTimingList extends StatelessWidget {
                   maxLines: 2,
                 ),
               ),
-              const Icon(Icons.arrow_forward_rounded, size: 16),
+              const Icon(Icons.arrow_forward_rounded, size: 20),
               Flexible(
                 child: Text(
                   destination,

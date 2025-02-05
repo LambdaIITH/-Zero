@@ -220,13 +220,13 @@ Container lectureItem(
         ),
         SizedBox(width: 8),
         Container(
-          height: 36,
+          height: 50,
           width: 2,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(
               Radius.circular(20),
             ),
-            color: Colors.green,
+            color: context.customColors.customAccentColor,
           ),
         ),
         SizedBox(width: 8),
@@ -236,7 +236,7 @@ Container lectureItem(
             children: [
               NormalText(
                 text: lecture.classRoom != null && lecture.classRoom != 'null'
-                    ? '${lecture.courseCode}  | ${lecture.classRoom}'
+                    ? lecture.courseCode
                     : lecture.courseCode,
                 size: 12,
                 color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -248,6 +248,18 @@ Container lectureItem(
                 limit: 1,
                 color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
+              Row(
+                children: [
+                  Icon(Icons.location_on,size: 18,color: Colors.grey,),
+                  NormalText(
+                text: lecture.classRoom != null && lecture.classRoom != 'null'
+                    ? '${lecture.classRoom}'
+                    : lecture.courseCode,
+                size: 12,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+                ],
+              )
             ],
           ),
         ),

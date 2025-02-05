@@ -579,112 +579,221 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 15),
                           HomeScreenMessMenu(messMenu: messMenu, week: week),
                           const SizedBox(height: 15),
-                          Text(
-                            'Services',
-                            style: GoogleFonts.inter(
-                              color:
-                                  Theme.of(context).textTheme.bodyLarge?.color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 28,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[900] // Dark mode background
+                                  : Colors.grey[200], // Light mode background
+                              borderRadius:
+                                  BorderRadius.circular(12), 
                             ),
-                          ),
-                          const SizedBox(height: 15),
-                          Wrap(
-                            spacing: 10.0, // Horizontal spacing between cards
-                            runSpacing: 10.0, // Vertical spacing between rows
-                            children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width > 450
-                                    ? 200
-                                    : MediaQuery.of(context).size.width / 2 -
-                                        25, // Half of the screen width minus spacing
-                                child: HomeScreenCardSmall(
-                                  width: MediaQuery.of(context).size.width > 450
-                                      ? 200
-                                      : MediaQuery.of(context).size.width / 2 -
-                                          25,
-                                  isComingSoon: false,
-                                  title: 'Cab Sharing',
-                                  child: 'assets/icons/cab-sharing-icon.svg',
-                                  onTap: () {
-                                    widget.isGuest
-                                        ? showError()
-                                        : context.push('/cabsharing', extra: {
-                                            'user': userModel ??
-                                                UserModel(
-                                                    email: "user@iith.ac.in",
-                                                    name: "User"),
-                                            'image': image,
-                                          });
-                                  },
+                            padding: EdgeInsets.fromLTRB(12.0, 8.0, 1.0, 8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Services',
+                                  style: GoogleFonts.inter(
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.color,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 28,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width > 450
-                                    ? 200
-                                    : MediaQuery.of(context).size.width / 2 -
-                                        25,
-                                child: HomeScreenCardSmall(
-                                  width: MediaQuery.of(context).size.width > 450
-                                      ? 200
-                                      : MediaQuery.of(context).size.width / 2 -
-                                          25,
-                                  isComingSoon: false,
-                                  reduceImageSize: true,
-                                  title: 'Lost & Found',
-                                  child: 'assets/icons/magnifying-icon.svg',
-                                  onTap: widget.isGuest
-                                      ? showError
-                                      : () => context.push('/lnf', extra: {
-                                            'currentUserEmail':
-                                                userModel?.email ??
-                                                    'user@iith.ac.in'
-                                          }),
+                                const SizedBox(height: 15),
+                                Wrap(
+                                  spacing:
+                                      10.0, // Horizontal spacing between cards
+                                  runSpacing:
+                                      10.0, // Vertical spacing between rows
+                                  children: [
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width >
+                                              450
+                                          ? 200
+                                          : MediaQuery.of(context).size.width /
+                                                  3 -
+                                              28, // Half of the screen width minus spacing
+                                      child: HomeScreenCardSmall(
+                                        width:
+                                            MediaQuery.of(context).size.width >
+                                                    450
+                                                ? 200
+                                                : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        2 -
+                                                    25,
+                                        isComingSoon: false,
+                                        title: 'Cab Sharing',
+                                        child:
+                                            'assets/icons/cab-sharing-icon.svg',
+                                        onTap: () {
+                                          widget.isGuest
+                                              ? showError()
+                                              : context
+                                                  .push('/cabsharing', extra: {
+                                                  'user': userModel ??
+                                                      UserModel(
+                                                          email:
+                                                              "user@iith.ac.in",
+                                                          name: "User"),
+                                                  'image': image,
+                                                });
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width >
+                                              450
+                                          ? 200
+                                          : MediaQuery.of(context).size.width /
+                                                  3 -
+                                              28,
+                                      child: HomeScreenCardSmall(
+                                        width:
+                                            MediaQuery.of(context).size.width >
+                                                    450
+                                                ? 200
+                                                : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        2 -
+                                                    25,
+                                        isComingSoon: false,
+                                        reduceImageSize: true,
+                                        title: 'Lost & Found',
+                                        child:
+                                            'assets/icons/magnifying-icon.svg',
+                                        onTap: widget.isGuest
+                                            ? showError
+                                            : () => context.push('/lnf',
+                                                    extra: {
+                                                      'currentUserEmail':
+                                                          userModel?.email ??
+                                                              'user@iith.ac.in'
+                                                    }),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width >
+                                              450
+                                          ? 200
+                                          : MediaQuery.of(context).size.width /
+                                                  3 -
+                                              28,
+                                      child: HomeScreenCardSmall(
+                                        width:
+                                            MediaQuery.of(context).size.width >
+                                                    450
+                                                ? 200
+                                                : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        2 -
+                                                    25,
+                                        isComingSoon: false,
+                                        reduceImageSize: true,
+                                        title: 'Bus Shuttle',
+                                        child: 'assets/icons/bus-svg.svg',
+                                        onTap: () {
+                                          // widget.isGuest
+                                          //     ? showError()
+                                          context.push('/city_bus');
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width >
+                                              450
+                                          ? 200
+                                          : MediaQuery.of(context).size.width /
+                                                  3 -
+                                              28,
+                                      child: HomeScreenCardSmall(
+                                        width:
+                                            MediaQuery.of(context).size.width >
+                                                    450
+                                                ? 200
+                                                : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        2 -
+                                                    25,
+                                        isComingSoon: false,
+                                        reduceImageSize: true,
+                                        title: 'Face',
+                                        child: 'assets/icons/bus-svg.svg',
+                                        onTap: () {
+                                          // widget.isGuest
+                                          //     ? showError()
+                                          context.push('/face_upload');
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width >
+                                              450
+                                          ? 200
+                                          : MediaQuery.of(context).size.width /
+                                                  3 -
+                                              28,
+                                      child: HomeScreenCardSmall(
+                                        width:
+                                            MediaQuery.of(context).size.width >
+                                                    450
+                                                ? 200
+                                                : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        2 -
+                                                    25,
+                                        isComingSoon: false,
+                                        reduceImageSize: true,
+                                        title: 'Merch',
+                                        child: 'assets/icons/bus-svg.svg',
+                                        onTap: () {
+                                          // widget.isGuest
+                                          //     ? showError()
+                                          context.push('/');
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width >
+                                              450
+                                          ? 200
+                                          : MediaQuery.of(context).size.width /
+                                                  3 -
+                                              28,
+                                      child: HomeScreenCardSmall(
+                                        width:
+                                            MediaQuery.of(context).size.width >
+                                                    450
+                                                ? 200
+                                                : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        2 -
+                                                    25,
+                                        isComingSoon: false,
+                                        reduceImageSize: true,
+                                        title: 'Map',
+                                        child: 'assets/icons/bus-svg.svg',
+                                        onTap: () {
+                                          // widget.isGuest
+                                          //     ? showError()
+                                          context.push('/city_bus');
+                                        },
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width > 450
-                                    ? 200
-                                    : MediaQuery.of(context).size.width / 2 -
-                                        25,
-                                child: HomeScreenCardSmall(
-                                  width: MediaQuery.of(context).size.width > 450
-                                      ? 200
-                                      : MediaQuery.of(context).size.width / 2 -
-                                          25,
-                                  isComingSoon: false,
-                                  reduceImageSize: true,
-                                  title: 'Bus Shuttle',
-                                  child: 'assets/icons/bus-svg.svg',
-                                  onTap: () {
-                                    // widget.isGuest
-                                    //     ? showError()
-                                        context.push('/city_bus');
-                                  },
-                                ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width > 450
-                                    ? 200
-                                    : MediaQuery.of(context).size.width / 2 -
-                                    25,
-                                child: HomeScreenCardSmall(
-                                  width: MediaQuery.of(context).size.width > 450
-                                      ? 200
-                                      : MediaQuery.of(context).size.width / 2 -
-                                      25,
-                                  isComingSoon: false,
-                                  reduceImageSize: true,
-                                  title: 'Face',
-                                  child: 'assets/icons/bus-svg.svg',
-                                  onTap: () {
-                                    // widget.isGuest
-                                    //     ? showError()
-                                    context.push('/face_upload');
-                                  },
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 20),
                           // HomeCardNoOptions(

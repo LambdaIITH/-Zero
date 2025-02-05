@@ -1,3 +1,4 @@
+import 'package:dashbaord/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rounded_expansion_tile/rounded_expansion_tile.dart';
@@ -37,7 +38,7 @@ class HomeMessMenu extends StatelessWidget {
           ],
         ),
         child: RoundedExpansionTile(
-          trailing: const Icon(Icons.arrow_drop_down_circle_outlined),
+          trailing: Icon(Icons.arrow_drop_down_circle_outlined,color: context.customColors.customAccentColor,),
           rotateTrailing: true,
           duration: const Duration(milliseconds: 400),
           title: Padding(
