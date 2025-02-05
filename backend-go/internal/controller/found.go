@@ -1,12 +1,10 @@
 package controller
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/LambdaIITH/Dashboard/backend/config"
 	found "github.com/LambdaIITH/Dashboard/backend/internal/db"
@@ -33,10 +31,7 @@ func AddFoundItemHandler(c *gin.Context) {
 	}
 
 	// Insert the form data into the found table
-	var result map[string]interface{}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	result, err = found.InsertInFoundTable(ctx, formDataDict, userId)
+	result, err := found.InsertInFoundTable(c, formDataDict, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert data"})
 		return
@@ -58,7 +53,7 @@ func AddFoundItemHandler(c *gin.Context) {
 			return
 		}
 
-		err = found.InsertFoundImages(ctx, imagePaths, result["id"].(int))
+		err = found.InsertFoundImages(c, imagePaths, result["id"].(int))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save image paths"})
 			return
@@ -69,14 +64,14 @@ func AddFoundItemHandler(c *gin.Context) {
 
 func GetAllFoundItemsHandler(c *gin.Context) {
 	// Fetch all the found items
-	items, err := found.GetAllFoundItems(context.Background())
+	items, err := found.GetAllFoundItems(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch items"})
 		return
 	}
 
 	// Fetch the image URLs associated with the items
-	rows, err := config.DB.Query(context.Background(), "SELECT item_id, image_url FROM found_images")
+	rows, err := config.DB.Query(c, "SELECT item_id, image_url FROM found_images")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch images"})
 		return
@@ -115,7 +110,7 @@ func GetFoundItemByIdHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
 		return
 	}
-	item, err := found.GetParticularFoundItem(context.Background(), id)
+	item, err := found.GetParticularFoundItem(c, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
 		return
@@ -123,7 +118,7 @@ func GetFoundItemByIdHandler(c *gin.Context) {
 
 	// Fetch the image URLs associated with the item
 	var imageURLs []string
-	rows, err := config.DB.Query(context.Background(), "SELECT image_url FROM found_images WHERE item_id = $1", id)
+	rows, err := config.DB.Query(c, "SELECT image_url FROM found_images WHERE item_id = $1", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch images"})
 		return
@@ -168,28 +163,28 @@ func DeleteFoundItemHandler(c *gin.Context) {
 	}
 
 	// Check if the user is authorized to delete the item
-	res, err := found.AuthorizeEditDeleteItem(context.Background(), id, userID)
+	res, err := found.AuthorizeEditDeleteItem(c, id, userID)
 	if err != nil || !res {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	// Get the image URLs associated with the item
-	imageURLs, err := found.DeleteAllImageURIsFromFound(context.Background(), id)
+	imageURLs, err := found.DeleteAllImageURIsFromFound(c, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch images"})
 		return
 	}
 
 	// Delete the item from the found table
-	_, err = config.DB.Exec(context.Background(), "DELETE FROM found WHERE id = $1", id)
+	_, err = config.DB.Exec(c, "DELETE FROM found WHERE id = $1", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete item"})
 		return
 	}
 
 	// Deletes the images uris from the 'found_images' table in the database
-	_, err = found.DeleteAnItemImagesFromFound(context.Background(), id)
+	_, err = found.DeleteAnItemImagesFromFound(c, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete images from database"})
 		return
@@ -219,7 +214,7 @@ func EditFoundItemHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item id"})
 		return
 	}
-	res, err := found.AuthorizeEditDeleteItem(context.Background(), itemID, userID)
+	res, err := found.AuthorizeEditDeleteItem(c, itemID, userID)
 	if err != nil || !res {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -232,7 +227,7 @@ func EditFoundItemHandler(c *gin.Context) {
 		return
 	}
 
-	if _, err := found.UpdateInFoundTable(context.Background(), itemID, formData); err != nil {
+	if _, err := found.UpdateInFoundTable(c, itemID, formData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to edit item"})
 		return
 	}
@@ -244,7 +239,7 @@ func SearchFoundItemHandler(c *gin.Context) {
 	query := c.Query("query")
 
 	// Fetch found items matching the query
-	foundItems, err := found.SearchLostItemsFromFound(context.Background(), query)
+	foundItems, err := found.SearchLostItemsFromFound(c, query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch items"})
 		return
@@ -256,7 +251,7 @@ func SearchFoundItemHandler(c *gin.Context) {
 	}
 
 	// Fetch image URLs associated with the items
-	imageRows, err := found.GetSomeImgUrisFromFound(context.Background(), itemIDs)
+	imageRows, err := found.GetSomeImgUrisFromFound(c, itemIDs)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch images"})
 		return
