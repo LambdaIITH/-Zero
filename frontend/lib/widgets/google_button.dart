@@ -164,66 +164,111 @@ class _CustomGoogleButtonState extends State<CustomGoogleButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: const Color(0xffFE724C),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () async {
-            bool status = await signInWithGoogle();
-            bool isLoggedIn = await checkLoggedIn();
+    return Column(
+      children: [
+        Container(
+          height: 60,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Theme.of(context).cardColor,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () async {
+                bool status = await signInWithGoogle();
+                bool isLoggedIn = await checkLoggedIn();
 
-            if (isLoggedIn && status) {
-              var email = FirebaseAuth.instance.currentUser?.email ?? '';
+                if (isLoggedIn && status) {
+                  var email = FirebaseAuth.instance.currentUser?.email ?? '';
 
-              if (email.isEmpty) {
-                await logout();
-                showSnackBar('Something went wrong');
-                Navigator.of(context).popUntil(
-                    (route) => route.isFirst); //POP THE LOADING SCREEN
-              } else {
-                context.go('/home', extra: {
-                  'isGuest': false,
-                  'code': widget.code,
-                });
-              }
-            } else {
-              await logout();
-              Navigator.of(context)
-                  .popUntil((route) => route.isFirst); //POP THE LOADING SCREEN
-            }
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(
-                  "assets/icons/google.png",
-                  height: 36,
-                  width: 36,
-                ),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    "Continue with Google",
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                  if (email.isEmpty) {
+                    await logout();
+                    showSnackBar('Something went wrong');
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  } else {
+                    context.go('/home', extra: {
+                      'isGuest': false,
+                      'code': widget.code,
+                    });
+                  }
+                } else {
+                  await logout();
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }
+              },
+              borderRadius: BorderRadius.circular(12.0),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      "assets/icons/google.jpg",
+                      height: 28,
+                      width: 28,
                     ),
-                  ),
+                    const SizedBox(width: 20),
+                    Flexible(
+                      child: Text(
+                        "Sign In With Google",
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
+        const SizedBox(
+          height: 10,
+        ),
+        Text(
+          "OR",
+          style:
+              TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color,fontSize: 15),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        Container(
+          height: 60,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Theme.of(context).cardColor,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: null,
+              borderRadius: BorderRadius.circular(12.0),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        "Continue without Login",
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        )
+      ],
     );
   }
 }
