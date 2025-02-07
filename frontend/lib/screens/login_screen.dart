@@ -55,13 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     timeDilation = widget.timeDilation;
   }
-
   @override
   void dispose() {
     timeDilation = 1.0; 
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
