@@ -42,12 +42,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyCGwHvbCTCmmZHI1AG_2LW62zIGZl_eAEo',
-    appId: '1:472121739465:web:c209e655440be93f9d6518',
+    appId: '1:472121739465:web:28e3fd4ec06b8a3f9d6518',
     messagingSenderId: '472121739465',
     projectId: 'dashboard-iith',
     authDomain: 'dashboard-iith.firebaseapp.com',
-    storageBucket: 'dashboard-iith.appspot.com',
-    measurementId: 'G-H0YXVRV2BZ',
+    storageBucket: 'dashboard-iith.firebasestorage.app',
+    measurementId: 'G-32K0B7S4PL',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -55,34 +55,39 @@ class DefaultFirebaseOptions {
     appId: '1:472121739465:android:e7080caa6f17001e9d6518',
     messagingSenderId: '472121739465',
     projectId: 'dashboard-iith',
-    storageBucket: 'dashboard-iith.appspot.com',
+    storageBucket: 'dashboard-iith.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCF6912XrlY_LAEws85ddea2Xgp2-_cjV8',
-    appId: '1:472121739465:ios:8a4d7185dde781269d6518',
+    appId: '1:472121739465:ios:a4dbe663d3457a9e9d6518',
     messagingSenderId: '472121739465',
     projectId: 'dashboard-iith',
-    storageBucket: 'dashboard-iith.appspot.com',
+    storageBucket: 'dashboard-iith.firebasestorage.app',
+    androidClientId: '472121739465-1bjrrunahhk2962jvsn5tfpro79gsm37.apps.googleusercontent.com',
+    iosClientId: '472121739465-de4k347d2utj3rb1tk401ojtnlgsg5ib.apps.googleusercontent.com',
     iosBundleId: 'dev.iith.dashboard',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyCF6912XrlY_LAEws85ddea2Xgp2-_cjV8',
-    appId: '1:472121739465:ios:8a4d7185dde781269d6518',
+    appId: '1:472121739465:ios:a4dbe663d3457a9e9d6518',
     messagingSenderId: '472121739465',
     projectId: 'dashboard-iith',
-    storageBucket: 'dashboard-iith.appspot.com',
+    storageBucket: 'dashboard-iith.firebasestorage.app',
+    androidClientId: '472121739465-1bjrrunahhk2962jvsn5tfpro79gsm37.apps.googleusercontent.com',
+    iosClientId: '472121739465-de4k347d2utj3rb1tk401ojtnlgsg5ib.apps.googleusercontent.com',
     iosBundleId: 'dev.iith.dashboard',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCGwHvbCTCmmZHI1AG_2LW62zIGZl_eAEo',
-    appId: '1:472121739465:web:28e3fd4ec06b8a3f9d6518',
+    apiKey: 'AIzaSyAx3fwU5XQo-OayM3jof-NU0tkUGDUbZd4',
+    appId: '1:472121739465:web:256a539e1467b46f9d6518',
     messagingSenderId: '472121739465',
     projectId: 'dashboard-iith',
     authDomain: 'dashboard-iith.firebaseapp.com',
-    storageBucket: 'dashboard-iith.appspot.com',
-    measurementId: 'G-32K0B7S4PL',
+    storageBucket: 'dashboard-iith.firebasestorage.app',
+    measurementId: 'G-TDPZFCL0SW',
   );
+
 }
