@@ -199,6 +199,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     user_id BIGINT NOT NULL,
     travel_date DATE NOT NULL,
     bus_timing TIME NOT NULL,
-    isUsed BOOLEAN DEFAULT FALSE
+    isUsed BOOLEAN DEFAULT FALSE,
+    amount NUMERIC(10, 2) NOT NULL,
 );
 

@@ -204,7 +204,7 @@ class _CustomGoogleButtonState extends State<CustomGoogleButton> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.asset(
-                      "assets/icons/google_icon.jpg",
+                      "assets/icons/google.png",
                       height: 28,
                       width: 28,
                     ),

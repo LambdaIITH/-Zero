@@ -1,12 +1,10 @@
 package controller
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/LambdaIITH/Dashboard/backend/config"
 	lost "github.com/LambdaIITH/Dashboard/backend/internal/db"
@@ -41,25 +39,19 @@ func AddItemHandler(c *gin.Context) {
 	}
 
 	// Step 2: Get the user ID
-	userId, err := helpers.GetUserID(c.Request)
+	userId, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-
 	// Step 3: Insert the form data into the lost table
-	var result map[string]interface{}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	result, err = lost.InsertInLostTable(ctx, formDataDict, userId)
+	currItem := schema.LostItem{}
+
+	currItem.ID, err = lost.InsertInLostTable(c, formDataDict, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert data"})
 		return
 	}
-
-	// Step 4: Get the ID of the inserted item
-	currItem := schema.LostItem{}
-	currItem.ID = result["id"].(int)
 
 	// Step 5: Upload the images to S3 and save the image URLs in the database
 	form, err := c.MultipartForm()
@@ -67,6 +59,7 @@ func AddItemHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file data"})
 		return
 	}
+
 	files := form.File["images"]
 	if len(files) > 0 {
 		s3Client := helpers.NewS3Client(os.Getenv("BUCKET_NAME"), os.Getenv("REGION"), os.Getenv("RESOURCE_URI"))
@@ -77,7 +70,7 @@ func AddItemHandler(c *gin.Context) {
 			return
 		}
 
-		err = lost.InsertLostImages(ctx, imagePaths, currItem.ID)
+		err = lost.InsertLostImages(c, imagePaths, currItem.ID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save image paths"})
 			return
@@ -93,14 +86,14 @@ GetAllItemsHandler fetches all the lost items from the database and returns them
 */
 func GetAllItemsHandler(c *gin.Context) {
 	// Step 1: Fetch all the lost items
-	items, err := lost.GetAllLostItems(context.Background())
+	items, err := lost.GetAllLostItems(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch items"})
 		return
 	}
 
 	// Step 2: Fetch the image URLs associated with the items
-	rows, err := config.DB.Query(context.Background(), "SELECT item_id, image_url FROM lost_images")
+	rows, err := config.DB.Query(c, "SELECT item_id, image_url FROM lost_images")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch images"})
 		return
@@ -144,7 +137,7 @@ func GetItemByIdHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
 		return
 	}
-	item, err := lost.GetParticularLostItem(context.Background(), id)
+	item, err := lost.GetParticularLostItem(c, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
 		return
@@ -152,7 +145,7 @@ func GetItemByIdHandler(c *gin.Context) {
 
 	// Step 2: Fetch the image URLs associated with the item
 	var imageURLs []string
-	rows, err := config.DB.Query(context.Background(), "SELECT image_url FROM lost_images WHERE item_id = $1", id)
+	rows, err := config.DB.Query(c, "SELECT image_url FROM lost_images WHERE item_id = $1", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch images"})
 		return
@@ -186,7 +179,7 @@ func GetItemByIdHandler(c *gin.Context) {
 
 func DeleteItemHandler(c *gin.Context) {
 	// Step 1: Get the user ID
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -200,7 +193,7 @@ func DeleteItemHandler(c *gin.Context) {
 	}
 
 	// Step 3: Check if the user is authorized to delete the item
-	res, err := lost.AuthorizeEditDeleteItem(context.Background(), id, userID)
+	res, err := lost.AuthorizeEditDeleteItem(c, id, userID)
 	if err != nil || !res {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -208,14 +201,14 @@ func DeleteItemHandler(c *gin.Context) {
 
 	// Step 4: Delete images associated with the item
 	// Get the image URLs associated with the item
-	imageURLs, err := lost.DeleteAllImageUrisLost(context.Background(), id)
+	imageURLs, err := lost.DeleteAllImageUrisLost(c, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch images"})
 		return
 	}
 
 	// Step 5: Delete the item from the lost table
-	_, err = config.DB.Exec(context.Background(), "DELETE FROM lost WHERE id = $1", id)
+	_, err = config.DB.Exec(c, "DELETE FROM lost WHERE id = $1", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete item"})
 		return
@@ -223,7 +216,7 @@ func DeleteItemHandler(c *gin.Context) {
 
 	// Step 6: Delete the images from the database
 	// This step deletes the item images from the 'lost_images' table in the database
-	_, err = lost.DeleteItemImagesFromLost(context.Background(), id)
+	_, err = lost.DeleteItemImagesFromLost(c, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete images from database"})
 		return
@@ -246,7 +239,7 @@ It edits the images in S3 and updates the image URLs in the database.
 */
 func EditItemHandler(c *gin.Context) {
 	// Step 1: Get the user ID
-	userID, err := helpers.GetUserID(c.Request)
+	userID, err := helpers.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -258,7 +251,7 @@ func EditItemHandler(c *gin.Context) {
 		return
 	}
 
-	res, err := lost.AuthorizeEditDeleteItem(context.Background(), itemID, userID)
+	res, err := lost.AuthorizeEditDeleteItem(c, itemID, userID)
 	if err != nil {
 		return
 	}
@@ -275,7 +268,7 @@ func EditItemHandler(c *gin.Context) {
 		return
 	}
 
-	if _, err := lost.UpdateInLostTable(context.Background(), itemID, formData); err != nil {
+	if _, err := lost.UpdateInLostTable(c, itemID, formData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to edit item"})
 		return
 	}
@@ -291,7 +284,7 @@ func SearchItemHandler(c *gin.Context) {
 	query := c.Query("query")
 
 	// Step 1: Fetch lost items matching the query
-	lostItems, err := lost.SearchLostItemsLost(context.Background(), query)
+	lostItems, err := lost.SearchLostItemsLost(c, query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch items"})
 		return
@@ -303,7 +296,7 @@ func SearchItemHandler(c *gin.Context) {
 	}
 
 	// Step 2: Fetch image URLs associated with the items
-	imageRows, err := lost.GetSomeImgUrisLost(context.Background(), itemIDs)
+	imageRows, err := lost.GetSomeImgUrisLost(c, itemIDs)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch images"})
 		return

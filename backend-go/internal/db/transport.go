@@ -2,6 +2,9 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 
@@ -41,4 +44,78 @@ func ScanQR(ctx context.Context, transactionData map[string]interface{}) bool {
 	}
 
 	return true
+}
+
+func GetLastTransaction(ctx context.Context, userId int) map[string]interface{} {
+	query := `
+    SELECT transaction_id, payment_time, travel_date, bus_timing, isused, start, destination, amount
+    FROM transactions
+    WHERE user_id = $1 AND payment_time >= NOW() - INTERVAL '2 hours'
+    ORDER BY payment_time DESC
+    LIMIT 1`
+
+	rows, err := config.DB.Query(ctx, query, userId)
+	if err != nil {
+		log.Printf("Error fetching transaction data: %v", err)
+		return nil
+	}
+	defer rows.Close()
+
+	columns := make([]string, 0)
+	colTypes := rows.FieldDescriptions()
+
+	for _, col := range colTypes {
+		columns = append(columns, string(col.Name))
+	}
+
+	if !rows.Next() {
+		return nil
+	}
+
+	values := make([]interface{}, len(columns))
+	scanArgs := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	err = rows.Scan(scanArgs...)
+	if err != nil {
+		log.Printf("Error scanning row: %v", err)
+		return nil
+	}
+
+	transaction := make(map[string]interface{})
+	for i, col := range columns {
+		val := values[i]
+		if col == "transaction_id" {
+			if v, ok := val.(string); ok {
+				transaction["transactionId"] = v
+			}
+		} else if col == "user_id" {
+			if v, ok := val.(int64); ok {
+				transaction["userId"] = v
+			}
+		} else if col == "payment_time" {
+			if v, ok := val.(time.Time); ok {
+				transaction["paymentTime"] = v.Format("13:12")
+			}
+		} else if col == "bus_timing" {
+			if v, ok := val.(time.Time); ok {
+				transaction["busTiming"] = v.Format("13:12")
+			}
+		} else if col == "travel_date" {
+			if v, ok := val.(time.Time); ok {
+				transaction["travelDate"] = v.Format("04/02/09")
+			}
+		} else if col == "isUsed" {
+			if v, ok := val.(bool); ok {
+				transaction["isUsed"] = fmt.Sprintf("%v", v)
+			}
+		} else {
+			if v, ok := val.(string); ok {
+				transaction[col] = v
+			}
+		}
+	}
+	return transaction
 }

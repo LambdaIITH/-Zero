@@ -791,41 +791,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                   ],
+
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // HomeCardNoOptions(
-                          //   isComingSoon: true,
-                          //   title: 'Cab Sharing',
-                          //   child: 'assets/icons/cab-sharing-icon.svg',
-                          //   onTap: () {
-                          //     widget.isGuest
-                          //         ? showError()
-                          //         : context.push('/cabsharing', extra: {
-                          //             'user': userModel ??
-                          //                 UserModel(
-                          //                     email: "user@iith.ac.in",
-                          //                     name: "User"),
-                          //             'image': image,
-                          //           });
-                          //   },
-                          // ),
-                          // const SizedBox(height: 20),
-                          // HomeCardNoOptions(
-                          //   isComingSoon: false,
-                          //   isLnF: true,
-                          //   title: 'Lost & Found',
-                          //   child: 'assets/icons/magnifying-icon.svg',
-                          //   onTap: widget.isGuest
-                          //       ? showError
-                          //       : () => context.push('/lnf', extra: {
-                          //             'currentUserEmail':
-                          //                 userModel?.email ?? 'user@iith.ac.in'
-                          //           }),
-                          // ),
-                          // const SizedBox(height: 20),
                         ],
                       ),
                     ),

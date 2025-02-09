@@ -1004,7 +1004,8 @@ class ApiServices {
     }
   }
 
-  Future<Map<String, dynamic>> submitTransactionID(String transactionId, amount, from, to) async {
+  Future<Map<String, dynamic>> submitTransactionID(
+      String transactionId, amount, from, to) async {
     try {
       // Sending the POST request
       final response = await dio.post(
@@ -1103,10 +1104,24 @@ class ApiServices {
     }
   }
 
+  Future<bool> bookIghRoom(
+      BuildContext context, Map<String, dynamic> bookingDetails) async {
+    try {
+      final response = await dio.post(
+        '${dotenv.env["ADMIN_BACKEND_URL"]}/igh/book_room',
+        data: bookingDetails,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint(e.toString());
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>> uploadPhoto(capturedImage) async {
     if (capturedImage != null) {
       try {
-
         /// Form data for the POST request
         ///
         FormData formData = FormData.fromMap({
@@ -1114,7 +1129,8 @@ class ApiServices {
             "face_name": "Sample Face Name 2",
             "face_description": "This is a sample face description"
           }),
-          'images': await MultipartFile.fromFile(capturedImage!.path, filename: 'face.jpg')
+          'images': await MultipartFile.fromFile(capturedImage!.path,
+              filename: 'face.jpg')
         });
 
         final response = await dio.post(
@@ -1144,6 +1160,4 @@ class ApiServices {
     }
     return {'error': 'No image to upload'};
   }
-
-
 }
