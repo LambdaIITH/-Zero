@@ -239,7 +239,7 @@ Container lectureItem(
                     ? lecture.courseCode
                     : lecture.courseCode,
                 size: 12,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
               NormalText(
                 text: timetable!.courses[lecture.courseCode]?['title'] ??
@@ -256,7 +256,7 @@ Container lectureItem(
                     ? '${lecture.classRoom}'
                     : lecture.courseCode,
                 size: 12,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
                 ],
               )
