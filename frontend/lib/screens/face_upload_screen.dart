@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:dashbaord/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:http/http.dart' as http;
 import 'package:async/async.dart';
 import 'dart:convert';
@@ -17,6 +19,10 @@ class _FaceUploadScreenState extends State<FaceUploadScreen> {
   XFile? _capturedImage;
   List<CameraDescription>? _cameras;
   int _selectedCameraIndex = 0;
+  final FaceDetector _faceDetector = FaceDetector(
+    options: FaceDetectorOptions(enableContours: false, enableLandmarks: false),
+  );
+  bool _isFaceDetected = false;
 
   @override
   void initState() {
@@ -27,7 +33,8 @@ class _FaceUploadScreenState extends State<FaceUploadScreen> {
   void _initializeCamera() async {
     _cameras = await availableCameras();
     if (_cameras != null && _cameras!.isNotEmpty) {
-      _cameraController = CameraController(_cameras![_selectedCameraIndex], ResolutionPreset.medium);
+      _cameraController =
+          CameraController(_cameras![_selectedCameraIndex], ResolutionPreset.medium);
       await _cameraController!.initialize();
       setState(() {});
     }
@@ -48,15 +55,41 @@ class _FaceUploadScreenState extends State<FaceUploadScreen> {
   Future<void> _capturePhoto() async {
     if (_cameraController != null && _cameraController!.value.isInitialized) {
       XFile image = await _cameraController!.takePicture();
-      setState(() {
-        _capturedImage = image;
-      });
+      await _detectFaces(image);
+    }
+  }
+
+  Future<void> _detectFaces(XFile image) async {
+    final inputImage = InputImage.fromFilePath(image.path);
+    final List<Face> faces = await _faceDetector.processImage(inputImage);
+
+    setState(() {
+      _capturedImage = image;
+      _isFaceDetected = faces.isNotEmpty;
+    });
+
+    if (faces.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No face detected! Please try again.")),
+      );
+    }
+  }
+
+  Future<void> _uploadPhoto() async {
+    if (_capturedImage != null && _isFaceDetected) {
+      print("UPLOADING");
+      ApiServices().uploadPhoto(_capturedImage);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No face detected! Cannot upload.")),
+      );
     }
   }
 
   @override
   void dispose() {
     _disposeCamera();
+    _faceDetector.close();
     super.dispose();
   }
 
@@ -76,6 +109,7 @@ class _FaceUploadScreenState extends State<FaceUploadScreen> {
                     if (_capturedImage != null) {
                       setState(() {
                         _capturedImage = null;
+                        _isFaceDetected = false;
                         _initializeCamera();
                       });
                     } else {
@@ -84,7 +118,9 @@ class _FaceUploadScreenState extends State<FaceUploadScreen> {
                       });
                     }
                   },
-                  child: Text(_capturedImage != null ? 'Take Again' : (_isCameraOpen ? 'Close Camera' : 'Take Photo')),
+                  child: Text(_capturedImage != null
+                      ? 'Take Again'
+                      : (_isCameraOpen ? 'Close Camera' : 'Take Photo')),
                 ),
                 SizedBox(width: 10),
                 if (_isCameraOpen && _capturedImage == null)
@@ -103,7 +139,9 @@ class _FaceUploadScreenState extends State<FaceUploadScreen> {
               width: 300,
               height: 300,
               child: _capturedImage == null
-                  ? (_isCameraOpen && _cameraController != null && _cameraController!.value.isInitialized
+                  ? (_isCameraOpen &&
+                  _cameraController != null &&
+                  _cameraController!.value.isInitialized
                   ? ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: CameraPreview(_cameraController!),
@@ -111,7 +149,8 @@ class _FaceUploadScreenState extends State<FaceUploadScreen> {
                   : Container())
                   : ClipRRect(
                 borderRadius: BorderRadius.circular(15),
-                child: Image.file(File(_capturedImage!.path), fit: BoxFit.cover),
+                child: Image.file(File(_capturedImage!.path),
+                    fit: BoxFit.cover),
               ),
             ),
             if (_isCameraOpen && _capturedImage == null)
@@ -128,11 +167,14 @@ class _FaceUploadScreenState extends State<FaceUploadScreen> {
               Column(
                 children: [
                   SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      ApiServices().uploadPhoto(_capturedImage);
-                    },
+                  _isFaceDetected
+                      ? ElevatedButton(
+                    onPressed: _uploadPhoto,
                     child: Text('Upload'),
+                  )
+                      : Text(
+                    "No face detected. Retake the photo!",
+                    style: TextStyle(color: Colors.red),
                   ),
                 ],
               ),
